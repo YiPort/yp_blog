@@ -1,5 +1,6 @@
 package cn.yiport.controller;
 
+import cn.yiport.domain.ResponseResult;
 import cn.yiport.domain.entity.Article;
 import cn.yiport.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +17,24 @@ public class ArticleController {
     @Autowired
     private ArticleService articleService;
 
-    @GetMapping("/list")
-    public List<Article> test(){
-        return articleService.list();
+//    @GetMapping("/list")
+//    public List<Article> test(){
+//        return articleService.list();
+//    }
+
+    
+    /** 
+    * @Description: 查询热门文章
+    * @Author: YiPort
+    * @Date: 2023/4/2 
+    */
+    @GetMapping("/hotArticleList")
+    public ResponseResult hotArticleList(){
+        
+
+        ResponseResult result =  articleService.hotArticleList();
+        return result;
     }
+
+
 }
