@@ -6,6 +6,7 @@ import cn.yiport.domain.entity.Article;
 import cn.yiport.domain.vo.HotArticleVo;
 import cn.yiport.mapper.ArticleMapper;
 import cn.yiport.service.ArticleService;
+import cn.yiport.utils.BeanCopyUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -33,13 +34,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> imple
         List<Article> articles = page.getRecords();
 
         //bean拷贝
-        List<HotArticleVo> articleVos = new ArrayList<>();
-        for (Article article : articles) {
-            HotArticleVo vo = new HotArticleVo();
-            BeanUtils.copyProperties(article,vo);
-            articleVos.add(vo);
-        }
+//        List<HotArticleVo> articleVos = new ArrayList<>();
+//        for (Article article : articles) {
+//            HotArticleVo vo = new HotArticleVo();
+//            BeanUtils.copyProperties(article,vo);
+//            articleVos.add(vo);
+//        }
+        List<HotArticleVo> articleVos = BeanCopyUtils.copyBeanList(articles, HotArticleVo.class);
 
-        return ResponseResult.okResult(articles);
+
+        return ResponseResult.okResult(articleVos);
     }
 }
