@@ -2,6 +2,8 @@ package cn.yiport.domain.entity;
 
 import java.util.Date;
 import java.io.Serializable;
+
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +18,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@TableName("yp_category")
 public class Category  {
     
     private Long id;
