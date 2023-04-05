@@ -37,4 +37,15 @@ public class ArticleController {
     }
 
 
+    /**
+     * @Description: 分页查询文章列表
+     * @Author: YiPort
+     * @Date: 2023/4/5
+     */
+    @GetMapping("/articleList")
+    public ResponseResult articleList(Integer pageNum,Integer pageSize,Long categoryId){
+        return articleService.articleList(pageNum,pageSize,categoryId);
+    }
+
+
 }
