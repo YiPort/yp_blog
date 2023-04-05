@@ -3,6 +3,7 @@ package cn.yiport.service.impl;
 import cn.yiport.constants.SystemConstants;
 import cn.yiport.domain.ResponseResult;
 import cn.yiport.domain.entity.Article;
+import cn.yiport.domain.entity.Category;
 import cn.yiport.domain.vo.ArticleListVo;
 import cn.yiport.domain.vo.HotArticleVo;
 import cn.yiport.domain.vo.PageVo;
@@ -13,13 +14,15 @@ import cn.yiport.utils.BeanCopyUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
+import java.util.stream.Collectors;
 
 @Service
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> implements ArticleService {
@@ -69,6 +72,19 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> imple
         //分页查询
         Page<Article> page = new Page<>(pageNum,pageSize);
         page(page,lambdaQueryWrapper);
+
+        List<Article> articles = page.getRecords();
+        //查询categoryName
+        //写法一：articleId去查询articleName进行设置
+//        for (Article article : articles) {
+//            Category category = categoryService.getById(article.getCategoryId());
+//            article.setCategoryName(category.getName());
+//        }
+        //写法二：通过链式查询
+        articles.stream()
+                .map(article -> article.setCategoryName(categoryService.getById(article.getCategoryId()).getName()))
+                .collect(Collectors.toList());
+
 
         //封装查询结果
         List<ArticleListVo> articleListVos = BeanCopyUtils.copyBeanList(page.getRecords(), ArticleListVo.class);
