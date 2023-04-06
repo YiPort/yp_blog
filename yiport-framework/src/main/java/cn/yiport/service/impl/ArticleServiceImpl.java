@@ -4,6 +4,7 @@ import cn.yiport.constants.SystemConstants;
 import cn.yiport.domain.ResponseResult;
 import cn.yiport.domain.entity.Article;
 import cn.yiport.domain.entity.Category;
+import cn.yiport.domain.vo.ArticleDetailVo;
 import cn.yiport.domain.vo.ArticleListVo;
 import cn.yiport.domain.vo.HotArticleVo;
 import cn.yiport.domain.vo.PageVo;
@@ -93,4 +94,19 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> imple
         return ResponseResult.okResult(pageVo);
     }
 
+    @Override
+    public ResponseResult getArticleDetail(Long id) {
+        //根据id查询文章
+        Article article = getById(id);
+        //转换成VO
+        ArticleDetailVo articleDetailVo = BeanCopyUtils.copyBean(article, ArticleDetailVo.class);
+        //根据分类id查询分类名
+        Long categoryId = articleDetailVo.getCategoryId();
+        Category category = categoryService.getById(categoryId);
+        if(category!=null){
+            articleDetailVo.setCategoryName(category.getName());
+        }
+        //封装响应返回
+        return ResponseResult.okResult(articleDetailVo);
+    }
 }
