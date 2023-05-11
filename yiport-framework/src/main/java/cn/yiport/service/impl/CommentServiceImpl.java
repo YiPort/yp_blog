@@ -1,5 +1,6 @@
 package cn.yiport.service.impl;
 
+import cn.yiport.constants.SystemConstants;
 import cn.yiport.domain.ResponseResult;
 import cn.yiport.domain.entity.Comment;
 import cn.yiport.domain.vo.CommentVo;
@@ -32,14 +33,16 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     private UserService userService;
 
     @Override
-    public ResponseResult commentList(Long articleId, Integer pageNum, Integer pageSize) {
+    public ResponseResult commentList(String commentType, Long articleId, Integer pageNum, Integer pageSize) {
         //查询对应文章的根评论
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         //对articleId进行判断
-        queryWrapper.eq(Comment::getArticleId,articleId);
+        queryWrapper.eq(SystemConstants.ARTICLE_COMMENT.equals(commentType),Comment::getArticleId,articleId);
         //根评论 rootId为-1
         queryWrapper.eq(Comment::getRootId,-1);
 
+        //评论类型
+        queryWrapper.eq(Comment::getType,commentType);
         //分页查询
         Page<Comment> page = new Page(pageNum,pageSize);
         page(page,queryWrapper);
@@ -101,7 +104,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         save(comment);
         return ResponseResult.okResult();
     }
-
 }
 
 

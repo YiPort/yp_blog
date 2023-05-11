@@ -1,5 +1,6 @@
 package cn.yiport.controller;
 
+import cn.yiport.constants.SystemConstants;
 import cn.yiport.domain.ResponseResult;
 import cn.yiport.domain.entity.Comment;
 import cn.yiport.service.CommentService;
@@ -15,7 +16,7 @@ public class CommentController {
 
     @GetMapping("/commentList")
     public ResponseResult commentList(Long articleId, Integer pageNum, Integer pageSize){
-        return commentService.commentList(articleId,pageNum,pageSize);
+        return commentService.commentList(SystemConstants.ARTICLE_COMMENT,articleId,pageNum,pageSize);
     }
 
     @PostMapping
