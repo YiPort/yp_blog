@@ -84,6 +84,12 @@
             <artifactId>springfox-swagger-ui</artifactId>
         </dependency>
 
+<!--        七牛云OSS依赖-->
+        <dependency>
+            <groupId>com.qiniu</groupId>
+            <artifactId>qiniu-java-sdk</artifactId>
+            <version>7.8.0</version>
+        </dependency>
     </dependencies>
 
 </project>
