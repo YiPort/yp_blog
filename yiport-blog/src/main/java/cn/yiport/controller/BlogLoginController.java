@@ -3,7 +3,7 @@ package cn.yiport.controller;
 import cn.yiport.domain.ResponseResult;
 import cn.yiport.domain.entity.User;
 import cn.yiport.enums.AppHttpCodeEnum;
-import cn.yiport.filter.exception.SystemException;
+import cn.yiport.handler.exception.SystemException;
 import cn.yiport.service.BlogLoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
