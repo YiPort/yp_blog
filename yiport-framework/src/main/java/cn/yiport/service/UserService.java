@@ -1,5 +1,6 @@
 package cn.yiport.service;
 
+import cn.yiport.domain.ResponseResult;
 import cn.yiport.domain.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -11,6 +12,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @since 2023-05-01 13:50:17
  */
 public interface UserService extends IService<User> {
+
+    ResponseResult userInfo();
 
 }
 
