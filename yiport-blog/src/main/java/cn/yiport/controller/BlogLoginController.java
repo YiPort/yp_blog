@@ -16,6 +16,11 @@ public class BlogLoginController {
     @Autowired
     private BlogLoginService blogLoginService;
 
+    /**
+     * 用户登录
+     * @param user
+     * @return
+     */
     @PostMapping("/login")
     public ResponseResult login(@RequestBody User user){
        if(!StringUtils.hasText(user.getUserName())){
@@ -24,6 +29,11 @@ public class BlogLoginController {
         return blogLoginService.login(user);
     }
 
+    /**
+     * 用户退出登录
+     * 需要token请求头
+     * @return
+     */
     @PostMapping("/logout")
     public ResponseResult logout(){
         return blogLoginService.logout();

@@ -12,6 +12,12 @@ public class UploadController {
     @Autowired
     private UploadService uploadService;
 
+    /**
+     * 头像上传
+     * 需要token
+     * @param img
+     * @return
+     */
     @PostMapping("/upload")
     public ResponseResult uploadImg(MultipartFile img){
         return uploadService.uploadImg(img);
