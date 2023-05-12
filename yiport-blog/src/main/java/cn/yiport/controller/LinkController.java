@@ -14,6 +14,10 @@ public class LinkController {
     @Autowired
     private LinkService linkService;
 
+    /**
+     * 友联查询
+     * @return
+     */
     @GetMapping("/getAllLink")
     public ResponseResult getAllLink(){
         return linkService.getAllLink();
