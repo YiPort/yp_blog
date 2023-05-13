@@ -4,7 +4,10 @@ public enum AppHttpCodeEnum {
     // 成功
     SUCCESS(200,"操作成功"),
     // 登录
-
+    /**
+     * 请求参数错误
+     */
+    PARAMETER_ERROR(400, "请求参数错误"),
     NEED_LOGIN(401,"需要登录后操作"),
     NO_OPERATOR_AUTH(403,"无权限操作"),
     SYSTEM_ERROR(500,"出现错误"),
@@ -20,7 +23,8 @@ public enum AppHttpCodeEnum {
     NICKNAME_NOT_NULL(510, "昵称不能为空"),
     PASSWORD_NOT_NULL(511, "密码不能为空"),
     EMAIL_NOT_NULL(512, "邮箱不能为空"),
-    NICKNAME_EXIST(513, "昵称已存在"),;
+    CAPTCHA_NOT_NULL(513, "验证码不能为空"),
+    NICKNAME_EXIST(514, "昵称已存在");
 
     int code;
     String msg;
