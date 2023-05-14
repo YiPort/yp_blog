@@ -13,7 +13,7 @@ spring:
     password: passwd
   servlet:
     multipart:
-      max-file-size: 2MB
+      max-file-size: 1MB #限定文件上传大小
       max-request-size: 5MB
 mybatis-plus:
   configuration:
@@ -25,7 +25,16 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
       id-type: auto
-oss:
+oss:  #七牛云OSS
   accessKey: xxxx
   secretKey: xxxx
   bucket: yp-blog
+
+fdfs: #fastDFS
+  so-timeout: 1501 # 超时时间
+  connect-timeout: 601 # 连接超时时间
+  thumb-image: # 缩略图
+    width: 60
+    height: 60
+  tracker-list: # tracker地址：你的虚拟机服务器地址+端口（默认是22122）
+    - 192.168.10.123:22122
