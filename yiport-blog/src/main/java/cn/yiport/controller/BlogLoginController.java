@@ -37,10 +37,10 @@ public class BlogLoginController {
             throw new SystemException(AppHttpCodeEnum.PASSWORD_NOT_NULL);
         }
         if (StringUtils.isBlank(captcha)){
-            throw new SystemException(AppHttpCodeEnum.PASSWORD_NOT_NULL);
+            throw new SystemException(AppHttpCodeEnum.CAPTCHA_NOT_NULL);
         }
         if (StringUtils.isBlank(uuid)){
-
+            throw new SystemException(AppHttpCodeEnum.CAPTCHA_NOT_NULL);
         }
 
         return blogLoginService.userLoginByAccount(accountLoginRequest);
