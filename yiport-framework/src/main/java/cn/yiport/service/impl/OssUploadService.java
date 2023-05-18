@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 
-@Service
+//@Service
 @Data
 @ConfigurationProperties(prefix = "oss")
 public class OssUploadService implements UploadService {
