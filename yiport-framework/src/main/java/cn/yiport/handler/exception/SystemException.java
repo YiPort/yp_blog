@@ -55,5 +55,8 @@ public class SystemException extends RuntimeException{
     public String getMsg() {
         return msg;
     }
-    
+
+    public String getDescription() {
+        return description;
+    }
 }

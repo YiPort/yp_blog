@@ -3,7 +3,6 @@ package cn.yiport.domain;
 import cn.yiport.enums.AppHttpCodeEnum;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-
 import java.io.Serializable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -11,6 +10,11 @@ public class ResponseResult<T> implements Serializable {
     private Integer code;
     private String msg;
     private T data;
+
+    /**
+     * 详细描述
+     */
+    private String description;
 
     public ResponseResult() {
         this.code = AppHttpCodeEnum.SUCCESS.getCode();
@@ -27,6 +31,15 @@ public class ResponseResult<T> implements Serializable {
         this.msg = msg;
         this.data = data;
     }
+
+    public ResponseResult(Integer code, String msg, T data, String description)
+    {
+        this.code = code;
+        this.msg = msg;
+        this.data = data;
+        this.description = description;
+    }
+
 
     public ResponseResult(Integer code, String msg) {
         this.code = code;
@@ -46,6 +59,12 @@ public class ResponseResult<T> implements Serializable {
         return result.ok(code, null, msg);
     }
 
+    public static <T> ResponseResult<T> okResult(int code, String msg, String description)
+    {
+        ResponseResult<T> result = new ResponseResult<>();
+        return result.ok(code, null, msg, description);
+    }
+
     public static ResponseResult okResult(Object data) {
         ResponseResult result = setAppHttpCodeEnum(AppHttpCodeEnum.SUCCESS, AppHttpCodeEnum.SUCCESS.getMsg());
         if(data!=null) {
@@ -62,6 +81,12 @@ public class ResponseResult<T> implements Serializable {
         return setAppHttpCodeEnum(enums,msg);
     }
 
+    public static ResponseResult errorResult(Integer code, String msg, String description)
+    {
+        ResponseResult<?> result = new ResponseResult<>();
+        return result.error(code, msg, description);
+    }
+
     public static ResponseResult setAppHttpCodeEnum(AppHttpCodeEnum enums){
         return okResult(enums.getCode(),enums.getMsg());
     }
@@ -70,9 +95,22 @@ public class ResponseResult<T> implements Serializable {
         return okResult(enums.getCode(),msg);
     }
 
+    private static <T> ResponseResult<T> setAppHttpCodeEnum(AppHttpCodeEnum enums, String msg, String description) {
+        return okResult(enums.getCode(), msg, description);
+    }
+
+
     public ResponseResult<?> error(Integer code, String msg) {
         this.code = code;
         this.msg = msg;
+        return this;
+    }
+
+    public ResponseResult<?> error(Integer code, String msg, String description)
+    {
+        this.code = code;
+        this.msg = msg;
+        this.description = description;
         return this;
     }
 
@@ -86,6 +124,15 @@ public class ResponseResult<T> implements Serializable {
         this.code = code;
         this.data = data;
         this.msg = msg;
+        return this;
+    }
+
+    public ResponseResult<T> ok(Integer code, T data, String msg, String description)
+    {
+        this.code = code;
+        this.data = data;
+        this.msg = msg;
+        this.description = description;
         return this;
     }
 
@@ -118,6 +165,11 @@ public class ResponseResult<T> implements Serializable {
         this.data = data;
     }
 
+    public String getDescription() {
+        return description;
+    }
 
-
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }
