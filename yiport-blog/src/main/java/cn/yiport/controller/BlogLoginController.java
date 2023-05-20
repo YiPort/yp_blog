@@ -6,6 +6,8 @@ import cn.yiport.domain.request.AccountLoginRequest;
 import cn.yiport.enums.AppHttpCodeEnum;
 import cn.yiport.handler.exception.SystemException;
 import cn.yiport.service.BlogLoginService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.util.StringUtils;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Api(tags = "用户登录",description = "用户登录相关接口")
 public class BlogLoginController {
     @Autowired
     private BlogLoginService blogLoginService;
@@ -25,7 +28,8 @@ public class BlogLoginController {
      * @return
      */
     @PostMapping("/login")
-  public ResponseResult login( @RequestBody AccountLoginRequest accountLoginRequest){
+    @ApiOperation(value = "用户登录",notes = "用户登录")
+    public ResponseResult login( @RequestBody AccountLoginRequest accountLoginRequest){
         String userName = accountLoginRequest.getUserName();
         String userPassword = accountLoginRequest.getPassword();
         String captcha = accountLoginRequest.getCaptcha();
@@ -52,6 +56,7 @@ public class BlogLoginController {
      * @return
      */
     @PostMapping("/logout")
+    @ApiOperation(value = "用户退出登录",notes = "用户退出登录，需要token请求头")
     public ResponseResult logout(){
         return blogLoginService.logout();
     }
@@ -62,6 +67,7 @@ public class BlogLoginController {
      * @return
      */
     @GetMapping("/user/captchaImage")
+    @ApiOperation(value = "获取图片验证码",notes = "获取图片验证码")
     public ResponseResult getCaptchaImage() {
         return blogLoginService.getCaptchaImage();
     }
