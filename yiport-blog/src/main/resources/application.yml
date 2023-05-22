@@ -15,6 +15,8 @@ spring:
     multipart:
       max-file-size: 1MB #限定文件上传大小
       max-request-size: 5MB
+  main:
+    allow-circular-references: true
 mybatis-plus:
   configuration:
     # 日志
