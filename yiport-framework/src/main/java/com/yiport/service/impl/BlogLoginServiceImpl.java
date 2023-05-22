@@ -79,7 +79,7 @@ public class BlogLoginServiceImpl implements BlogLoginService {
      * @return 结果
      */
     @Override
-    public ResponseResult<Map<String, Object>> userLoginByAccount(AccountLoginRequest userLoginRequest)
+    public ResponseResult userLoginByAccount(AccountLoginRequest userLoginRequest)
     {
         String userAccount = userLoginRequest.getUserName();
         String userPassword = userLoginRequest.getPassword();
