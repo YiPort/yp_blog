@@ -16,17 +16,20 @@ public class ResponseResult<T> implements Serializable {
      */
     private String description;
 
-    public ResponseResult() {
+    public ResponseResult()
+    {
         this.code = AppHttpCodeEnum.SUCCESS.getCode();
         this.msg = AppHttpCodeEnum.SUCCESS.getMsg();
     }
 
-    public ResponseResult(Integer code, T data) {
+    public ResponseResult(Integer code, T data)
+    {
         this.code = code;
         this.data = data;
     }
 
-    public ResponseResult(Integer code, String msg, T data) {
+    public ResponseResult(Integer code, String msg, T data)
+    {
         this.code = code;
         this.msg = msg;
         this.data = data;
@@ -40,22 +43,32 @@ public class ResponseResult<T> implements Serializable {
         this.description = description;
     }
 
-
-    public ResponseResult(Integer code, String msg) {
+    public ResponseResult(Integer code, String msg)
+    {
         this.code = code;
         this.msg = msg;
     }
 
-    public static ResponseResult errorResult(int code, String msg) {
-        ResponseResult result = new ResponseResult();
+    public static <T> ResponseResult<T> errorResult(int code, String msg)
+    {
+        ResponseResult<T> result = new ResponseResult<>();
         return result.error(code, msg);
     }
-    public static ResponseResult okResult() {
-        ResponseResult result = new ResponseResult();
-        return result;
+
+    public static <T> ResponseResult<T> errorResult(int code, String msg, String description)
+    {
+        ResponseResult<T> result = new ResponseResult<>();
+        return result.error(code, msg, description);
     }
-    public static ResponseResult okResult(int code, String msg) {
-        ResponseResult result = new ResponseResult();
+
+    public static <T> ResponseResult<T> okResult()
+    {
+        return new ResponseResult<>();
+    }
+
+    public static <T> ResponseResult<T> okResult(int code, String msg)
+    {
+        ResponseResult<T> result = new ResponseResult<>();
         return result.ok(code, null, msg);
     }
 
@@ -65,48 +78,59 @@ public class ResponseResult<T> implements Serializable {
         return result.ok(code, null, msg, description);
     }
 
-    public static ResponseResult okResult(Object data) {
-        ResponseResult result = setAppHttpCodeEnum(AppHttpCodeEnum.SUCCESS, AppHttpCodeEnum.SUCCESS.getMsg());
-        if(data!=null) {
+    public static <T> ResponseResult<T> okResult(T data)
+    {
+        ResponseResult<T> result = setAppHttpCodeEnum(AppHttpCodeEnum.SUCCESS, AppHttpCodeEnum.SUCCESS.getMsg());
+        if (data != null)
+        {
             result.setData(data);
         }
         return result;
     }
 
-    public static ResponseResult errorResult(AppHttpCodeEnum enums){
-        return setAppHttpCodeEnum(enums,enums.getMsg());
-    }
-
-    public static ResponseResult errorResult(AppHttpCodeEnum enums, String msg){
-        return setAppHttpCodeEnum(enums,msg);
-    }
-
-    public static ResponseResult errorResult(Integer code, String msg, String description)
+    public static <T> ResponseResult<T> okResult(T data, String description)
     {
-        ResponseResult<?> result = new ResponseResult<>();
-        return result.error(code, msg, description);
+        ResponseResult<T> result = setAppHttpCodeEnum(AppHttpCodeEnum.SUCCESS, AppHttpCodeEnum.SUCCESS.getMsg(), description);
+        if (data != null)
+        {
+            result.setData(data);
+        }
+        return result;
     }
 
-    public static ResponseResult setAppHttpCodeEnum(AppHttpCodeEnum enums){
-        return okResult(enums.getCode(),enums.getMsg());
+    public static <T> ResponseResult<T> errorResult(AppHttpCodeEnum enums)
+    {
+        return setAppHttpCodeEnum(enums, enums.getMsg());
     }
 
-    private static ResponseResult setAppHttpCodeEnum(AppHttpCodeEnum enums, String msg){
-        return okResult(enums.getCode(),msg);
+    public static <T> ResponseResult<T> errorResult(AppHttpCodeEnum enums, String msg)
+    {
+        return setAppHttpCodeEnum(enums, msg);
     }
 
-    private static <T> ResponseResult<T> setAppHttpCodeEnum(AppHttpCodeEnum enums, String msg, String description) {
+    public static <T> ResponseResult<T> setAppHttpCodeEnum(AppHttpCodeEnum enums)
+    {
+        return okResult(enums.getCode(), enums.getMsg());
+    }
+
+    private static <T> ResponseResult<T> setAppHttpCodeEnum(AppHttpCodeEnum enums, String msg)
+    {
+        return okResult(enums.getCode(), msg);
+    }
+
+    private static <T> ResponseResult<T> setAppHttpCodeEnum(AppHttpCodeEnum enums, String msg, String description)
+    {
         return okResult(enums.getCode(), msg, description);
     }
 
-
-    public ResponseResult<?> error(Integer code, String msg) {
+    public ResponseResult<T> error(Integer code, String msg)
+    {
         this.code = code;
         this.msg = msg;
         return this;
     }
 
-    public ResponseResult<?> error(Integer code, String msg, String description)
+    public ResponseResult<T> error(Integer code, String msg, String description)
     {
         this.code = code;
         this.msg = msg;
@@ -114,13 +138,15 @@ public class ResponseResult<T> implements Serializable {
         return this;
     }
 
-    public ResponseResult<?> ok(Integer code, T data) {
+    public ResponseResult<T> ok(Integer code, T data)
+    {
         this.code = code;
         this.data = data;
         return this;
     }
 
-    public ResponseResult<?> ok(Integer code, T data, String msg) {
+    public ResponseResult<T> ok(Integer code, T data, String msg)
+    {
         this.code = code;
         this.data = data;
         this.msg = msg;
@@ -136,40 +162,49 @@ public class ResponseResult<T> implements Serializable {
         return this;
     }
 
-    public ResponseResult<?> ok(T data) {
+    public ResponseResult<T> ok(T data)
+    {
         this.data = data;
         return this;
     }
 
-    public Integer getCode() {
+    public Integer getCode()
+    {
         return code;
     }
 
-    public void setCode(Integer code) {
+    public void setCode(Integer code)
+    {
         this.code = code;
     }
 
-    public String getMsg() {
+    public String getMsg()
+    {
         return msg;
     }
 
-    public void setMsg(String msg) {
+    public void setMsg(String msg)
+    {
         this.msg = msg;
     }
 
-    public T getData() {
+    public T getData()
+    {
         return data;
     }
 
-    public void setData(T data) {
+    public void setData(T data)
+    {
         this.data = data;
     }
 
-    public String getDescription() {
+    public String getDescription()
+    {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(String description)
+    {
         this.description = description;
     }
 }
