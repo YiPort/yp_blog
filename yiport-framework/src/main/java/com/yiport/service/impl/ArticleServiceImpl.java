@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -55,7 +56,20 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> imple
 //            BeanUtils.copyProperties(article,vo);
 //            articleVos.add(vo);
 //        }
+
+        // 查询文章所属分类
+        articles.forEach(article -> article.setCategoryName(((Function<Article, String>) article1 -> {
+            Long categoryId = article1.getCategoryId();
+            return categoryService.getById(categoryId).getName();
+        }).apply(article)));
+
         List<HotArticleVo> articleVos = BeanCopyUtils.copyBeanList(articles, HotArticleVo.class);
+        // 从 redis中获取浏览量
+        articleVos.forEach(hotArticleVO -> {
+            String redisKey = "article:viewCount";
+            Integer viewCount = redisCache.getCacheMapValue(redisKey, hotArticleVO.getId().toString());
+            hotArticleVO.setViewCount(Long.valueOf(viewCount));
+        });
 
 
         return ResponseResult.okResult(articleVos);
@@ -91,7 +105,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> imple
 
         //封装查询结果
         List<ArticleListVo> articleListVos = BeanCopyUtils.copyBeanList(page.getRecords(), ArticleListVo.class);
-
+        // 从 redis中获取浏览量
+        articleListVos.forEach(articleListVO -> {
+            String redisKey = "article:viewCount";
+            Integer viewCount = redisCache.getCacheMapValue(redisKey, articleListVO.getId().toString());
+            articleListVO.setViewCount(Long.valueOf(viewCount));
+        });
         PageVo pageVo = new PageVo(articleListVos,page.getTotal());
         return ResponseResult.okResult(pageVo);
     }
