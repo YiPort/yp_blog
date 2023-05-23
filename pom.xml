@@ -12,6 +12,7 @@
         <module>yiport-framework</module>
         <module>yiport-admin</module>
         <module>yiport-blog</module>
+        <module>yiport-gateway</module>
     </modules>
 
     <properties>
@@ -26,6 +27,7 @@
         <aliyun-oss.version>3.10.2</aliyun-oss.version>
         <easyexcel.version>3.0.5</easyexcel.version>
         <mybatis.version>2.2.2</mybatis.version>
+        <druid.version>1.2.11</druid.version>
         <springfox-swagger2.version>2.9.2</springfox-swagger2.version>
 
     </properties>
@@ -88,6 +90,11 @@
                 <version>${spring-cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>druid-spring-boot-starter</artifactId>
+                <version>${druid.version}</version>
             </dependency>
             <!-- spring cloud alibaba 依赖 -->
             <dependency>

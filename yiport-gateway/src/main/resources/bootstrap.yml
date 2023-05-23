@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: gatewayservice
+  main:
+    web-application-type: reactive
+  cloud:
+    nacos:
+      server-addr: localhost:8848 # nacos地址
+      username: nacos
+      password: nacos
+      config:
+        group: DEFAULT_GROUP
+        file-extension: yaml   # 文件后缀名
+        namespace: e1d5a1dc-9c21-45a0-9b22-70f501f3d59f
+        shared-configs:
+          - data-id: default-redis.yaml
+            refresh: true
+          - data-id: default-mysql.yaml
+            refresh: true
+
+      discovery:
+        namespace: e1d5a1dc-9c21-45a0-9b22-70f501f3d59f
+        cluster-name: CN
+#        ephemeral: false
+
