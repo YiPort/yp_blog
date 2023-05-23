@@ -1,7 +1,7 @@
 package com.yiport.mapper;
 
-import com.yiport.domain.entity.Category;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.yiport.domain.entity.Category;
 
 
 /**

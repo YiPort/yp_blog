@@ -1,8 +1,8 @@
 package com.yiport.service;
 
 import com.yiport.domain.ResponseResult;
-import com.yiport.domain.entity.Link;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yiport.domain.entity.Link;
 
 /**
  * 友链(Link)表服务接口

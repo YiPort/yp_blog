@@ -26,7 +26,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> implements ArticleService {
+public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
 
 
     @Autowired
@@ -35,6 +35,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> imple
     @Autowired
     private RedisCache redisCache;
 
+    /**
+     * 查询热门文章列表
+     *
+     * @return
+     */
     @Override
     public ResponseResult hotArticleList() {
         //查询热门文章 封装成ResponseResult返回
@@ -75,6 +80,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> imple
         return ResponseResult.okResult(articleVos);
     }
 
+    /**
+     * 分页查询文章列表
+     *
+     * @return
+     */
     @Override
     public ResponseResult articleList(Integer pageNum, Integer pageSize, Long categoryId) {
         //查询条件
@@ -115,6 +125,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> imple
         return ResponseResult.okResult(pageVo);
     }
 
+    /**
+     * 获取文章详情
+     *
+     * @param id
+     * @return
+     */
     @Override
     public ResponseResult getArticleDetail(Long id) {
         //根据id查询文章
