@@ -29,10 +29,10 @@ CREATE TABLE `yp_comment` (
   `content` varchar(512) DEFAULT NULL COMMENT '评论内容',
   `to_comment_user_id` bigint(20) DEFAULT '-1' COMMENT '所回复的目标评论的userid',
   `to_comment_id` bigint(20) DEFAULT '-1' COMMENT '回复目标评论id',
-  `create_by` bigint(20) DEFAULT NULL,
-  `create_time` datetime DEFAULT NULL,
-  `update_by` bigint(20) DEFAULT NULL,
-  `update_time` datetime DEFAULT NULL,
+  `create_by` bigint(20) DEFAULT NULL COMMENT '创建人的用户id',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_by` bigint(20) DEFAULT NULL COMMENT '更新人',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `del_flag` int(1) DEFAULT '0' COMMENT '删除标志（0代表未删除，1代表已删除）',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COMMENT='评论表';
