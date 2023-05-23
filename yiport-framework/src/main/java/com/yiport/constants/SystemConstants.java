@@ -30,4 +30,14 @@ public class SystemConstants
      */
     public static final String LINK_COMMENT = "1";
 
+    /**
+     * 已发布
+     */
+    public static final String RELEASE = "0";
+
+    /**
+     * 未发布
+     */
+    public static final String NOT_RELEASE = "1";
+
 }

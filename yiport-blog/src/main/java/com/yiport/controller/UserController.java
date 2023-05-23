@@ -31,7 +31,7 @@ public class UserController {
      * @return
      */
     @PutMapping("/userInfo")
-    @SystemLog(BusinessName = "更新个人信息")
+    @SystemLog(businessName = "更新个人信息")
     public ResponseResult updateUserInfo(@RequestBody User user){
         return userService.updateUserInfo(user);
     }

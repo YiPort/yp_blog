@@ -63,7 +63,7 @@ public class LogAspect {
         // 打印请求 URL
         log.info("URL            : {}",request.getRequestURI());
         // 打印描述信息
-        log.info("BusinessName   : {}", systemLog.BusinessName());
+        log.info("BusinessName   : {}", systemLog.businessName());
         // 打印 Http method
         log.info("HTTP Method    : {}",request.getMethod() );
         // 打印调用 controller 的全路径以及执行方法
