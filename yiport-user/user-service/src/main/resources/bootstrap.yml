@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: userservice
+  cloud:
+    nacos:
+      config:
+        server-addr: localhost:8848 # nacos地址
+        username: nacos
+        password: nacos
+        group: DEFAULT_GROUP
+        file-extension: yaml   # 文件后缀名
+        shared-configs:
+          - data-id: default-redis.yaml
+            refresh: true
+          - data-id: default-mysql.yaml
+            refresh: true
+        namespace: e1d5a1dc-9c21-45a0-9b22-70f501f3d59f
+      discovery:
+        namespace: e1d5a1dc-9c21-45a0-9b22-70f501f3d59f
+        cluster-name: CN
+#        ephemeral: false
