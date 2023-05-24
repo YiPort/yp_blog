@@ -9,7 +9,6 @@
     </parent>
 
     <artifactId>yiport-gateway</artifactId>
-    <version>${global.version}</version>
 
     <name>yiport-gateway</name>
     <description>yiport-gateway</description>

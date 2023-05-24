@@ -8,6 +8,7 @@
     <artifactId>YPBlog</artifactId>
     <packaging>pom</packaging>
     <version>1.0.0</version>
+
     <modules>
         <module>yiport-framework</module>
         <module>yiport-user</module>
@@ -30,6 +31,7 @@
         <mybatis.version>2.2.2</mybatis.version>
         <druid.version>1.2.11</druid.version>
         <springfox-swagger2.version>2.9.2</springfox-swagger2.version>
+        <lombok.version>1.18.24</lombok.version>
 
     </properties>
     <dependencyManagement>
@@ -110,6 +112,12 @@
                 <groupId>org.mybatis.spring.boot</groupId>
                 <artifactId>mybatis-spring-boot-starter</artifactId>
                 <version>${mybatis.version}</version>
+            </dependency>
+            <!-- lombok 依赖 -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
             </dependency>
         </dependencies>
 

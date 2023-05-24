@@ -9,9 +9,7 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.yiport</groupId>
     <artifactId>yiport-user</artifactId>
-    <version>${global.version}</version>
 
     <packaging>pom</packaging>
 
