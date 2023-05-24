@@ -5,13 +5,15 @@
     <parent>
         <groupId>com.yiport</groupId>
         <artifactId>YPBlog</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
-    <groupId>com.yiport</groupId>
+
     <artifactId>yiport-gateway</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>${global.version}</version>
+
     <name>yiport-gateway</name>
     <description>yiport-gateway</description>
+
     <properties>
         <java.version>1.8</java.version>
     </properties>
@@ -19,7 +21,7 @@
         <dependency>
             <groupId>com.yiport</groupId>
             <artifactId>yiport-framework</artifactId>
-            <version>1.0-SNAPSHOT</version>
+             <version>${global.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework.boot</groupId>

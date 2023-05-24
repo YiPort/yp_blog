@@ -7,15 +7,16 @@
     <groupId>com.yiport</groupId>
     <artifactId>YPBlog</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <modules>
         <module>yiport-framework</module>
-        <module>yiport-admin</module>
+        <module>yiport-user</module>
         <module>yiport-blog</module>
         <module>yiport-gateway</module>
     </modules>
 
     <properties>
+        <global.version>1.0.0</global.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <spring-boot.version>2.6.11</spring-boot.version>
