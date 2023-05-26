@@ -14,6 +14,18 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+
+    /**
+     * 根据id返回user
+     * @param id
+     * @return
+     */
+    @GetMapping("/getUserById")
+    public User getById(Long id){
+        return userService.getById(id);
+    }
+
+
     /**
      * 个人信息查询
      * 需要token请求头

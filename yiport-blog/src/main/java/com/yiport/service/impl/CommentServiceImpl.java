@@ -1,5 +1,6 @@
 package com.yiport.service.impl;
 
+import com.yiport.client.UserClient;
 import com.yiport.constants.SystemConstants;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Comment;
@@ -9,7 +10,6 @@ import com.yiport.enums.AppHttpCodeEnum;
 import com.yiport.handler.exception.SystemException;
 import com.yiport.mapper.CommentMapper;
 import com.yiport.service.CommentService;
-import com.yiport.service.UserService;
 import com.yiport.utils.BeanCopyUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -30,7 +30,7 @@ import java.util.List;
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements CommentService {
 
     @Autowired
-    private UserService userService;
+    private UserClient userClient;
 
     @Override
     public ResponseResult commentList(String commentType, Long articleId, Integer pageNum, Integer pageSize) {
@@ -66,12 +66,12 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         //遍历vo集合
         for (CommentVo commentVo : commentVos) {
             //通过creatyBy查询用户的昵称并赋值
-            String nickName = userService.getById(commentVo.getCreateBy()).getNickName();
+            String nickName = userClient.getById(commentVo.getCreateBy()).getNickName();
             commentVo.setUsername(nickName);
             //通过toCommentUserId查询用户的昵称并赋值
             //如果toCommentUserId不为-1才进行查询
             if(commentVo.getToCommentUserId()!=-1){
-                String toCommentUserName = userService.getById(commentVo.getToCommentUserId()).getNickName();
+                String toCommentUserName = userClient.getById(commentVo.getToCommentUserId()).getNickName();
                 commentVo.setToCommentUserName(toCommentUserName);
             }
         }
