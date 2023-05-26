@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -40,10 +41,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 // 对于登录接口 允许匿名访问
-                .antMatchers("/user/login","/user/captchaImage").anonymous()
-//                //注销接口、个人信息接口需要认证才能访问
-//                .antMatchers("/logout","/user/userInfo").authenticated()
-                // 除上面外的所有请求全部不需要认证即可访问
+                // 对于任何人都可见
+                .antMatchers("/user/login", "/user/register", "/user/captchaImage").permitAll()
+                // 对于登录接口 允许匿名访问
+                .antMatchers("/user/login", "/user/register", "/user/captchaImage").anonymous()
+                // 除上面外的所有请求全部需要鉴权认证
                 .anyRequest().authenticated();
 
         //关闭默认的注销功能
@@ -63,8 +65,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         //允许跨域
         http.cors();
     }
+
     @Override
-    @Bean
+    @Bean(name = BeanIds.AUTHENTICATION_MANAGER)
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }

@@ -1,4 +1,4 @@
-package com.yiport.constants;
+package com.yiport.constent;
 
 /**
  * 用户常量

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Random;
 
-import static com.yiport.constants.UserConstant.CAPTCHA_RESULT_SPLIT;
+import static com.yiport.constent.UserConstant.CAPTCHA_RESULT_SPLIT;
 
 
 /**

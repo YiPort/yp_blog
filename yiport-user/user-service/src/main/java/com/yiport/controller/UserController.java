@@ -1,11 +1,14 @@
 package com.yiport.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.User;
 import com.yiport.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/user")
@@ -20,9 +23,13 @@ public class UserController {
      * @param id
      * @return
      */
-    @GetMapping("/getUserById")
-    public User getById(Long id){
-        return userService.getById(id);
+    @GetMapping("/getUserNickNameById")
+    public User getById(Long id) {
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getId, String.valueOf(id)).select(User::getNickName);
+
+        User user = userService.getOne(queryWrapper);
+        return user;
     }
 
 

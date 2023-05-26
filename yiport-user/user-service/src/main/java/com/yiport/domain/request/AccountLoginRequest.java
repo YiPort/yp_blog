@@ -1,6 +1,6 @@
 package com.yiport.domain.request;
 
-import com.yiport.constants.UserConstant;
+import com.yiport.constent.UserConstant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
