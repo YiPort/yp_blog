@@ -27,11 +27,6 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <!--SpringSecurity启动器-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
         <!--redis依赖-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -97,12 +92,6 @@
             <version>1.27.2</version>
         </dependency>
 
-        <!-- 验证码 -->
-        <dependency>
-            <groupId>com.github.penggle</groupId>
-            <artifactId>kaptcha</artifactId>
-            <version>2.3.2</version>
-        </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
