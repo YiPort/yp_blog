@@ -1,5 +1,6 @@
 package com.yiport.controller;
 
+import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.service.LinkService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ public class LinkController {
      * @return
      */
     @GetMapping("/getAllLink")
+    @SystemLog(businessName = "查询友链列表")
     public ResponseResult getAllLink(){
         return linkService.getAllLink();
     }

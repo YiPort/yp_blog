@@ -1,5 +1,6 @@
 package com.yiport.controller;
 
+import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.service.UploadService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ public class UploadController {
      * @return
      */
     @PostMapping("/upload")
+    @SystemLog(businessName = "上传文件头像")
     public ResponseResult uploadImg(MultipartFile img){
         return uploadService.uploadImg(img);
     }

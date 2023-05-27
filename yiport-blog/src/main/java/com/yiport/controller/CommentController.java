@@ -1,5 +1,6 @@
 package com.yiport.controller;
 
+import com.yiport.annotation.SystemLog;
 import com.yiport.constants.SystemConstants;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Comment;
@@ -23,6 +24,7 @@ public class CommentController {
      * @return
      */
     @GetMapping("/commentList")
+    @SystemLog(businessName = "查询评论列表")
     public ResponseResult commentList(Long articleId, Integer pageNum, Integer pageSize){
         return commentService.commentList(SystemConstants.ARTICLE_COMMENT,articleId,pageNum,pageSize);
     }
@@ -30,11 +32,13 @@ public class CommentController {
     /**
      * 发表评论
      * 需要token头
+     *
      * @param comment
      * @return
      */
-    @PostMapping
-    public ResponseResult addComment(@RequestBody Comment comment){
+    @PostMapping("/")
+    @SystemLog(businessName = "保存评论")
+    public ResponseResult addComment(@RequestBody Comment comment) {
         return commentService.addComment(comment);
     }
 
@@ -46,6 +50,7 @@ public class CommentController {
      * @return
      */
     @GetMapping("/linkCommentList")
+    @SystemLog(businessName = "查询友链评论")
     public ResponseResult linkCommentList(Integer pageNum,Integer pageSize){
         return commentService.commentList(SystemConstants.LINK_COMMENT,null,pageNum,pageSize);
     }

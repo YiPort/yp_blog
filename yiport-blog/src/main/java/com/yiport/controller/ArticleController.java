@@ -1,5 +1,6 @@
 package com.yiport.controller;
 
+import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ public class ArticleController {
     * @Date: 2023/4/2 
     */
     @GetMapping("/hotArticleList")
+    @SystemLog(businessName = "查询热门文章")
     public ResponseResult hotArticleList(){
         
 
@@ -38,6 +40,7 @@ public class ArticleController {
      * @Date: 2023/4/5
      */
     @GetMapping("/articleList")
+    @SystemLog(businessName = "查询文章列表")
     public ResponseResult articleList(Integer pageNum,Integer pageSize,Long categoryId){
         return articleService.articleList(pageNum,pageSize,categoryId);
     }
@@ -49,6 +52,7 @@ public class ArticleController {
     * @Date: 2023/4/5 
     */
     @GetMapping("/{id}")
+    @SystemLog(businessName = "查询文章详情")
     public ResponseResult getArticleDetail(@PathVariable("id") Long id){
         return articleService.getArticleDetail(id);
     }
@@ -56,7 +60,8 @@ public class ArticleController {
 
 
     @PutMapping("/updateViewCount/{id}")
-    public ResponseResult updateViewCount(@PathVariable("id") Long id){
+    @SystemLog(businessName = "更新文章浏览量")
+    public ResponseResult updateViewCount(@PathVariable("id") Long id) {
         return articleService.updateViewCount(id);
     }
 

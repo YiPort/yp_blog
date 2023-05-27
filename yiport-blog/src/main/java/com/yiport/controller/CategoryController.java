@@ -1,5 +1,6 @@
 package com.yiport.controller;
 
+import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ public class CategoryController {
      * @return
      */
     @GetMapping("/getCategoryList")
+    @SystemLog(businessName = "查询分类列表")
     public ResponseResult getCategoryList(){
        return categoryService.getCategoryList();
     }
