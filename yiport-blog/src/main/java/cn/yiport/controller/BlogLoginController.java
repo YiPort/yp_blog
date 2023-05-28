@@ -21,16 +21,11 @@ public class BlogLoginController {
 
     /**
      * 用户登录
-     * @param user
+     * @param accountLoginRequest
      * @return
      */
     @PostMapping("/login")
-//    public ResponseResult login(@RequestBody User user){
-    public ResponseResult login( @RequestBody AccountLoginRequest accountLoginRequest){
-//       if(!StringUtils.hasText(user.getUserName())){
-//           throw new SystemException(AppHttpCodeEnum.REQUIRE_USERNAME);
-//       }
-//        return blogLoginService.login(user);
+  public ResponseResult login( @RequestBody AccountLoginRequest accountLoginRequest){
         String userName = accountLoginRequest.getUserName();
         String userPassword = accountLoginRequest.getPassword();
         String captcha = accountLoginRequest.getCaptcha();

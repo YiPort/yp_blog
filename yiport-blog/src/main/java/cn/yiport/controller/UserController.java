@@ -1,5 +1,6 @@
 package cn.yiport.controller;
 
+import cn.yiport.annotation.SystemLog;
 import cn.yiport.domain.ResponseResult;
 import cn.yiport.domain.entity.User;
 import cn.yiport.service.UserService;
@@ -30,6 +31,7 @@ public class UserController {
      * @return
      */
     @PutMapping("/userInfo")
+    @SystemLog(BusinessName = "更新个人信息")
     public ResponseResult updateUserInfo(@RequestBody User user){
         return userService.updateUserInfo(user);
     }
