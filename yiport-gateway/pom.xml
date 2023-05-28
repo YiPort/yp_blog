@@ -21,16 +21,6 @@
             <groupId>com.yiport</groupId>
             <artifactId>yiport-framework</artifactId>
              <version>${global.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-security</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId></groupId>
-                    <artifactId>aut</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- 网关gateway依赖 -->
