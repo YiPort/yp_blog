@@ -3,14 +3,17 @@ package com.yiport.service;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.User;
 import com.yiport.domain.request.AccountLoginRequest;
+import com.yiport.domain.vo.UserLoginVO;
+import com.yiport.enums.AppHttpCodeEnum;
 
 public interface UserLoginService {
-    ResponseResult login(User user);
+    ResponseResult<UserLoginVO> login(User user);
 
-    ResponseResult logout();
+    ResponseResult<AppHttpCodeEnum> logout();
 
-    ResponseResult userLoginByAccount(AccountLoginRequest accountLoginRequest);
+    ResponseResult<UserLoginVO> userLoginByAccount(AccountLoginRequest accountLoginRequest);
 
     ResponseResult getCaptchaImage();
+
 
 }

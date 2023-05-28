@@ -2,8 +2,8 @@ package com.yiport.service.impl;
 
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.User;
-import com.yiport.domain.vo.UserInfoVo;
 import com.yiport.enums.AppHttpCodeEnum;
+import com.yiport.domain.vo.UserInfoVO;
 import com.yiport.handler.exception.SystemException;
 import com.yiport.mapper.UserMapper;
 import com.yiport.service.UserService;
@@ -35,7 +35,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //根据用户id查询用户信息
         User user = getById(userId);
         //封装成UserInfoVo
-        UserInfoVo vo = BeanCopyUtils.copyBean(user,UserInfoVo.class);
+        UserInfoVO vo = BeanCopyUtils.copyBean(user, UserInfoVO.class);
         return ResponseResult.okResult(vo);
     }
 

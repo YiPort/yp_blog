@@ -4,7 +4,7 @@ import com.yiport.domain.ResponseResult;
 import com.yiport.domain.request.AccountLoginRequest;
 import com.yiport.enums.AppHttpCodeEnum;
 import com.yiport.handler.exception.SystemException;
-import com.yiport.service.BlogLoginService;
+import com.yiport.service.UserLoginService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.util.StringUtils;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/user")
 public class UserLoginController {
     @Autowired
-    private BlogLoginService blogLoginService;
+    private UserLoginService blogLoginService;
 
     /**
      * 用户登录

@@ -4,10 +4,10 @@ import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.LoginUser;
 import com.yiport.domain.entity.User;
 import com.yiport.domain.request.AccountLoginRequest;
-import com.yiport.domain.vo.BlogUserLoginVo;
-import com.yiport.domain.vo.UserInfoVo;
+import com.yiport.domain.vo.UserLoginVO;
+import com.yiport.domain.vo.UserInfoVO;
 import com.yiport.handler.exception.SystemException;
-import com.yiport.service.BlogLoginService;
+import com.yiport.service.UserLoginService;
 import com.yiport.utils.BeanCopyUtils;
 import com.yiport.utils.CaptchaTextCreator;
 import com.yiport.utils.JwtUtil;
@@ -36,7 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-public class BlogLoginServiceImpl implements BlogLoginService {
+public class UserLoginServiceImpl implements UserLoginService {
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -51,11 +51,11 @@ public class BlogLoginServiceImpl implements BlogLoginService {
     private  Producer captchaProducerMath;
 
     @Override
-    public ResponseResult login(User user) {
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getUserName(),user.getPassword());
+    public ResponseResult<UserLoginVO> login(User user) {
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getUserName(), user.getPassword());
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
         //判断是否认证通过
-        if(Objects.isNull(authenticate)){
+        if (Objects.isNull(authenticate)) {
             throw new RuntimeException("用户名或密码错误");
         }
         //获取userid 生成token
@@ -63,12 +63,12 @@ public class BlogLoginServiceImpl implements BlogLoginService {
         String userId = loginUser.getUser().getId().toString();
         String jwt = JwtUtil.createJWT(userId);
         //把用户信息存入redis
-        redisCache.setCacheObject("bloglogin:"+userId,loginUser);
+        redisCache.setCacheObject("bloglogin:" + userId, loginUser);
 
         //把token和userinfo封装 返回
         //把User转换成UserInfoVo
-        UserInfoVo userInfoVo = BeanCopyUtils.copyBean(loginUser.getUser(), UserInfoVo.class);
-        BlogUserLoginVo vo = new BlogUserLoginVo(jwt,userInfoVo);
+        UserInfoVO userInfoVo = BeanCopyUtils.copyBean(loginUser.getUser(), UserInfoVO.class);
+        UserLoginVO vo = new UserLoginVO(jwt, userInfoVo);
         return ResponseResult.okResult(vo);
     }
 
@@ -79,15 +79,13 @@ public class BlogLoginServiceImpl implements BlogLoginService {
      * @return 结果
      */
     @Override
-    public ResponseResult userLoginByAccount(AccountLoginRequest userLoginRequest)
-    {
+    public ResponseResult<UserLoginVO> userLoginByAccount(AccountLoginRequest userLoginRequest) {
         String userAccount = userLoginRequest.getUserName();
         String userPassword = userLoginRequest.getPassword();
         String captcha = userLoginRequest.getCaptcha();
         String uuid = userLoginRequest.getUuid();
         // 1.1、非空校验
-        if (StringUtils.isAnyEmpty(userAccount, userPassword))
-        {
+        if (StringUtils.isAnyEmpty(userAccount, userPassword)) {
             throw new SystemException(AppHttpCodeEnum.PARAMETER_ERROR, "账号密码不能为空");
         }
         // 1.2、账号为4~9位
@@ -147,12 +145,12 @@ public class BlogLoginServiceImpl implements BlogLoginService {
         String userId = loginUser.getUser().getId().toString();
         String jwt = JwtUtil.createJWT(userId);
         //把用户信息存入redis
-        redisCache.setCacheObject("bloglogin:"+userId,loginUser);
+        redisCache.setCacheObject("bloglogin:" + userId, loginUser);
 
         //把token和userinfo封装 返回
         //把User转换成UserInfoVo
-        UserInfoVo userInfoVo = BeanCopyUtils.copyBean(loginUser.getUser(), UserInfoVo.class);
-        BlogUserLoginVo vo = new BlogUserLoginVo(jwt,userInfoVo);
+        UserInfoVO userInfoVo = BeanCopyUtils.copyBean(loginUser.getUser(), UserInfoVO.class);
+        UserLoginVO vo = new UserLoginVO(jwt, userInfoVo);
         return ResponseResult.okResult(vo);
     }
 
@@ -196,14 +194,14 @@ public class BlogLoginServiceImpl implements BlogLoginService {
 
 
     @Override
-    public ResponseResult logout() {
+    public ResponseResult<AppHttpCodeEnum> logout() {
         //获取token 解析获取userid
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         LoginUser loginUser = (LoginUser) authentication.getPrincipal();
         //获取userid
         Long userId = loginUser.getUser().getId();
         //删除redis中的用户信息
-        redisCache.deleteObject("bloglogin:"+userId);
+        redisCache.deleteObject("bloglogin:" + userId);
         return ResponseResult.okResult();
     }
 }

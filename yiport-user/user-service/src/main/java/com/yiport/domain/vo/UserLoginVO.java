@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BlogUserLoginVo {
+public class UserLoginVO {
 
     private String token;
-    private UserInfoVo userInfo;
+    private UserInfoVO userInfo;
 }

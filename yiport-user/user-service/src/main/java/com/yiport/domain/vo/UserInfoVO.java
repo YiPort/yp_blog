@@ -5,7 +5,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class UserInfoVo {
+public class UserInfoVO {
     /**
      * 主键
      */
