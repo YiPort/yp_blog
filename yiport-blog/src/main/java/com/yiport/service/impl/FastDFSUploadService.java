@@ -60,7 +60,7 @@ public class FastDFSUploadService implements UploadService {
 
 
             //4.返回url路径
-            return "http://image.yiport.me/"+storePath.getFullPath();
+            return "http://images.yiport.top/" + storePath.getFullPath();
         } catch (IOException e) {
             e.printStackTrace();
             //ignore

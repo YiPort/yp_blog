@@ -20,7 +20,7 @@ public class UploadController {
      * @return
      */
     @PostMapping("/upload")
-    @SystemLog(businessName = "上传文件头像")
+//    @SystemLog(businessName = "上传文件头像")
     public ResponseResult uploadImg(MultipartFile img){
         return uploadService.uploadImg(img);
     }
