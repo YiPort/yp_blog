@@ -1,5 +1,6 @@
 package com.yiport.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,11 +25,15 @@ public class CommentVo {
     //回复目标评论id
     private Long toCommentId;
 
+    @JsonProperty("username")
+    private String createNick;
+
+    private String status;
+
     private Long createBy;
 
     private Date createTime;
 
-    private String username;
 
     private List<CommentVo> children;
 

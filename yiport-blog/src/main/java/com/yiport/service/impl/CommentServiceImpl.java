@@ -1,6 +1,5 @@
 package com.yiport.service.impl;
 
-import com.yiport.client.UserClient;
 import com.yiport.constants.SystemConstants;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Comment;
@@ -14,7 +13,6 @@ import com.yiport.utils.BeanCopyUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -29,8 +27,7 @@ import java.util.List;
 @Service("commentService")
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements CommentService {
 
-    @Autowired
-    private UserClient userClient;
+
 
     @Override
     public ResponseResult commentList(String commentType, Long articleId, Integer pageNum, Integer pageSize) {
@@ -47,7 +44,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         Page<Comment> page = new Page(pageNum,pageSize);
         page(page,queryWrapper);
 
-        List<CommentVo> commentVoList = toCommentVoList(page.getRecords());
+        List<CommentVo> commentVoList = BeanCopyUtils.copyBeanList(page.getRecords(), CommentVo.class);
 
         //查询所有根评论对应的子评论集合，并且赋值给对应的属性
         for (CommentVo commentVo : commentVoList) {
@@ -61,23 +58,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
 
-    private List<CommentVo> toCommentVoList(List<Comment> list){
-        List<CommentVo> commentVos = BeanCopyUtils.copyBeanList(list, CommentVo.class);
-        //遍历vo集合
-        for (CommentVo commentVo : commentVos) {
-            //通过creatyBy查询用户的昵称并赋值
-            String nickName = userClient.getById(commentVo.getCreateBy()).getNickName();
-            commentVo.setUsername(nickName);
-            //通过toCommentUserId查询用户的昵称并赋值
-            //如果toCommentUserId不为-1才进行查询
-            if(commentVo.getToCommentUserId()!=-1){
-                String toCommentUserName = userClient.getById(commentVo.getToCommentUserId()).getNickName();
-                commentVo.setToCommentUserName(toCommentUserName);
-            }
-        }
-        return commentVos;
-    }
-
     /**
      * 根据根评论的id查询所对应的子评论的集合
      * @param id 根评论的id
@@ -90,7 +70,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         queryWrapper.orderByAsc(Comment::getCreateTime);
         List<Comment> comments = list(queryWrapper);
 
-        List<CommentVo> commentVos = toCommentVoList(comments);
+        List<CommentVo> commentVos = BeanCopyUtils.copyBeanList(comments, CommentVo.class);
         return commentVos;
     }
 

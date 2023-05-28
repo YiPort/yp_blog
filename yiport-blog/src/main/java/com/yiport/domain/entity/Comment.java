@@ -37,6 +37,18 @@ public class Comment  {
     //回复目标评论id
     private Long toCommentId;
 
+
+    /**
+     * 创建人的昵称
+     */
+    private String createNick;
+
+    /**
+     * 评论状态 0-未精选，1-精选评论
+     */
+    private String status;
+
+
     /**
      * 创建人的用户id
      */
