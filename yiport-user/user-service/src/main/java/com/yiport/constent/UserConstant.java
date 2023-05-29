@@ -3,8 +3,7 @@ package com.yiport.constent;
 /**
  * 用户常量
  */
-public interface UserConstant
-{
+public interface UserConstant {
 
     /**
      * 用户登录成功
@@ -73,5 +72,15 @@ public interface UserConstant
      * 验证码-结果分隔符
      */
     String CAPTCHA_RESULT_SPLIT = "@";
+
+    /**
+     * 管理员权限
+     */
+    int ADMIN_ROLE = 1;
+
+    /**
+     * 账号正常启用
+     */
+    String NORMAL_STATUS = "0";
 
 }

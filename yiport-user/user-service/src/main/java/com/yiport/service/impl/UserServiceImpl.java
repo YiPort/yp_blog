@@ -11,10 +11,10 @@ import com.yiport.utils.BeanCopyUtils;
 import com.yiport.utils.SecurityUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 /**
  * 用户表(User)表服务实现类
@@ -48,16 +48,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public ResponseResult register(User user) {
         //对数据进行非空判断
-        if(!StringUtils.hasText(user.getUserName())){
+        if (!org.springframework.util.StringUtils.hasText(user.getUserName())) {
             throw new SystemException(AppHttpCodeEnum.USERNAME_NOT_NULL);
         }
-        if(!StringUtils.hasText(user.getPassword())){
+        if (!org.springframework.util.StringUtils.hasText(user.getPassword())) {
             throw new SystemException(AppHttpCodeEnum.PASSWORD_NOT_NULL);
         }
-        if(!StringUtils.hasText(user.getEmail())){
+        if (!org.springframework.util.StringUtils.hasText(user.getEmail())) {
             throw new SystemException(AppHttpCodeEnum.EMAIL_NOT_NULL);
         }
-        if(!StringUtils.hasText(user.getNickName())){
+        if (!org.springframework.util.StringUtils.hasText(user.getNickName())) {
             throw new SystemException(AppHttpCodeEnum.NICKNAME_NOT_NULL);
         }
         //对数据进行是否存在的判断

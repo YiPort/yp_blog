@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.User;
+import com.yiport.domain.vo.UserVO;
 import com.yiport.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -62,8 +64,57 @@ public class UserController {
      * @return
      */
     @PostMapping("/register")
-    public ResponseResult register(@RequestBody User user){
+    public ResponseResult register(@RequestBody User user) {
         return userService.register(user);
     }
+
+
+    /**
+     * 获取用户登录态
+     *
+     * @return
+     */
+    @GetMapping("/current")
+    public ResponseResult<UserVO> current() {
+        return userService.getCurrent();
+    }
+
+    /**
+     * 管理员根据用户昵称查询用户
+     *
+     * @param username 用户昵称
+     * @return
+     */
+    @GetMapping("/searchByUsername")
+    @PreAuthorize("hasAuthority('1')")
+    public ResponseResult<List<UserVO>> searchByUsername(String username) {
+        return userService.searchByUsername(username);
+    }
+
+    /**
+     * 管理员分页查询用户
+     *
+     * @param current  当前页
+     * @param pageSize 页面容量
+     * @return
+     */
+    @GetMapping("/searchUsers")
+    @PreAuthorize("hasAuthority('1')")
+    public ResponseResult<List<UserVO>> searchUsers(Integer current, Integer pageSize) {
+        return userService.searchUsers(current, pageSize);
+    }
+
+    /**
+     * 管理员根据 id删除用户
+     *
+     * @param id
+     * @return
+     */
+    @PostMapping("/delete")
+    @PreAuthorize("hasAuthority('1')")
+    public ResponseResult deleteUser(@RequestBody Long id) {
+        return userService.deleteUserById(id);
+    }
+
 
 }
