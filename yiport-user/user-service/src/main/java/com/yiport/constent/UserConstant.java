@@ -76,7 +76,7 @@ public interface UserConstant {
     /**
      * 管理员权限
      */
-    int ADMIN_ROLE = 1;
+    String ADMIN_ROLE = "1";
 
     /**
      * 账号正常启用

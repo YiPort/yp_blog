@@ -35,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.yiport.constent.UserConstant.ADMIN_ROLE;
+
 @Service
 public class UserLoginServiceImpl implements UserLoginService {
 
@@ -63,7 +65,7 @@ public class UserLoginServiceImpl implements UserLoginService {
         String userId = loginUser.getUser().getId().toString();
         String jwt = JwtUtil.createJWT(userId);
         //把用户信息存入redis
-        redisCache.setCacheObject("bloglogin:" + userId, loginUser);
+        redisCache.setCacheObject("ypblog:login:" + userId, loginUser);
 
         //把token和userinfo封装 返回
         //把User转换成UserInfoVo
@@ -136,8 +138,7 @@ public class UserLoginServiceImpl implements UserLoginService {
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(userAccount, userPassword);
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
-        if (Objects.isNull(authenticate))
-        {
+        if (Objects.isNull(authenticate)) {
             throw new SystemException(AppHttpCodeEnum.LOGIN_ERROR, "账号或密码错误");
         }
         //获取userid 生成token
@@ -145,8 +146,16 @@ public class UserLoginServiceImpl implements UserLoginService {
         String userId = loginUser.getUser().getId().toString();
         String jwt = JwtUtil.createJWT(userId);
         //把用户信息存入redis
-        redisCache.setCacheObject("bloglogin:" + userId, loginUser);
-
+        redisCache.setCacheObject("ypblog:login:" + userId, loginUser);
+        // 将 token存入 redis
+        String tokenKey = "ypblog:token:" + userId;
+        redisCache.setCacheObject(tokenKey, jwt, 1, TimeUnit.DAYS);
+        // 将管理员权限信息存入 redis
+        if (loginUser.getUser().getType().equals(ADMIN_ROLE)) ;
+        {
+            String adminKey = "ypblog:admin:" + userId;
+            redisCache.setCacheObject(adminKey, jwt, 1, TimeUnit.DAYS);
+        }
         //把token和userinfo封装 返回
         //把User转换成UserInfoVo
         UserInfoVO userInfoVo = BeanCopyUtils.copyBean(loginUser.getUser(), UserInfoVO.class);
@@ -201,7 +210,7 @@ public class UserLoginServiceImpl implements UserLoginService {
         //获取userid
         Long userId = loginUser.getUser().getId();
         //删除redis中的用户信息
-        redisCache.deleteObject("bloglogin:" + userId);
+        redisCache.deleteObject("ypblog:login:" + userId);
         return ResponseResult.okResult();
     }
 }
