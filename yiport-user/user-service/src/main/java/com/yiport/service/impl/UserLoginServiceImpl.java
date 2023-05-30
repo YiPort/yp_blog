@@ -151,7 +151,7 @@ public class UserLoginServiceImpl implements UserLoginService {
         String tokenKey = "ypblog:token:" + userId;
         redisCache.setCacheObject(tokenKey, jwt, 1, TimeUnit.DAYS);
         // 将管理员权限信息存入 redis
-        if (loginUser.getUser().getType().equals(ADMIN_ROLE)) ;
+        if (loginUser.getUser().getUserRole().equals(ADMIN_ROLE)) ;
         {
             String adminKey = "ypblog:admin:" + userId;
             redisCache.setCacheObject(adminKey, jwt, 1, TimeUnit.DAYS);

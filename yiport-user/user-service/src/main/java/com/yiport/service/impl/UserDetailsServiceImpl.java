@@ -32,7 +32,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         }
         // 获取权限集合
         Set<String> permissions = new HashSet<>();
-        permissions.add(user.getType().toString());
+        permissions.add(user.getUserRole().toString());
         //返回用户信息
         //查询权限信息封装
         return new LoginUser(user, permissions);
