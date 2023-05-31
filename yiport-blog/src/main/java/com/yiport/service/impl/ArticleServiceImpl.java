@@ -73,7 +73,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         articleVos.forEach(hotArticleVO -> {
             String redisKey = "article:viewCount";
             Integer viewCount = redisCache.getCacheMapValue(redisKey, hotArticleVO.getId().toString());
-            hotArticleVO.setViewCount(Long.valueOf(viewCount));
+            if (viewCount != null) {
+                hotArticleVO.setViewCount(Long.valueOf(viewCount));
+            }
         });
 
 
@@ -119,7 +121,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         articleListVos.forEach(articleListVO -> {
             String redisKey = "article:viewCount";
             Integer viewCount = redisCache.getCacheMapValue(redisKey, articleListVO.getId().toString());
-            articleListVO.setViewCount(Long.valueOf(viewCount));
+            if (viewCount != null) {
+                articleListVO.setViewCount(Long.valueOf(viewCount));
+            }
         });
         PageVo pageVo = new PageVo(articleListVos,page.getTotal());
         return ResponseResult.okResult(pageVo);
