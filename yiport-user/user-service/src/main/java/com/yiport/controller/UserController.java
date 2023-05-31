@@ -87,7 +87,7 @@ public class UserController {
      */
     @GetMapping("/searchByUsername")
     @PreAuthorize("hasAuthority('1')")
-    public ResponseResult<List<UserVO>> searchByUsername(String username) {
+    public ResponseResult<List<UserVO>> searchByUsername(@RequestParam("username") String username) {
         return userService.searchByUsername(username);
     }
 
@@ -100,7 +100,7 @@ public class UserController {
      */
     @GetMapping("/searchUsers")
     @PreAuthorize("hasAuthority('1')")
-    public ResponseResult<List<UserVO>> searchUsers(Integer current, Integer pageSize) {
+    public ResponseResult<List<UserVO>> searchUsers(@RequestParam("current") String current, @RequestParam("pageSize") String pageSize) {
         return userService.searchUsers(current, pageSize);
     }
 
@@ -112,7 +112,7 @@ public class UserController {
      */
     @PostMapping("/delete")
     @PreAuthorize("hasAuthority('1')")
-    public ResponseResult deleteUser(@RequestBody Long id) {
+    public ResponseResult deleteUser(@RequestParam("id") @RequestBody String id) {
         return userService.deleteUserById(id);
     }
 

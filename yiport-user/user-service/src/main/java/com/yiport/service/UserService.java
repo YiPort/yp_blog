@@ -46,7 +46,7 @@ public interface UserService extends IService<User> {
      * @param pageSize 页面容量
      * @return
      */
-    ResponseResult<List<UserVO>> searchUsers(Integer current, Integer pageSize);
+    ResponseResult<List<UserVO>> searchUsers(String current, String pageSize);
 
     /**
      * 管理员根据 id删除用户
@@ -54,7 +54,7 @@ public interface UserService extends IService<User> {
      * @param id
      * @return
      */
-    ResponseResult deleteUserById(Long id);
+    ResponseResult deleteUserById(String id);
 
 }
 
