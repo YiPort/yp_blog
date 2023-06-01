@@ -2,6 +2,7 @@ package com.yiport.controller;
 
 import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
+import com.yiport.domain.vo.SaveArticleVO;
 import com.yiport.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -58,11 +59,21 @@ public class ArticleController {
     }
 
 
-
     @PutMapping("/updateViewCount/{id}")
     @SystemLog(businessName = "更新文章浏览量")
     public ResponseResult updateViewCount(@PathVariable("id") Long id) {
         return articleService.updateViewCount(id);
     }
 
+    /**
+     * 保存文章
+     *
+     * @param article
+     * @return
+     */
+    @PostMapping(value = "/postArticle")
+    @SystemLog(businessName = "保存文章")
+    public ResponseResult postArticle(@RequestBody SaveArticleVO article) {
+        return articleService.postArticle(article);
+    }
 }

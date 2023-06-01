@@ -14,4 +14,14 @@ public interface ArticleService extends IService<Article> {
 
     ResponseResult updateViewCount(Long id);
 
+
+    /**
+     * 保存文章
+     *
+     * @param article
+     * @return
+     */
+    ResponseResult postArticle(SaveArticleVO article);
+
+
 }

@@ -8,6 +8,8 @@ import com.yiport.domain.vo.ArticleDetailVo;
 import com.yiport.domain.vo.ArticleListVo;
 import com.yiport.domain.vo.HotArticleVo;
 import com.yiport.domain.vo.PageVo;
+import com.yiport.domain.vo.SaveArticleVO;
+import com.yiport.handler.exception.SystemException;
 import com.yiport.mapper.ArticleMapper;
 import com.yiport.service.ArticleService;
 import com.yiport.service.CategoryService;
@@ -16,14 +18,24 @@ import com.yiport.utils.RedisCache;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.yiport.constants.SystemConstants.NOT_RELEASE;
+import static com.yiport.constants.SystemConstants.RELEASE;
+import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
+import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
+import static com.yiport.enums.AppHttpCodeEnum.SYSTEM_ERROR;
 
 @Service
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
@@ -157,8 +169,59 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public ResponseResult updateViewCount(Long id) {
         //更新redis中对应 id的浏览量
-        redisCache.incrementCacheMapValue("article:viewCount",id.toString(),1);
+        redisCache.incrementCacheMapValue("article:viewCount", id.toString(), 1);
         return ResponseResult.okResult();
+    }
+
+    /**
+     * 保存文章
+     *
+     * @param article
+     * @return
+     */
+    @Override
+    public ResponseResult postArticle(SaveArticleVO article) {
+        // 必要参数校验
+        if (StringUtils.isAnyBlank(article.getTitle(), article.getContent())) {
+            throw new SystemException(PARAMETER_ERROR, "文章标题和内容不能为空");
+        }
+
+        String userId = article.getCreateBy().toString();
+        String loginKey = "ypblog:login:" + userId;
+        String tokenKey = "ypblog:token:" + userId;
+        Object loginObj = redisCache.getCacheObject(loginKey);
+        Object tokenObj = redisCache.getCacheObject(tokenKey);
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = null;
+        if (requestAttributes != null) {
+            request = requestAttributes.getRequest();
+        }
+        String token = request.getHeader("Token");
+        // 登录校验
+        if (loginObj == null || tokenObj == null || token == null) {
+            throw new SystemException(NEED_LOGIN, "未登录，请登录后操作");
+        }
+        // 登录过期校验
+        if (!token.equals(String.valueOf(tokenObj))) {
+            throw new SystemException(NEED_LOGIN, "登录过期，请重新登录");
+        }
+        // TODO: 2022/4/26 暂时所有文章都为未发布状态
+        if (article.getStatus().equals(RELEASE)) {
+            article.setStatus(NOT_RELEASE);
+        }
+        // isComment值转换
+        if (article.getIsComment().equals("true")) {
+            article.setIsComment("1");
+        } else if (article.getIsComment().equals("false")) {
+            article.setIsComment("0");
+        }
+
+        Article article1 = BeanCopyUtils.copyBean(article, Article.class);
+        // 保存文章
+        if (!this.save(article1)) {
+            throw new SystemException(SYSTEM_ERROR);
+        }
+        return ResponseResult.okResult(200, "保存成功！");
     }
 
 }
