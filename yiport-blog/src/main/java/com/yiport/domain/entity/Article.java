@@ -49,7 +49,7 @@ public class Article  {
     
     private Long createBy;
     
-    private Date createTime;
+    private String createTime;
     
     private Long updateBy;
     

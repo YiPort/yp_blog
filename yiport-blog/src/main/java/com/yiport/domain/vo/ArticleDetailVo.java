@@ -28,5 +28,5 @@ public class ArticleDetailVo {
     //访问量
     private Long viewCount;
 
-    private Date createTime;
+    private String createTime;
 }
