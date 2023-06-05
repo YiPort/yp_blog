@@ -25,5 +25,8 @@ public class UserInfoVO {
 
     private String email;
 
-
+    /**
+     * 账号状态（0正常 1停用）
+     */
+    private String status;
 }
