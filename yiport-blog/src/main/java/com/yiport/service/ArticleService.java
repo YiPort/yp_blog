@@ -23,5 +23,13 @@ public interface ArticleService extends IService<Article> {
      */
     ResponseResult postArticle(SaveArticleVO article);
 
+    /**
+     * 获取草稿
+     *
+     * @param id
+     * @return
+     */
+    ResponseResult getDraftList(Long id);
+
 
 }

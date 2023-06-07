@@ -25,7 +25,10 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -46,6 +49,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Autowired
     private RedisCache redisCache;
+
+    @Resource
+    private ArticleMapper articleMapper;
 
     /**
      * 查询热门文章列表
@@ -215,13 +221,63 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         } else if (article.getIsComment().equals("false")) {
             article.setIsComment("0");
         }
+        // 获取当前时间
+        LocalDateTime currentTime = LocalDateTime.now();
+        // 定义时间格式
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        // 格式化时间
+        String formattedTime = currentTime.format(formatter);
+
 
         Article article1 = BeanCopyUtils.copyBean(article, Article.class);
+        article1.setCreateTime(formattedTime);
         // 保存文章
         if (!this.save(article1)) {
             throw new SystemException(SYSTEM_ERROR);
         }
         return ResponseResult.okResult(200, "保存成功！");
     }
+
+
+    /**
+     * 获取草稿
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public ResponseResult getDraftList(Long id) {
+        // id校验
+        if (id <= 0) {
+            throw new SystemException(PARAMETER_ERROR);
+        }
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = null;
+        if (requestAttributes != null) {
+            request = requestAttributes.getRequest();
+        }
+        // token校验
+        String token = request.getHeader("Token");
+        if (StringUtils.isAnyBlank(token)) {
+            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
+        }
+        String tokenKey = "ypblog:token:" + id;
+        Object cacheObject = redisCache.getCacheObject(tokenKey);
+        if (cacheObject == null) {
+            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
+        }
+        if (!token.equals(String.valueOf(cacheObject))) {
+            throw new SystemException(NEED_LOGIN, "登录过期，请重新登录");
+        }
+        // 获取草稿
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Article::getStatus, NOT_RELEASE);
+        queryWrapper.eq(Article::getCreateBy, id);
+        List<Article> articles = articleMapper.selectList(queryWrapper);
+        List<SaveArticleVO> saveArticleVOS = BeanCopyUtils.copyBeanList(articles, SaveArticleVO.class);
+
+        return ResponseResult.okResult(saveArticleVOS);
+    }
+
 
 }

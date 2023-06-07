@@ -76,4 +76,18 @@ public class ArticleController {
     public ResponseResult postArticle(@RequestBody SaveArticleVO article) {
         return articleService.postArticle(article);
     }
+
+
+    /**
+     * 获取草稿
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/getDraft/{id}")
+    @SystemLog(businessName = "获取草稿")
+    public ResponseResult getDraftList(@PathVariable Long id) {
+        return articleService.getDraftList(id);
+    }
+
 }
