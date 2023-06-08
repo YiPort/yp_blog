@@ -51,17 +51,19 @@ public class LogAspect {
 
     private void handBefore(ProceedingJoinPoint joinPoint) {
 
-        ServletRequestAttributes requestAttributes= (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = requestAttributes.getRequest();
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = null;
+        if (requestAttributes != null) {
+            request = requestAttributes.getRequest();
+        }
 
-        SystemLog systemLog=getSystemLog(joinPoint);
-
-
+        // 获取被增强方法上的注解对象
+        SystemLog systemLog = getSystemLog(joinPoint);
 
 
         log.info("=======Start=======");
         // 打印请求 URL
-        log.info("URL            : {}",request.getRequestURI());
+        log.info("URL            : {}", request.getRequestURI());
         // 打印描述信息
         log.info("BusinessName   : {}", systemLog.businessName());
         // 打印 Http method
