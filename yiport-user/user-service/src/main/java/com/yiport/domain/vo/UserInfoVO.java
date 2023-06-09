@@ -26,7 +26,7 @@ public class UserInfoVO {
     private String email;
 
     /**
-     * 账号状态（0正常 1停用）
+     * 用户角色 0-普通用户 1-管理员
      */
-    private String status;
+    private String userRole;
 }
