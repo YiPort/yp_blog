@@ -16,6 +16,12 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SaveArticleVO implements Serializable {
+
+    /**
+     * 主键
+     */
+    private Long id;
+
     /**
      * 标题
      */

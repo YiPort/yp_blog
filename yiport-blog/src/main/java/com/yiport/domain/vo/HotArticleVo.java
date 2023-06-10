@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 热门文章响应体
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

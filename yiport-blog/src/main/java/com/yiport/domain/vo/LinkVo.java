@@ -4,7 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
+/**
+ * 友链响应体
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

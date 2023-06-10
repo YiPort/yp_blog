@@ -1,6 +1,5 @@
 package com.yiport.domain.vo;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,6 +7,9 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * 评论响应体
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,7 +27,6 @@ public class CommentVo {
     //回复目标评论id
     private Long toCommentId;
 
-    @JsonProperty("username")
     private String createNick;
 
     private String status;
