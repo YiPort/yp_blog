@@ -4,10 +4,10 @@ import com.yiport.constants.SystemConstants;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Article;
 import com.yiport.domain.entity.Category;
-import com.yiport.domain.vo.ArticleDetailVo;
-import com.yiport.domain.vo.ArticleListVo;
-import com.yiport.domain.vo.HotArticleVo;
-import com.yiport.domain.vo.PageVo;
+import com.yiport.domain.vo.ArticleDetailVO;
+import com.yiport.domain.vo.ArticleListVO;
+import com.yiport.domain.vo.HotArticleVO;
+import com.yiport.domain.vo.PageVO;
 import com.yiport.domain.vo.SaveArticleVO;
 import com.yiport.handler.exception.SystemException;
 import com.yiport.mapper.ArticleMapper;
@@ -86,7 +86,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             return categoryService.getById(categoryId).getName();
         }).apply(article)));
 
-        List<HotArticleVo> articleVos = BeanCopyUtils.copyBeanList(articles, HotArticleVo.class);
+        List<HotArticleVO> articleVos = BeanCopyUtils.copyBeanList(articles, HotArticleVO.class);
         // 从 redis中获取浏览量
         articleVos.forEach(hotArticleVO -> {
             String redisKey = "article:viewCount";
@@ -134,16 +134,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
 
         //封装查询结果
-        List<ArticleListVo> articleListVos = BeanCopyUtils.copyBeanList(page.getRecords(), ArticleListVo.class);
+        List<ArticleListVO> articleListVOS = BeanCopyUtils.copyBeanList(page.getRecords(), ArticleListVO.class);
         // 从 redis中获取浏览量
-        articleListVos.forEach(articleListVO -> {
+        articleListVOS.forEach(articleListVO -> {
             String redisKey = "article:viewCount";
             Integer viewCount = redisCache.getCacheMapValue(redisKey, articleListVO.getId().toString());
             if (viewCount != null) {
                 articleListVO.setViewCount(Long.valueOf(viewCount));
             }
         });
-        PageVo pageVo = new PageVo(articleListVos,page.getTotal());
+        PageVO pageVo = new PageVO(articleListVOS, page.getTotal());
         return ResponseResult.okResult(pageVo);
     }
 
@@ -161,7 +161,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Integer viewCount = redisCache.getCacheMapValue("article:viewCount", id.toString());
         article.setViewCount(viewCount.longValue());
         //转换成VO
-        ArticleDetailVo articleDetailVo = BeanCopyUtils.copyBean(article, ArticleDetailVo.class);
+        ArticleDetailVO articleDetailVo = BeanCopyUtils.copyBean(article, ArticleDetailVO.class);
         //根据分类id查询分类名
         Long categoryId = articleDetailVo.getCategoryId();
         Category category = categoryService.getById(categoryId);

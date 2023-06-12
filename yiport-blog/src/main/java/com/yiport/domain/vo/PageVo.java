@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PageVo {
+public class PageVO {
     private List rows;
     private Long total;
 }

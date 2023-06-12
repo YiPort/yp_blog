@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryVo {
+public class CategoryVO {
     /**
      * 主键
      */
@@ -30,4 +30,10 @@ public class CategoryVo {
      * 描述
      */
     private String description;
+
+    /**
+     * 创建人id
+     */
+    private Long createBy;
+
 }

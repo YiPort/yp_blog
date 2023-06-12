@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentVo {
+public class CommentVO {
     private Long id;
     //文章id
     private Long articleId;
@@ -36,6 +36,6 @@ public class CommentVo {
     private Date createTime;
 
 
-    private List<CommentVo> children;
+    private List<CommentVO> children;
 
 }

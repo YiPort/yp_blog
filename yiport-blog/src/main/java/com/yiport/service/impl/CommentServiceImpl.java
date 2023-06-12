@@ -3,8 +3,8 @@ package com.yiport.service.impl;
 import com.yiport.constants.SystemConstants;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Comment;
-import com.yiport.domain.vo.CommentVo;
-import com.yiport.domain.vo.PageVo;
+import com.yiport.domain.vo.CommentVO;
+import com.yiport.domain.vo.PageVO;
 import com.yiport.enums.AppHttpCodeEnum;
 import com.yiport.handler.exception.SystemException;
 import com.yiport.mapper.CommentMapper;
@@ -44,34 +44,35 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         Page<Comment> page = new Page(pageNum,pageSize);
         page(page,queryWrapper);
 
-        List<CommentVo> commentVoList = BeanCopyUtils.copyBeanList(page.getRecords(), CommentVo.class);
+        List<CommentVO> commentVOList = BeanCopyUtils.copyBeanList(page.getRecords(), CommentVO.class);
 
         //查询所有根评论对应的子评论集合，并且赋值给对应的属性
-        for (CommentVo commentVo : commentVoList) {
+        for (CommentVO commentVo : commentVOList) {
             //查询对应的子评论
-            List<CommentVo> children = getChildren(commentVo.getId());
+            List<CommentVO> children = getChildren(commentVo.getId());
             //赋值
             commentVo.setChildren(children);
         }
 
-        return ResponseResult.okResult(new PageVo(commentVoList,page.getTotal()));
+        return ResponseResult.okResult(new PageVO(commentVOList, page.getTotal()));
     }
 
 
     /**
      * 根据根评论的id查询所对应的子评论的集合
+     *
      * @param id 根评论的id
      * @return
      */
-    private List<CommentVo> getChildren(Long id) {
+    private List<CommentVO> getChildren(Long id) {
 
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Comment::getRootId,id);
+        queryWrapper.eq(Comment::getRootId, id);
         queryWrapper.orderByAsc(Comment::getCreateTime);
         List<Comment> comments = list(queryWrapper);
 
-        List<CommentVo> commentVos = BeanCopyUtils.copyBeanList(comments, CommentVo.class);
-        return commentVos;
+        List<CommentVO> commentVOS = BeanCopyUtils.copyBeanList(comments, CommentVO.class);
+        return commentVOS;
     }
 
 

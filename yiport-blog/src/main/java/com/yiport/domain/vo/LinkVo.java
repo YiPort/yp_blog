@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LinkVo {
+public class LinkVO {
     private Long id;
 
     private String name;

@@ -4,15 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
-
 /**
  * 文章详情响应体
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArticleDetailVo {
+public class ArticleDetailVO {
     private Long id;
     //标题
     private String title;

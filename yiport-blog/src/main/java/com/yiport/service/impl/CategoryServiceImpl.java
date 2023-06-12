@@ -2,7 +2,7 @@ package com.yiport.service.impl;
 
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Category;
-import com.yiport.domain.vo.CategoryVo;
+import com.yiport.domain.vo.CategoryVO;
 import com.yiport.mapper.CategoryMapper;
 import com.yiport.service.CategoryService;
 import com.yiport.utils.BeanCopyUtils;
@@ -40,7 +40,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         queryWrapper.eq(Category::getStatus, STATUS_NORMAL);
         List<Category> categories = categoryMapper.selectList(queryWrapper);
 
-        List<CategoryVo> categoryListVOS = BeanCopyUtils.copyBeanList(categories, CategoryVo.class);
+        List<CategoryVO> categoryListVOS = BeanCopyUtils.copyBeanList(categories, CategoryVO.class);
         return ResponseResult.okResult(categoryListVOS);
     }
 }

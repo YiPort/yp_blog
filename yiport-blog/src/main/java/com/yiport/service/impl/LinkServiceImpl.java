@@ -3,7 +3,7 @@ package com.yiport.service.impl;
 import com.yiport.constants.SystemConstants;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Link;
-import com.yiport.domain.vo.LinkVo;
+import com.yiport.domain.vo.LinkVO;
 import com.yiport.mapper.LinkMapper;
 import com.yiport.service.LinkService;
 import com.yiport.utils.BeanCopyUtils;
@@ -29,8 +29,8 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
         queryWrapper.eq(Link::getStatus, SystemConstants.LINK_STATUS_NORMAL);
         List<Link> links = list(queryWrapper);
         //转换成vo
-        List<LinkVo> linkVos = BeanCopyUtils.copyBeanList(links, LinkVo.class);
+        List<LinkVO> linkVOS = BeanCopyUtils.copyBeanList(links, LinkVO.class);
         //封装返回
-        return ResponseResult.okResult(linkVos);
+        return ResponseResult.okResult(linkVOS);
     }
 }
