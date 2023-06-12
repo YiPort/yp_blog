@@ -22,6 +22,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Objects;
 
+import static com.yiport.constants.BusinessConstants.BLOG_LOGIN;
+
 @Component
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
@@ -51,7 +53,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         }
         String userId = claims.getSubject();
         //从redis中获取用户信息
-        LoginUser loginUser = redisCache.getCacheObject("ypblog:login:" + userId);
+        LoginUser loginUser = redisCache.getCacheObject(BLOG_LOGIN + userId);
         //如果获取不到
         if (Objects.isNull(loginUser)) {
             //说明登录过期  提示重新登录

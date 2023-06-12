@@ -34,6 +34,8 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.yiport.constants.BusinessConstants.BLOG_LOGIN;
+import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
 import static com.yiport.constants.SystemConstants.NOT_RELEASE;
 import static com.yiport.constants.SystemConstants.RELEASE;
 import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
@@ -193,8 +195,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
 
         String userId = article.getCreateBy().toString();
-        String loginKey = "ypblog:login:" + userId;
-        String tokenKey = "ypblog:token:" + userId;
+        String loginKey = BLOG_LOGIN + userId;
+        String tokenKey = BLOG_TOKEN + userId;
         Object loginObj = redisCache.getCacheObject(loginKey);
         Object tokenObj = redisCache.getCacheObject(tokenKey);
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -261,7 +263,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (StringUtils.isAnyBlank(token)) {
             throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
         }
-        String tokenKey = "ypblog:token:" + id;
+        String tokenKey = BLOG_TOKEN + id;
         Object cacheObject = redisCache.getCacheObject(tokenKey);
         if (cacheObject == null) {
             throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
