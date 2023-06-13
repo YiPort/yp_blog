@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -33,7 +32,7 @@ public class CommentVO {
 
     private Long createBy;
 
-    private Date createTime;
+    private String createTime;
 
 
     private List<CommentVO> children;
