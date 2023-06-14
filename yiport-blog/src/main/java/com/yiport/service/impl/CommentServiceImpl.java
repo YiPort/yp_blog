@@ -16,6 +16,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -79,9 +81,17 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Override
     public ResponseResult addComment(Comment comment) {
         //评论内容不能为空
-        if(!StringUtils.hasText(comment.getContent())){
+        if (!StringUtils.hasText(comment.getContent())) {
             throw new SystemException(AppHttpCodeEnum.CONTENT_NOT_NULL);
         }
+        //设置保存时间
+        // 获取当前时间
+        LocalDateTime currentTime = LocalDateTime.now();
+        // 定义时间格式
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        // 格式化创建时间
+        String createTime = currentTime.format(formatter);
+        comment.setCreateTime(createTime);
         save(comment);
         return ResponseResult.okResult();
     }

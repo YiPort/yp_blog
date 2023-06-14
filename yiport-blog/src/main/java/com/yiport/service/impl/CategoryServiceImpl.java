@@ -20,7 +20,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
 
 
@@ -87,8 +86,14 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
             throw new SystemException(NEED_LOGIN, "登录过期，请重新登陆");
         }
         Category category1 = BeanCopyUtils.copyBean(category, Category.class);
-
-        category1.setCreateTime(new Date());
+        //设置保存时间
+        // 获取当前时间
+        LocalDateTime currentTime = LocalDateTime.now();
+        // 定义时间格式
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        // 格式化创建时间
+        String createTime = currentTime.format(formatter);
+        category1.setCreateTime(createTime);
         save(category1);
         return ResponseResult.okResult();
     }
