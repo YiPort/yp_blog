@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.yiport.constants.BlogBusinessConstants.ARTICLE_VIEWCOUNT;
+
 @Component
 public class ViewCountRunner implements CommandLineRunner {
 
@@ -29,6 +31,6 @@ public class ViewCountRunner implements CommandLineRunner {
                     return article.getViewCount().intValue();//
                 }));
         //存储到redis中(hash类型)
-        redisCache.setCacheMap("article:viewCount",viewCountMap);
+        redisCache.setCacheMap(ARTICLE_VIEWCOUNT, viewCountMap);
     }
 }

@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.yiport.constants.BlogBusinessConstants.ARTICLE_VIEWCOUNT;
+
 @Component
 public class UpdateViewCountJob {
 
@@ -22,7 +24,7 @@ public class UpdateViewCountJob {
 
     @Scheduled(cron = "0 0/10 * * * ?")
     public void updateViewCount() {
-        Map<String, Integer> viewCountMap = redisCache.getCacheMap("article:viewCount");
+        Map<String, Integer> viewCountMap = redisCache.getCacheMap(ARTICLE_VIEWCOUNT);
 
         List<Article> articles = viewCountMap.entrySet()
                 .stream().map(entry -> (new
