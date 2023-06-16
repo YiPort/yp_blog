@@ -12,6 +12,7 @@ import cn.yiport.mapper.ArticleMapper;
 import cn.yiport.service.ArticleService;
 import cn.yiport.service.CategoryService;
 import cn.yiport.utils.BeanCopyUtils;
+import cn.yiport.utils.RedisCache;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -31,6 +32,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> imple
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private RedisCache redisCache;
 
     @Override
     public ResponseResult hotArticleList() {
@@ -109,4 +113,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper,Article> imple
         //封装响应返回
         return ResponseResult.okResult(articleDetailVo);
     }
+
+    @Override
+    public ResponseResult updateViewCount(Long id) {
+        //更新redis中对应 id的浏览量
+        redisCache.incrementCacheMapValue("article:viewCount",id.toString(),1);
+        return ResponseResult.okResult();
+    }
+
 }
