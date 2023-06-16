@@ -29,7 +29,9 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -192,8 +194,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public ResponseResult postArticle(SaveArticleVO article) {
         // 必要参数校验
-        if (StringUtils.isAnyBlank(article.getTitle(), article.getContent())) {
-            throw new SystemException(PARAMETER_ERROR, "文章标题和内容不能为空");
+        if (StringUtils.isAnyBlank(article.getTitle(), article.getContent()) || article.getCategoryId() == null) {
+            throw new SystemException(PARAMETER_ERROR, "文章标题、内容、分类不能为空");
         }
 
         String userId = article.getCreateBy().toString();
@@ -215,8 +217,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (!token.equals(String.valueOf(tokenObj))) {
             throw new SystemException(NEED_LOGIN, "登录过期，请重新登录");
         }
-        // TODO: 2022/4/26 暂时所有文章都为未发布状态
-        if (article.getStatus().equals(RELEASE)) {
+        // 管理员权限校验
+        String adminKey = BLOG_ADMIN + userId;
+        if (redisCache.getCacheObject(adminKey) == null) {
             article.setStatus(NOT_RELEASE);
         }
         // isComment值转换
@@ -225,19 +228,26 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         } else if (article.getIsComment().equals("false")) {
             article.setIsComment("0");
         }
+
+
+        // 保存文章
+        Article saveArticle = BeanCopyUtils.copyBean(article, Article.class);
+        //设置保存时间
         // 获取当前时间
         LocalDateTime currentTime = LocalDateTime.now();
         // 定义时间格式
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        // 格式化时间
-        String formattedTime = currentTime.format(formatter);
-
-
-        Article article1 = BeanCopyUtils.copyBean(article, Article.class);
-        article1.setCreateTime(formattedTime);
-        // 保存文章
-        if (!this.save(article1)) {
-            throw new SystemException(SYSTEM_ERROR);
+        // 格式化创建时间
+        String createTime = currentTime.format(formatter);
+        saveArticle.setCreateTime(createTime);
+        //插入
+        articleMapper.insert(saveArticle);
+        // 将文章浏览量同步到 redis
+        if (article.getStatus().equals(RELEASE)) {
+            Map<String, Integer> viewCountMap = new HashMap<>();
+            viewCountMap.put(saveArticle.getId().toString(), 0);
+            //存储到redis中(hash类型)
+            redisCache.setCacheMap(ARTICLE_VIEWCOUNT, viewCountMap);
         }
         return ResponseResult.okResult(200, "保存成功！");
     }
