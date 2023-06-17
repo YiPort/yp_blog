@@ -90,4 +90,17 @@ public class ArticleController {
         return articleService.getDraftList(id);
     }
 
+
+    /**
+     * 获取编辑记录
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/getEditHistory/{id}")
+    @SystemLog(businessName = "获取编辑记录")
+    public ResponseResult getEditHistory(@PathVariable Long id) {
+        return articleService.getEditHistory(id);
+    }
+
 }

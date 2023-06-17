@@ -6,6 +6,7 @@ import com.yiport.domain.entity.Article;
 import com.yiport.domain.entity.Category;
 import com.yiport.domain.vo.ArticleDetailVO;
 import com.yiport.domain.vo.ArticleListVO;
+import com.yiport.domain.vo.EditHistoryVO;
 import com.yiport.domain.vo.HotArticleVO;
 import com.yiport.domain.vo.PageVO;
 import com.yiport.domain.vo.SaveArticleVO;
@@ -29,6 +30,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +38,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.yiport.constants.BlogBusinessConstants.ARTICLE_EDITLIST;
 import static com.yiport.constants.BlogBusinessConstants.ARTICLE_VIEWCOUNT;
 import static com.yiport.constants.BusinessConstants.BLOG_ADMIN;
 import static com.yiport.constants.BusinessConstants.BLOG_LOGIN;
@@ -171,13 +174,19 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         //根据分类id查询分类名
         Long categoryId = articleDetailVo.getCategoryId();
         Category category = categoryService.getById(categoryId);
-        if(category!=null){
+        if (category != null) {
             articleDetailVo.setCategoryName(category.getName());
         }
         //封装响应返回
         return ResponseResult.okResult(articleDetailVo);
     }
 
+    /**
+     * 更新文章浏览量
+     *
+     * @param id
+     * @return
+     */
     @Override
     public ResponseResult updateViewCount(Long id) {
         //更新redis中对应 id的浏览量
@@ -242,13 +251,24 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         saveArticle.setCreateTime(createTime);
         //插入
         articleMapper.insert(saveArticle);
+        String editKey = ARTICLE_EDITLIST + saveArticle.getCreateBy();
         // 将文章浏览量同步到 redis
         if (article.getStatus().equals(RELEASE)) {
             Map<String, Integer> viewCountMap = new HashMap<>();
             viewCountMap.put(saveArticle.getId().toString(), 0);
             //存储到redis中(hash类型)
             redisCache.setCacheMap(ARTICLE_VIEWCOUNT, viewCountMap);
+            // 将事件 push入消息队列
+            EditHistoryVO editHistory = new EditHistoryVO("发布了文章：" + saveArticle.getTitle(), createTime, "#0bbd87");
+
+            redisCache.setCacheList(editKey, Arrays.asList(editHistory));
+
+        } else {
+            // 将事件 push入消息队列
+            EditHistoryVO editHistory = new EditHistoryVO("编辑了文章：" + saveArticle.getTitle(), createTime, "#e6a23c");
+            redisCache.setCacheList(editKey, Arrays.asList(editHistory));
         }
+
         return ResponseResult.okResult(200, "保存成功！");
     }
 
@@ -291,6 +311,43 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         List<SaveArticleVO> saveArticleVOS = BeanCopyUtils.copyBeanList(articles, SaveArticleVO.class);
 
         return ResponseResult.okResult(saveArticleVOS);
+    }
+
+
+    /**
+     * 获取编辑记录
+     *
+     * @param id 用户id
+     * @return
+     */
+    @Override
+    public ResponseResult getEditHistory(Long id) {
+        // id校验
+        if (id <= 0) {
+            throw new SystemException(PARAMETER_ERROR);
+        }
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = null;
+        if (requestAttributes != null) {
+            request = requestAttributes.getRequest();
+        }
+        // token校验
+        String token = request.getHeader("token");
+        if (StringUtils.isAnyBlank(token)) {
+            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
+        }
+        String tokenKey = BLOG_TOKEN + id;
+        Object cacheObject = redisCache.getCacheObject(tokenKey);
+        if (cacheObject == null) {
+            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
+        }
+        if (!token.equals(String.valueOf(cacheObject))) {
+            throw new SystemException(NEED_LOGIN, "登录过期，请重新登录");
+        }
+        // 获取编辑记录
+        String editKey = ARTICLE_EDITLIST + id;
+        List<Object> cacheList = redisCache.getCacheList(editKey);
+        return ResponseResult.okResult(cacheList);
     }
 
 

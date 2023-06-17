@@ -32,4 +32,12 @@ public interface ArticleService extends IService<Article> {
     ResponseResult getDraftList(Long id);
 
 
+    /**
+     * 获取编辑记录
+     *
+     * @param id
+     * @return
+     */
+    ResponseResult getEditHistory(Long id);
+
 }
