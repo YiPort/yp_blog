@@ -22,10 +22,12 @@ public class UserController {
 
     /**
      * 根据id返回user
+     *
      * @param id
      * @return
      */
     @GetMapping("/getUserNickNameById")
+    @SystemLog(businessName = "根据id返回user")
     public User getById(Long id) {
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getId, String.valueOf(id)).select(User::getNickName);
@@ -37,17 +39,18 @@ public class UserController {
 
     /**
      * 个人信息查询
-     * 需要token请求头
+     *
      * @return
      */
     @GetMapping("/userInfo")
+    @SystemLog(businessName = "个人信息查询")
     public ResponseResult userInfo(){
         return userService.userInfo();
     }
 
     /**
      * 更新个人信息
-     * 需要token请求头
+     *
      * @param user
      * @return
      */
@@ -75,6 +78,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/current")
+    @SystemLog(businessName = "获取用户登录态")
     public ResponseResult<UserVO> current() {
         return userService.getCurrent();
     }
@@ -87,6 +91,7 @@ public class UserController {
      */
     @GetMapping("/searchByUsername")
     @PreAuthorize("hasAuthority('1')")
+    @SystemLog(businessName = "管理员根据用户昵称查询用户")
     public ResponseResult<List<UserVO>> searchByUsername(@RequestParam("username") String username) {
         return userService.searchByUsername(username);
     }
@@ -100,18 +105,20 @@ public class UserController {
      */
     @GetMapping("/searchUsers")
     @PreAuthorize("hasAuthority('1')")
+    @SystemLog(businessName = "管理员分页查询用户")
     public ResponseResult<List<UserVO>> searchUsers(@RequestParam("current") String current, @RequestParam("pageSize") String pageSize) {
         return userService.searchUsers(current, pageSize);
     }
 
     /**
-     * 管理员根据 id删除用户
+     * 管理员根据id删除用户
      *
      * @param id
      * @return
      */
     @PostMapping("/delete")
     @PreAuthorize("hasAuthority('1')")
+    @SystemLog(businessName = "管理员根据id删除用户")
     public ResponseResult deleteUser(@RequestParam("id") @RequestBody String id) {
         return userService.deleteUserById(id);
     }

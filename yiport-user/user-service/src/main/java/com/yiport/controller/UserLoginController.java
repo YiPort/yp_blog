@@ -1,6 +1,8 @@
 package com.yiport.controller;
 
+import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
+import com.yiport.domain.entity.User;
 import com.yiport.domain.request.AccountLoginRequest;
 import com.yiport.enums.AppHttpCodeEnum;
 import com.yiport.handler.exception.SystemException;
@@ -21,10 +23,12 @@ public class UserLoginController {
 
     /**
      * 用户登录
+     *
      * @param accountLoginRequest
      * @return
      */
     @PostMapping("/login")
+    @SystemLog(businessName = "用户登录")
     public ResponseResult login(@RequestBody AccountLoginRequest accountLoginRequest) {
         String userName = accountLoginRequest.getUserName();
         String userPassword = accountLoginRequest.getPassword();
@@ -48,10 +52,11 @@ public class UserLoginController {
 
     /**
      * 用户退出登录
-     * 需要token请求头
+     *
      * @return
      */
     @PostMapping("/logout")
+    @SystemLog(businessName = "用户退出登录")
     public ResponseResult logout() {
         return userLoginService.logout();
     }
@@ -62,6 +67,7 @@ public class UserLoginController {
      * @return
      */
     @GetMapping("/captchaImage")
+    @SystemLog(businessName = "获取图片验证码")
     public ResponseResult getCaptchaImage() {
         return userLoginService.getCaptchaImage();
     }
