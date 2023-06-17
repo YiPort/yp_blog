@@ -12,5 +12,10 @@ import com.yiport.domain.entity.Link;
  */
 public interface LinkService extends IService<Link> {
 
+    /**
+     * 友联查询
+     *
+     * @return
+     */
     ResponseResult getAllLink();
 }

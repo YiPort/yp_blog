@@ -9,6 +9,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserLoginVO {
 
+    /**
+     * Token
+     */
     private String token;
+
+    /**
+     * 用户信息
+     */
     private UserInfoVO userInfo;
 }

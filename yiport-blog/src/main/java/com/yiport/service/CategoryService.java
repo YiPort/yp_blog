@@ -13,6 +13,11 @@ import com.yiport.domain.vo.CategoryVO;
  */
 public interface CategoryService extends IService<Category> {
 
+    /**
+     * 查询分类列表
+     *
+     * @return
+     */
     ResponseResult getCategoryList();
 
 

@@ -12,22 +12,44 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ArticleDetailVO {
     private Long id;
-    //标题
+
+    /**
+     * 标题
+     */
     private String title;
-    //文章摘要
+
+    /**
+     * 文章摘要
+     */
     private String summary;
-    //所属分类id
+
+    /**
+     * 所属分类id
+     */
     private Long categoryId;
-    //所属分类名
+
+    /**
+     * 所属分类名
+     */
     private String categoryName;
-    //缩略图
+
+    /**
+     * 缩略图
+     */
     private String thumbnail;
-    //文章内容
+
+    /**
+     * 文章内容
+     */
     private String content;
 
-
-    //访问量
+    /**
+     * 访问量
+     */
     private Long viewCount;
 
+    /**
+     * 创建时间
+     */
     private String createTime;
 }

@@ -42,6 +42,11 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     @Autowired
     private RedisCache redisCache;
 
+    /**
+     * 查询分类列表
+     *
+     * @return
+     */
     @Override
     public ResponseResult getCategoryList() {
         LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();

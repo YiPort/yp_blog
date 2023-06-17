@@ -27,13 +27,19 @@ public class OssUploadService implements UploadService {
     private String secretKey;
     private String bucket;
 
+    /**
+     * 头像上传
+     *
+     * @param img
+     * @return
+     */
     @Override
     public ResponseResult uploadImg(MultipartFile img) {
         //判断文件类型
         //获取原始文件名
         String originalFilename = img.getOriginalFilename();
         //对原始文件名进行判断
-        if(!originalFilename.endsWith(".png")){
+        if (!originalFilename.endsWith(".png")) {
             throw new SystemException(AppHttpCodeEnum.FILE_TYPE_ERROR);
         }
 

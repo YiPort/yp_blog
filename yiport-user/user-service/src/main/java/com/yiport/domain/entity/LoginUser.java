@@ -19,6 +19,9 @@ public class LoginUser implements UserDetails {
 
     private static final long serialVersionUID = -1754674097819059609L;
 
+    /**
+     * 登录用户
+     */
     private User user;
 
 

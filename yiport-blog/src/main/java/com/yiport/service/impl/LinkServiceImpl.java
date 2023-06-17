@@ -22,6 +22,11 @@ import java.util.List;
 @Service("linkService")
 public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements LinkService {
 
+    /**
+     * 友联查询
+     *
+     * @return
+     */
     @Override
     public ResponseResult getAllLink() {
         //查询所有审核通过的

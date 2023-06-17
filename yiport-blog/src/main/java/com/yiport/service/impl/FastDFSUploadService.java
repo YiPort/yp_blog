@@ -20,20 +20,25 @@ import java.util.List;
 @Service
 public class FastDFSUploadService implements UploadService {
 
-    private static final List<String> CONTENT_TYPES = Arrays.asList("image/png","image/jpg");
+    private static final List<String> CONTENT_TYPES = Arrays.asList("image/png", "image/jpg");
 
     @Autowired
     private FastFileStorageClient fastFileStorageClient;
 
 
-
+    /**
+     * 头像上传
+     *
+     * @param img
+     * @return
+     */
     @Override
     public ResponseResult uploadImg(MultipartFile img) {
         String url = uploadFastDFS(img);
         return ResponseResult.okResult(url);
     }
 
-    public String uploadFastDFS(MultipartFile img){
+    public String uploadFastDFS(MultipartFile img) {
         String originalFilename = img.getOriginalFilename();//获取文件名
 
 //        String[] split = originalFilename.split(".");
