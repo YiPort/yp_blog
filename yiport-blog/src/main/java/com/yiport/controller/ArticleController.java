@@ -19,46 +19,55 @@ public class ArticleController {
 //        return articleService.list();
 //    }
 
-    
-    /** 
-    * @Description: 查询热门文章
-    * @Author: YiPort
-    * @Date: 2023/4/2 
-    */
+
+    /**
+     * 查询热门文章
+     *
+     * @Author: YiPort
+     * @Date: 2023/4/2
+     */
     @GetMapping("/hotArticleList")
     @SystemLog(businessName = "查询热门文章")
-    public ResponseResult hotArticleList(){
-        
+    public ResponseResult hotArticleList() {
 
-        ResponseResult result =  articleService.hotArticleList();
+
+        ResponseResult result = articleService.hotArticleList();
         return result;
     }
 
 
     /**
-     * @Description: 分页查询文章列表
+     * 分页查询文章列表
+     *
      * @Author: YiPort
      * @Date: 2023/4/5
      */
     @GetMapping("/articleList")
     @SystemLog(businessName = "查询文章列表")
-    public ResponseResult articleList(Integer pageNum,Integer pageSize,Long categoryId){
-        return articleService.articleList(pageNum,pageSize,categoryId);
+    public ResponseResult articleList(Integer pageNum, Integer pageSize, Long categoryId) {
+        return articleService.articleList(pageNum, pageSize, categoryId);
     }
 
-    
-    /** 
-    * @Description: 查询文章详情
-    * @Author: YiPort
-    * @Date: 2023/4/5 
-    */
+
+    /**
+     * 查询文章详情
+     *
+     * @Author: YiPort
+     * @Date: 2023/4/5
+     */
     @GetMapping("/{id}")
     @SystemLog(businessName = "查询文章详情")
-    public ResponseResult getArticleDetail(@PathVariable("id") Long id){
+    public ResponseResult getArticleDetail(@PathVariable("id") Long id) {
         return articleService.getArticleDetail(id);
     }
 
 
+    /**
+     * 更新文章浏览量
+     *
+     * @param id
+     * @return
+     */
     @PutMapping("/updateViewCount/{id}")
     @SystemLog(businessName = "更新文章浏览量")
     public ResponseResult updateViewCount(@PathVariable("id") Long id) {

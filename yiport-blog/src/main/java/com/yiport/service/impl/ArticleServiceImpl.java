@@ -4,6 +4,7 @@ import com.yiport.constants.SystemConstants;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Article;
 import com.yiport.domain.entity.Category;
+import com.yiport.domain.entity.EditHistory;
 import com.yiport.domain.vo.ArticleDetailVO;
 import com.yiport.domain.vo.ArticleListVO;
 import com.yiport.domain.vo.EditHistoryVO;
@@ -14,6 +15,7 @@ import com.yiport.handler.exception.SystemException;
 import com.yiport.mapper.ArticleMapper;
 import com.yiport.service.ArticleService;
 import com.yiport.service.CategoryService;
+import com.yiport.service.EditHistoryService;
 import com.yiport.utils.BeanCopyUtils;
 import com.yiport.utils.RedisCache;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -30,6 +32,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -61,6 +64,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Resource
     private ArticleMapper articleMapper;
+
+    @Autowired
+    private EditHistoryService editHistoryService;
 
     /**
      * 查询热门文章列表
@@ -239,7 +245,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
 
 
-        // 保存文章
         Article saveArticle = BeanCopyUtils.copyBean(article, Article.class);
         //设置保存时间
         // 获取当前时间
@@ -259,14 +264,18 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             //存储到redis中(hash类型)
             redisCache.setCacheMap(ARTICLE_VIEWCOUNT, viewCountMap);
             // 将事件 push入消息队列
-            EditHistoryVO editHistory = new EditHistoryVO("发布了文章：" + saveArticle.getTitle(), createTime, "#0bbd87");
-
-            redisCache.setCacheList(editKey, Arrays.asList(editHistory));
+            EditHistory editHistory = new EditHistory(saveArticle.getCreateBy(), "发布了文章：" + saveArticle.getTitle(), createTime, "#0bbd87");
+            EditHistoryVO editHistoryVO = BeanCopyUtils.copyBean(editHistory, EditHistoryVO.class);
+            redisCache.setCacheList(editKey, Arrays.asList(editHistoryVO));
+            editHistoryService.saveOrUpdate(editHistory);
 
         } else {
             // 将事件 push入消息队列
-            EditHistoryVO editHistory = new EditHistoryVO("编辑了文章：" + saveArticle.getTitle(), createTime, "#e6a23c");
-            redisCache.setCacheList(editKey, Arrays.asList(editHistory));
+            EditHistory editHistory = new EditHistory(saveArticle.getCreateBy(), "编辑了文章：" + saveArticle.getTitle(), createTime, "#e6a23c");
+            EditHistoryVO editHistoryVO = BeanCopyUtils.copyBean(editHistory, EditHistoryVO.class);
+            redisCache.setCacheList(editKey, Arrays.asList(editHistoryVO));
+            editHistoryService.saveOrUpdate(editHistory);
+
         }
 
         return ResponseResult.okResult(200, "保存成功！");
@@ -346,7 +355,22 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         // 获取编辑记录
         String editKey = ARTICLE_EDITLIST + id;
-        List<Object> cacheList = redisCache.getCacheList(editKey);
+        List<Object> cacheList = Arrays.asList(redisCache.getCacheMap(editKey).values().toArray());
+        if (cacheList.isEmpty()) {
+            LambdaQueryWrapper<EditHistory> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(EditHistory::getUserId, id);
+            List<EditHistory> editHistories = editHistoryService.list(wrapper);
+
+            List<EditHistoryVO> editHistoryVOS = BeanCopyUtils.copyBeanList(editHistories, EditHistoryVO.class);
+
+            Map<String, EditHistoryVO> editHistoryMap = editHistories.stream()
+                    .collect(Collectors.toMap(editHistory -> editHistory.getId().toString(), editHistory -> BeanCopyUtils.copyBean(editHistory, EditHistoryVO.class)));
+
+            cacheList = new ArrayList<>(editHistoryVOS);
+            if (!cacheList.isEmpty()) {
+                redisCache.setCacheMap(editKey, editHistoryMap);
+            }
+        }
         return ResponseResult.okResult(cacheList);
     }
 

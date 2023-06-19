@@ -17,7 +17,7 @@ public class CommentController {
 
     /**
      * 查询评论列表
-     * 不需要token请求头
+     *
      * @param articleId
      * @param pageNum
      * @param pageSize
@@ -31,7 +31,6 @@ public class CommentController {
 
     /**
      * 发表评论
-     * 需要token头
      *
      * @param comment
      * @return
@@ -44,7 +43,7 @@ public class CommentController {
 
     /**
      * 查询友联评论列表
-     * 不需要token请求头
+     *
      * @param pageNum
      * @param pageSize
      * @return
