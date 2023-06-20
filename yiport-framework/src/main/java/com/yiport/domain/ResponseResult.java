@@ -7,8 +7,22 @@ import java.io.Serializable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResponseResult<T> implements Serializable {
+
+    private static final long serialVersionUID = 2285868956518400337L;
+
+    /**
+     * 状态码
+     */
     private Integer code;
+
+    /**
+     * 信息提示
+     */
     private String msg;
+
+    /**
+     * 返回数据
+     */
     private T data;
 
     /**
