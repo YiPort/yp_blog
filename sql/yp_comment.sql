@@ -33,7 +33,7 @@ CREATE TABLE `yp_comment`(
                              `status`             CHAR(1)      DEFAULT '0' COMMENT '评论状态（0-未精选，1-精选评论）',
                              `create_by`          bigint(20) DEFAULT NULL COMMENT '创建人的用户id',
                              `create_time`        datetime     DEFAULT NULL COMMENT '创建时间',
-                             `update_by`          bigint(20) DEFAULT NULL COMMENT '更新人',
+                             `update_by`          bigint(20) DEFAULT NULL COMMENT '更新人的用户id',
                              `update_time`        datetime     DEFAULT NULL COMMENT '更新时间',
                              `del_flag`           int(1) DEFAULT '0' COMMENT '删除标志（0代表未删除，1代表已删除）',
                              PRIMARY KEY (`id`)

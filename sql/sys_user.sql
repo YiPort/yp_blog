@@ -34,9 +34,9 @@ CREATE TABLE `sys_user`(
                            `avatar`      varchar(128)         DEFAULT NULL COMMENT '头像',
                            `create_by`   bigint(20) DEFAULT NULL COMMENT '创建人的用户id',
                            `create_time` datetime             DEFAULT NULL COMMENT '创建时间',
-                           `update_by`   bigint(20) DEFAULT NULL COMMENT '更新人',
+                           `update_by`   bigint(20) DEFAULT NULL COMMENT '更新人的用户id',
                            `update_time` datetime             DEFAULT NULL COMMENT '更新时间',
-                           `del_flag`    int(11) DEFAULT '0' COMMENT '删除标志（0代表未删除，1代表已删除）',
-  PRIMARY KEY (`id`)
+                           `del_flag`    int(1) DEFAULT '0' COMMENT '删除标志（0代表未删除，1代表已删除）',
+                           PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
