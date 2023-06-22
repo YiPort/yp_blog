@@ -32,6 +32,7 @@
         <druid.version>1.2.11</druid.version>
         <springfox-swagger2.version>2.9.2</springfox-swagger2.version>
         <lombok.version>1.18.24</lombok.version>
+        <hutool.version>5.8.21</hutool.version>
 
     </properties>
     <dependencyManagement>
@@ -119,6 +120,32 @@
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
             </dependency>
+            <!-- hutool 依赖-->
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>${hutool.version}</version>
+            </dependency>
+            <!-- hutool 核心依赖-->
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-core</artifactId>
+                <version>${hutool.version}</version>
+            </dependency>
+            <!-- hutool http 依赖-->
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-http</artifactId>
+                <version>${hutool.version}</version>
+            </dependency>
+            <!-- Hutool 加密解密-->
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-crypto</artifactId>
+                <version>${hutool.version}</version>
+            </dependency>
+
+
         </dependencies>
 
 
