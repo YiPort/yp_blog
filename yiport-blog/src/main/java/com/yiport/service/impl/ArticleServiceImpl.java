@@ -254,8 +254,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 格式化创建时间
         String createTime = currentTime.format(formatter);
         saveArticle.setCreateTime(createTime);
-        //插入
-        articleMapper.insert(saveArticle);
+        if (article.getId() == null) {
+            // 保存文章
+            articleMapper.insert(saveArticle);
+        } else {
+            // 更新文章
+            articleMapper.updateById(saveArticle);
+        }
         String editKey = ARTICLE_EDITLIST + saveArticle.getCreateBy();
         // 将文章浏览量同步到 redis
         if (article.getStatus().equals(RELEASE)) {
