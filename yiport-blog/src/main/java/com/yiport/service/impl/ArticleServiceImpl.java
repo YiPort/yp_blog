@@ -263,7 +263,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         String editKey = ARTICLE_EDITLIST + saveArticle.getCreateBy();
         // 将文章浏览量同步到 redis
-        if (article.getStatus().equals(RELEASE)) {
+        if (StringUtils.isNotBlank(article.getStatus()) && article.getStatus().equals(RELEASE)) {
             Map<String, Integer> viewCountMap = new HashMap<>();
             viewCountMap.put(saveArticle.getId().toString(), 0);
             //存储到redis中(hash类型)
@@ -271,15 +271,20 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             // 将事件 push入消息队列
             EditHistory editHistory = new EditHistory(saveArticle.getCreateBy(), "发布了文章：" + saveArticle.getTitle(), createTime, "#0bbd87");
             EditHistoryVO editHistoryVO = BeanCopyUtils.copyBean(editHistory, EditHistoryVO.class);
-            redisCache.setCacheList(editKey, Arrays.asList(editHistoryVO));
             editHistoryService.saveOrUpdate(editHistory);
+            Map<String, EditHistoryVO> editHistoryMap = new HashMap();
+            editHistoryMap.put(editHistory.getId().toString(), editHistoryVO);
+            redisCache.setCacheMap(editKey, editHistoryMap);
+
 
         } else {
             // 将事件 push入消息队列
             EditHistory editHistory = new EditHistory(saveArticle.getCreateBy(), "编辑了文章：" + saveArticle.getTitle(), createTime, "#e6a23c");
             EditHistoryVO editHistoryVO = BeanCopyUtils.copyBean(editHistory, EditHistoryVO.class);
-            redisCache.setCacheList(editKey, Arrays.asList(editHistoryVO));
             editHistoryService.saveOrUpdate(editHistory);
+            Map<String, EditHistoryVO> editHistoryMap = new HashMap();
+            editHistoryMap.put(editHistory.getId().toString(), editHistoryVO);
+            redisCache.setCacheMap(editKey, editHistoryMap);
 
         }
 
