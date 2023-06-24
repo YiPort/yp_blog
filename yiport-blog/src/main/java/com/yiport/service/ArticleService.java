@@ -64,4 +64,14 @@ public interface ArticleService extends IService<Article> {
      */
     ResponseResult getEditHistory(Long id);
 
+
+    /**
+     * 删除草稿
+     *
+     * @param id
+     * @param articleId
+     * @return
+     */
+    ResponseResult deleteDraft(Long id, Long articleId);
+
 }

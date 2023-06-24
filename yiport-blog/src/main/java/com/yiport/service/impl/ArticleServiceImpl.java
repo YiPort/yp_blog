@@ -268,7 +268,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             viewCountMap.put(saveArticle.getId().toString(), 0);
             //存储到redis中(hash类型)
             redisCache.setCacheMap(ARTICLE_VIEWCOUNT, viewCountMap);
-            // 将事件 push入消息队列
+            // 将事件 push入消息列表
             EditHistory editHistory = new EditHistory(saveArticle.getCreateBy(), "发布了文章：" + saveArticle.getTitle(), createTime, "#0bbd87");
             EditHistoryVO editHistoryVO = BeanCopyUtils.copyBean(editHistory, EditHistoryVO.class);
             editHistoryService.saveOrUpdate(editHistory);
@@ -278,7 +278,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
 
         } else {
-            // 将事件 push入消息队列
+            // 将事件 push入消息列表
             EditHistory editHistory = new EditHistory(saveArticle.getCreateBy(), "编辑了文章：" + saveArticle.getTitle(), createTime, "#e6a23c");
             EditHistoryVO editHistoryVO = BeanCopyUtils.copyBean(editHistory, EditHistoryVO.class);
             editHistoryService.saveOrUpdate(editHistory);
@@ -384,5 +384,55 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return ResponseResult.okResult(cacheList);
     }
 
+    /**
+     * 删除草稿
+     *
+     * @param id
+     * @param articleId
+     * @return
+     */
+    @Override
+    public ResponseResult deleteDraft(Long id, Long articleId) {
+        // id校验
+        if (id <= 0) {
+            throw new SystemException(PARAMETER_ERROR);
+        }
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = null;
+        if (requestAttributes != null) {
+            request = requestAttributes.getRequest();
+        }
+        // token校验
+        String token = request.getHeader("Token");
+        if (StringUtils.isAnyBlank(token)) {
+            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
+        }
+        String tokenKey = BLOG_TOKEN + id;
+        Object cacheObject = redisCache.getCacheObject(tokenKey);
+        if (cacheObject == null) {
+            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
+        }
+        if (!token.equals(String.valueOf(cacheObject))) {
+            throw new SystemException(NEED_LOGIN, "登录过期，请重新登录");
+        }
+        // 获取标题
+        String title = getById(articleId).getTitle();
+        // 删除草稿
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Article::getCreateBy, id);
+        queryWrapper.eq(Article::getId, articleId);
+        articleMapper.delete(queryWrapper);
+        // 获取时间戳,设置创建时间
+        String createTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String editKey = ARTICLE_EDITLIST + id;
+        // 将事件 push入消息列表
+        EditHistory editHistory = new EditHistory(id, "删除了文章：" + title, createTime, "#F56C6C");
+        EditHistoryVO editHistoryVO = BeanCopyUtils.copyBean(editHistory, EditHistoryVO.class);
+        Map<String, EditHistoryVO> editHistoryMap = new HashMap();
+        editHistoryService.saveOrUpdate(editHistory);
+        editHistoryMap.put(editHistory.getId().toString(), editHistoryVO);
+        redisCache.setCacheMap(editKey, editHistoryMap);
+        return ResponseResult.okResult();
+    }
 
 }

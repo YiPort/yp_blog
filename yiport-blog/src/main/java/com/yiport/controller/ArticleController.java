@@ -112,4 +112,18 @@ public class ArticleController {
         return articleService.getEditHistory(id);
     }
 
+
+    /**
+     * 删除草稿
+     *
+     * @param id
+     * @param articleId
+     * @return
+     */
+    @DeleteMapping("/deleteDraft/{id}/{articleId}")
+    @SystemLog(businessName = "删除草稿")
+    public ResponseResult deleteDraft(@PathVariable Long id, @PathVariable Long articleId) {
+        return articleService.deleteDraft(id, articleId);
+    }
+
 }
