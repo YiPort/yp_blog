@@ -9,8 +9,6 @@ import java.io.Serializable;
 /**
  * 保存文章请求体
  *
- * @author wzy
- * @version 2022/4/26 19:48
  */
 @Data
 @NoArgsConstructor
