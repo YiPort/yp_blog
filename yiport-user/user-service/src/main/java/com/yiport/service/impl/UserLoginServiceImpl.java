@@ -35,6 +35,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.yiport.constants.BusinessConstants.BLOG_ADMIN;
+import static com.yiport.constants.BusinessConstants.BLOG_LOGIN;
+import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
+import static com.yiport.constent.UserBusinessConstants.CAPTCHA_CODES;
 import static com.yiport.constent.UserConstant.ADMIN_ROLE;
 
 @Service
@@ -65,7 +69,7 @@ public class UserLoginServiceImpl implements UserLoginService {
         String userId = loginUser.getUser().getId().toString();
         String jwt = JwtUtil.createJWT(userId);
         //把用户信息存入redis
-        redisCache.setCacheObject("ypblog:login:" + userId, loginUser);
+        redisCache.setCacheObject(BLOG_LOGIN + userId, loginUser);
 
         //把token和userinfo封装 返回
         //把User转换成UserInfoVo
@@ -120,7 +124,7 @@ public class UserLoginServiceImpl implements UserLoginService {
             throw new SystemException(AppHttpCodeEnum.PARAMETER_ERROR, "验证码为1~4位");
         }
         // 1.7、验证码失效
-        String key = "captcha_codes:" + uuid;
+        String key = CAPTCHA_CODES + uuid;
         String text;
         text = redisCache.getCacheObject(key);
         if (StringUtils.isAnyBlank(text))
@@ -146,14 +150,14 @@ public class UserLoginServiceImpl implements UserLoginService {
         String userId = loginUser.getUser().getId().toString();
         String jwt = JwtUtil.createJWT(userId);
         //把用户信息存入redis
-        redisCache.setCacheObject("ypblog:login:" + userId, loginUser);
+        redisCache.setCacheObject(BLOG_LOGIN + userId, loginUser);
         // 将 token存入 redis
-        String tokenKey = "ypblog:token:" + userId;
+        String tokenKey = BLOG_TOKEN + userId;
         redisCache.setCacheObject(tokenKey, jwt, 1, TimeUnit.DAYS);
         // 将管理员权限信息存入 redis
         if (loginUser.getUser().getUserRole().equals(ADMIN_ROLE)) ;
         {
-            String adminKey = "ypblog:admin:" + userId;
+            String adminKey = BLOG_ADMIN + userId;
             redisCache.setCacheObject(adminKey, jwt, 1, TimeUnit.DAYS);
         }
         //把token和userinfo封装 返回
@@ -173,7 +177,7 @@ public class UserLoginServiceImpl implements UserLoginService {
     {
         // 生成 UUID
         String uuid = UUID.randomUUID().toString().replaceAll("-", "");
-        String redisKey = "captcha_codes:" + uuid;
+        String redisKey = CAPTCHA_CODES + uuid;
 
         // 生成验证码
         String text = captchaTextCreator.getText();
@@ -210,7 +214,7 @@ public class UserLoginServiceImpl implements UserLoginService {
         //获取userid
         Long userId = loginUser.getUser().getId();
         //删除redis中的用户信息
-        redisCache.deleteObject("ypblog:login:" + userId);
+        redisCache.deleteObject(BLOG_LOGIN + userId);
         return ResponseResult.okResult();
     }
 }
