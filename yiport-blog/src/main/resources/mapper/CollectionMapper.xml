@@ -6,12 +6,12 @@
 
     <resultMap id="BaseResultMap" type="com.yiport.domain.entity.Collection">
         <id property="id" column="id" jdbcType="BIGINT"/>
-        <result property="article_id" column="article_id" jdbcType="BIGINT"/>
-        <result property="create_by" column="create_by" jdbcType="BIGINT"/>
-        <result property="create_time" column="create_time" jdbcType="TIMESTAMP"/>
-        <result property="update_by" column="update_by" jdbcType="BIGINT"/>
-        <result property="update_time" column="update_time" jdbcType="TIMESTAMP"/>
-        <result property="del_flag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="articleId" column="article_id" jdbcType="BIGINT"/>
+        <result property="createBy" column="create_by" jdbcType="BIGINT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="BIGINT"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
     </resultMap>
 
     <sql id="Base_Column_List">

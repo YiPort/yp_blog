@@ -14,36 +14,38 @@ import java.io.Serializable;
 @TableName(value = "yp_collection")
 @Data
 public class Collection implements Serializable {
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
+
     /**
      * 主键
      */
     private Long id;
+
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
     /**
      * 文章id
      */
-    private Long article_id;
+    private Long articleId;
     /**
      * 创建人的用户id
      */
-    private Long create_by;
+    private Long createBy;
     /**
      * 创建时间
      */
-    private String create_time;
+    private String createTime;
     /**
-     * 更新人
+     * 更新人的用户id
      */
-    private Long update_by;
+    private Long updateBy;
     /**
      * 最后编辑时间
      */
-    private String update_time;
+    private String updateTime;
     /**
      * 删除标志（0代表未删除，1代表已删除）
      */
-    private Integer del_flag;
+    private Integer delFlag;
 
     @Override
     public boolean equals(Object that) {
@@ -58,12 +60,12 @@ public class Collection implements Serializable {
         }
         Collection other = (Collection) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-                && (this.getArticle_id() == null ? other.getArticle_id() == null : this.getArticle_id().equals(other.getArticle_id()))
-                && (this.getCreate_by() == null ? other.getCreate_by() == null : this.getCreate_by().equals(other.getCreate_by()))
-                && (this.getCreate_time() == null ? other.getCreate_time() == null : this.getCreate_time().equals(other.getCreate_time()))
-                && (this.getUpdate_by() == null ? other.getUpdate_by() == null : this.getUpdate_by().equals(other.getUpdate_by()))
-                && (this.getUpdate_time() == null ? other.getUpdate_time() == null : this.getUpdate_time().equals(other.getUpdate_time()))
-                && (this.getDel_flag() == null ? other.getDel_flag() == null : this.getDel_flag().equals(other.getDel_flag()));
+                && (this.getArticleId() == null ? other.getArticleId() == null : this.getArticleId().equals(other.getArticleId()))
+                && (this.getCreateBy() == null ? other.getCreateBy() == null : this.getCreateBy().equals(other.getCreateBy()))
+                && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+                && (this.getUpdateBy() == null ? other.getUpdateBy() == null : this.getUpdateBy().equals(other.getUpdateBy()))
+                && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
+                && (this.getDelFlag() == null ? other.getDelFlag() == null : this.getDelFlag().equals(other.getDelFlag()));
     }
 
     @Override
@@ -71,12 +73,12 @@ public class Collection implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getArticle_id() == null) ? 0 : getArticle_id().hashCode());
-        result = prime * result + ((getCreate_by() == null) ? 0 : getCreate_by().hashCode());
-        result = prime * result + ((getCreate_time() == null) ? 0 : getCreate_time().hashCode());
-        result = prime * result + ((getUpdate_by() == null) ? 0 : getUpdate_by().hashCode());
-        result = prime * result + ((getUpdate_time() == null) ? 0 : getUpdate_time().hashCode());
-        result = prime * result + ((getDel_flag() == null) ? 0 : getDel_flag().hashCode());
+        result = prime * result + ((getArticleId() == null) ? 0 : getArticleId().hashCode());
+        result = prime * result + ((getCreateBy() == null) ? 0 : getCreateBy().hashCode());
+        result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
+        result = prime * result + ((getUpdateBy() == null) ? 0 : getUpdateBy().hashCode());
+        result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
+        result = prime * result + ((getDelFlag() == null) ? 0 : getDelFlag().hashCode());
         return result;
     }
 
@@ -87,12 +89,12 @@ public class Collection implements Serializable {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", article_id=").append(article_id);
-        sb.append(", create_by=").append(create_by);
-        sb.append(", create_time=").append(create_time);
-        sb.append(", update_by=").append(update_by);
-        sb.append(", update_time=").append(update_time);
-        sb.append(", del_flag=").append(del_flag);
+        sb.append(", articleId=").append(articleId);
+        sb.append(", createBy=").append(createBy);
+        sb.append(", createTime=").append(createTime);
+        sb.append(", updateBy=").append(updateBy);
+        sb.append(", updateTime=").append(updateTime);
+        sb.append(", delFlag=").append(delFlag);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();
