@@ -15,4 +15,12 @@ public interface CollectionService extends IService<Collection> {
      */
     ResponseResult addCollection(Long userId, Long articleId);
 
+    /**
+     * 获取收藏文章列表
+     *
+     * @param userId
+     * @return
+     */
+    ResponseResult getCollectList(Long userId);
+
 }

@@ -4,6 +4,7 @@ package com.yiport.controller;
 import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.service.CollectionService;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,4 +33,17 @@ public class CollectionController {
     public ResponseResult addCollection(@PathVariable Long userId, @PathVariable Long articleId) {
         return collectionService.addCollection(userId, articleId);
     }
+
+    /**
+     * 获取收藏文章列表
+     *
+     * @param userId 用户id
+     * @return
+     */
+    @GetMapping("/getCollectList/{userId}")
+    @SystemLog(businessName = "获取收藏文章列表")
+    public ResponseResult getCollectList(@PathVariable Long userId) {
+        return collectionService.getCollectList(userId);
+    }
+
 }

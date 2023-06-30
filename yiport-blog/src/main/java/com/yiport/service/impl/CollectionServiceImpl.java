@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Article;
 import com.yiport.domain.entity.Collection;
+import com.yiport.domain.vo.ArticleListVO;
 import com.yiport.handler.exception.SystemException;
 import com.yiport.mapper.ArticleMapper;
 import com.yiport.mapper.CollectionMapper;
@@ -19,6 +20,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
+import java.util.List;
 
 import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
 import static com.yiport.constants.SystemConstants.RELEASE;
@@ -89,6 +92,42 @@ public class CollectionServiceImpl extends ServiceImpl<CollectionMapper, Collect
         collectionMapper.insert(collection);
 
         return ResponseResult.okResult();
+    }
+
+    /**
+     * 获取收藏文章列表
+     *
+     * @param userId
+     * @return
+     */
+    @Override
+    public ResponseResult getCollectList(Long userId) {
+        // id校验
+        if (userId <= 0) {
+            throw new SystemException(PARAMETER_ERROR);
+        }
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = null;
+        if (requestAttributes != null) {
+            request = requestAttributes.getRequest();
+        }
+        // token校验
+        String token = request.getHeader("Token");
+        if (StringUtils.isAnyBlank(token)) {
+            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
+        }
+        String tokenKey = BLOG_TOKEN + userId;
+        Object cacheObject = redisCache.getCacheObject(tokenKey);
+        if (cacheObject == null) {
+            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
+        }
+        if (!token.equals(String.valueOf(cacheObject))) {
+            throw new SystemException(NEED_LOGIN, "登录过期，请重新登录");
+        }
+
+        List<ArticleListVO> collectList = collectionMapper.getCollectList(userId);
+
+        return ResponseResult.okResult(collectList);
     }
 
 }

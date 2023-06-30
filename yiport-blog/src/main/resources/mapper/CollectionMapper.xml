@@ -21,4 +21,13 @@
         del_flag
     </sql>
 
+    <!--获取收藏文章列表-->
+    <select id="getCollectList" resultType="com.yiport.domain.vo.ArticleListVO">
+        SELECT art.id, art.title, art.summary, art.category_id, art.thumbnail
+        FROM yp_collection col
+                 LEFT JOIN yp_article art
+                           ON col.article_id = art.id
+        WHERE col.create_by = #{userId}
+    </select>
+
 </mapper>
