@@ -80,15 +80,15 @@ public class CollectionServiceImpl extends ServiceImpl<CollectionMapper, Collect
             throw new SystemException(PARAMETER_ERROR, "文章不存在");
         }
         LambdaQueryWrapper<Collection> queryWrapper1 = new LambdaQueryWrapper<>();
-        queryWrapper1.eq(Collection::getArticle_id, articleId);
-        queryWrapper1.eq(Collection::getCreate_by, userId);
+        queryWrapper1.eq(Collection::getArticleId, articleId);
+        queryWrapper1.eq(Collection::getCreateBy, userId);
         if (collectionMapper.selectOne(queryWrapper1) != null) {
             throw new SystemException(PARAMETER_ERROR, "该文章已收藏");
         }
         // 添加收藏
         Collection collection = new Collection();
-        collection.setArticle_id(articleId);
-        collection.setCreate_by(userId);
+        collection.setArticleId(articleId);
+        collection.setCreateBy(userId);
         collectionMapper.insert(collection);
 
         return ResponseResult.okResult();
