@@ -28,7 +28,9 @@ import static com.yiport.constants.SystemConstants.RELEASE;
 import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
 import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
 
-
+/**
+ * 收藏业务层
+ */
 @Service
 public class CollectionServiceImpl extends ServiceImpl<CollectionMapper, Collection>
         implements CollectionService {
@@ -50,28 +52,8 @@ public class CollectionServiceImpl extends ServiceImpl<CollectionMapper, Collect
      */
     @Override
     public ResponseResult addCollection(Long userId, Long articleId) {
-        // id校验
-        if (userId <= 0) {
-            throw new SystemException(PARAMETER_ERROR);
-        }
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = null;
-        if (requestAttributes != null) {
-            request = requestAttributes.getRequest();
-        }
-        // token校验
-        String token = request.getHeader("token");
-        if (StringUtils.isAnyBlank(token)) {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
-        }
-        String tokenKey = BLOG_TOKEN + userId;
-        Object cacheObject = redisCache.getCacheObject(tokenKey);
-        if (cacheObject == null) {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
-        }
-        if (!token.equals(String.valueOf(cacheObject))) {
-            throw new SystemException(NEED_LOGIN, "登录过期，请重新登录");
-        }
+        //校验登录状态
+        checkLogin(userId);
         // 校验文章是否存在
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Article::getStatus, RELEASE);
@@ -102,6 +84,20 @@ public class CollectionServiceImpl extends ServiceImpl<CollectionMapper, Collect
      */
     @Override
     public ResponseResult getCollectList(Long userId) {
+        //校验登录状态
+        checkLogin(userId);
+
+        List<ArticleListVO> collectList = collectionMapper.getCollectList(userId);
+
+        return ResponseResult.okResult(collectList);
+    }
+
+    /**
+     * 校验登录状态
+     *
+     * @param userId
+     */
+    private void checkLogin(Long userId) {
         // id校验
         if (userId <= 0) {
             throw new SystemException(PARAMETER_ERROR);
@@ -124,14 +120,6 @@ public class CollectionServiceImpl extends ServiceImpl<CollectionMapper, Collect
         if (!token.equals(String.valueOf(cacheObject))) {
             throw new SystemException(NEED_LOGIN, "登录过期，请重新登录");
         }
-
-        List<ArticleListVO> collectList = collectionMapper.getCollectList(userId);
-
-        return ResponseResult.okResult(collectList);
     }
-
 }
-
-
-
 
