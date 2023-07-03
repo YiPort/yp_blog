@@ -93,6 +93,25 @@ public class CollectionServiceImpl extends ServiceImpl<CollectionMapper, Collect
     }
 
     /**
+     * 取消收藏文章
+     *
+     * @param userId
+     * @param articleId
+     * @return
+     */
+    @Override
+    public ResponseResult deleteCollection(Long userId, Long articleId) {
+        //校验登录状态
+        checkLogin(userId);
+        //删除收藏文章
+        LambdaQueryWrapper<Collection> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Collection::getCreateBy, userId);
+        queryWrapper.eq(Collection::getArticleId, articleId);
+        collectionMapper.delete(queryWrapper);
+        return ResponseResult.okResult();
+    }
+
+    /**
      * 校验登录状态
      *
      * @param userId

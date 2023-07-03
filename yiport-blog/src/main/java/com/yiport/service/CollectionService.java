@@ -23,4 +23,13 @@ public interface CollectionService extends IService<Collection> {
      */
     ResponseResult getCollectList(Long userId);
 
+    /**
+     * 取消收藏文章
+     *
+     * @param userId
+     * @param articleId
+     * @return
+     */
+    ResponseResult deleteCollection(Long userId, Long articleId);
+
 }
