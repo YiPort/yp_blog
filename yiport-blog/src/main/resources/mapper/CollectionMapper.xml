@@ -28,6 +28,7 @@
                  LEFT JOIN yp_article art
                            ON col.article_id = art.id
         WHERE col.create_by = #{userId}
+          AND col.del_flag = 0
     </select>
 
 </mapper>
