@@ -25,7 +25,7 @@ public class LogAspect {
     }
 
     @Around("pt()")
-    public Object priaLog(ProceedingJoinPoint joinPoint) {
+    public Object priaLog(ProceedingJoinPoint joinPoint) throws Throwable {
 
         Object ret = null;
 
@@ -33,8 +33,6 @@ public class LogAspect {
             handBefore(joinPoint);
             ret = joinPoint.proceed();
             handAfter(ret);
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
         } finally {
             log.info("=======End=======" + System.lineSeparator());
         }
