@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.User;
+import com.yiport.domain.request.UserRegisterRequest;
 import com.yiport.domain.vo.UserVO;
+import com.yiport.service.UserLoginService;
 import com.yiport.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +20,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserLoginService userLoginService;
 
 
     /**
@@ -63,12 +68,18 @@ public class UserController {
     /**
      * 用户注册
      * 不需要token请求头
-     * @param user
+     *
+     * @param userRegisterRequest
      * @return
      */
     @PostMapping("/register")
-    public ResponseResult register(@RequestBody User user) {
-        return userService.register(user);
+    public ResponseResult userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
+        if (userRegisterRequest == null) {
+            return null;
+        }
+
+        return userLoginService.userRegister(userRegisterRequest);
+
     }
 
 

@@ -1,12 +1,17 @@
 package com.yiport.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.LoginUser;
 import com.yiport.domain.entity.User;
 import com.yiport.domain.request.AccountLoginRequest;
+import com.yiport.domain.request.UserRegisterRequest;
 import com.yiport.domain.vo.UserLoginVO;
 import com.yiport.domain.vo.UserInfoVO;
 import com.yiport.handler.exception.SystemException;
+import com.yiport.mapper.UserMapper;
 import com.yiport.service.UserLoginService;
 import com.yiport.utils.BeanCopyUtils;
 import com.yiport.utils.CaptchaTextCreator;
@@ -21,6 +26,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FastByteArrayOutputStream;
 
@@ -40,9 +46,17 @@ import static com.yiport.constants.BusinessConstants.BLOG_LOGIN;
 import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
 import static com.yiport.constent.UserBusinessConstants.CAPTCHA_CODES;
 import static com.yiport.constent.UserConstant.ADMIN_ROLE;
+import static com.yiport.constent.UserConstant.SUCCESS;
+import static com.yiport.enums.AppHttpCodeEnum.NICKNAME_EXIST;
+import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
+import static com.yiport.enums.AppHttpCodeEnum.SYSTEM_ERROR;
+import static com.yiport.enums.AppHttpCodeEnum.USERNAME_EXIST;
 
 @Service
-public class UserLoginServiceImpl implements UserLoginService {
+public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implements UserLoginService {
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -54,7 +68,136 @@ public class UserLoginServiceImpl implements UserLoginService {
     private CaptchaTextCreator captchaTextCreator;
 
     @Autowired
-    private  Producer captchaProducerMath;
+    private Producer captchaProducerMath;
+
+    @Override
+    public ResponseResult register(User user) {
+        // 1.校验
+        String userAccount = user.getUserName();
+        String nickName = user.getNickName();
+        String userPassword = user.getPassword();
+        // 1.1、非空校验（使用 Apache Commons Lang库）
+        if (StringUtils.isAnyEmpty(userAccount, userPassword)) {
+            throw new SystemException(PARAMETER_ERROR, "账号密码不能为空");
+        }
+        // 1.2、账号为4~9位
+        if (userAccount.length() < 4 || userAccount.length() > 9) {
+            throw new SystemException(PARAMETER_ERROR, "账号为4~9位");
+        }
+        // 1.3、密码为8~16位
+        if (userPassword.length() < 8 || userPassword.length() > 16) {
+            throw new SystemException(PARAMETER_ERROR, "密码为8~16位");
+        }
+        // 1.4、账号不能包含特殊字符
+        String validPattern = "[\\s`!@#$%^&*_\\-~()+=|{}':;,\\[\\].<>/\\\\?！￥…（）—【】‘；：”“’。，、？]";
+        Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
+        if (matcher.find()) {
+            throw new SystemException(PARAMETER_ERROR, "账号不能包含特殊字符");
+        }
+        // 1.5、密码不能含有空字符
+        String validPattern1 = "[\\s]";
+        Matcher matcher1 = Pattern.compile(validPattern1).matcher(userPassword);
+        if (matcher1.find()) {
+            throw new SystemException(PARAMETER_ERROR, "密码不能包含空字符");
+        }
+        // 1.6、账号不能重复（将数据库查询校验放到最后）
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userAccount", userAccount);
+        long count = this.count(queryWrapper);
+        if (count > 0) {
+            throw new SystemException(USERNAME_EXIST, "账号已存在");
+        }
+        // 1.7、昵称不能重复（将数据库查询校验放到最后）
+        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(User::getNickName, nickName);
+        int count1 = count(lambdaQueryWrapper);
+        if (count1 > 0) {
+            throw new SystemException(NICKNAME_EXIST, "昵称已存在");
+        }
+
+        // 2.加密
+        String encryptPassword = passwordEncoder.encode(userPassword);
+        user.setPassword(encryptPassword);
+        // 3.插入数据
+        boolean saveResult = this.save(user);
+        if (!saveResult) {
+            throw new SystemException(SYSTEM_ERROR, "系统错误");
+        }
+        return ResponseResult.okResult(SUCCESS);
+    }
+
+    @Override
+    public ResponseResult userRegister(UserRegisterRequest userRegisterRequest) {
+        String userAccount = userRegisterRequest.getUserName();
+        String userPassword = userRegisterRequest.getPassword();
+        String checkPassword = userRegisterRequest.getCheckPassword();
+        String captcha = userRegisterRequest.getCaptcha();
+        String uuid = userRegisterRequest.getUuid();
+        // 1.校验
+        // 1.1、非空校验（使用 Apache Commons Lang库）
+        if (StringUtils.isAnyEmpty(userAccount, userPassword, checkPassword)) {
+            throw new SystemException(PARAMETER_ERROR, "账号密码不能为空");
+        }
+        // 1.2、账号为4~9位
+        if (userAccount.length() < 4 || userAccount.length() > 9) {
+            throw new SystemException(PARAMETER_ERROR, "账号为4~9位");
+        }
+        // 1.3、密码为8~16位
+        if (userPassword.length() < 8 || userPassword.length() > 16) {
+            throw new SystemException(PARAMETER_ERROR, "密码为8~16位");
+        }
+        // 1.4、账号不能包含特殊字符
+        String validPattern = "[\\s`!@#$%^&*_\\-~()+=|{}':;,\\[\\].<>/\\\\?！￥…（）—【】‘；：”“’。，、？]";
+        Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
+        if (matcher.find()) {
+            throw new SystemException(PARAMETER_ERROR, "账号不能包含特殊字符");
+        }
+        // 1.5、密码不能含有空字符
+        String validPattern1 = "[\\s]";
+        Matcher matcher1 = Pattern.compile(validPattern1).matcher(userPassword);
+        if (matcher1.find()) {
+            throw new SystemException(PARAMETER_ERROR, "密码不能包含空字符");
+        }
+        // 1.6、密码和校验密码不相同
+        if (!userPassword.equals(checkPassword)) {
+            throw new SystemException(PARAMETER_ERROR, "密码和校验密码不相同");
+        }
+        // 1.6、验证码为1~4位
+        if (captcha.length() < 1 || captcha.length() > 4) {
+            throw new SystemException(PARAMETER_ERROR, "验证码为1~4位");
+        }
+        // 1.7、验证码失效
+        String key = CAPTCHA_CODES + uuid;
+        String text;
+        text = redisCache.getCacheObject(key);
+        if (StringUtils.isAnyBlank(text)) {
+            throw new SystemException(PARAMETER_ERROR, "验证码失效请重试");
+        }
+        // 1.8、验证码错误
+        String result = text.substring(text.lastIndexOf("@") + 1);
+        if (!result.equals(captcha)) {
+            throw new SystemException(PARAMETER_ERROR, "验证码错误请重试");
+        }
+        // 1.9、账号不能重复（将数据库查询校验放到最后）
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getUserName, userAccount);
+        long count = this.count(queryWrapper);
+        if (count > 0) {
+            throw new SystemException(USERNAME_EXIST, "账号已存在");
+        }
+
+        // 2.加密
+        String encryptPassword = passwordEncoder.encode(userPassword);
+        // 3.插入数据
+        User user = new User();
+        user.setUserName(userAccount);
+        user.setPassword(encryptPassword);
+        boolean saveResult = this.save(user);
+        if (!saveResult) {
+            throw new SystemException(SYSTEM_ERROR, "系统错误");
+        }
+        return ResponseResult.okResult(SUCCESS);
+    }
 
     @Override
     public ResponseResult<UserLoginVO> login(User user) {
@@ -92,36 +235,36 @@ public class UserLoginServiceImpl implements UserLoginService {
         String uuid = userLoginRequest.getUuid();
         // 1.1、非空校验
         if (StringUtils.isAnyEmpty(userAccount, userPassword)) {
-            throw new SystemException(AppHttpCodeEnum.PARAMETER_ERROR, "账号密码不能为空");
+            throw new SystemException(PARAMETER_ERROR, "账号密码不能为空");
         }
         // 1.2、账号为4~9位
         if (userAccount.length() < 4 || userAccount.length() > 9)
         {
-            throw new SystemException(AppHttpCodeEnum.PARAMETER_ERROR, "账号为4~9位");
+            throw new SystemException(PARAMETER_ERROR, "账号为4~9位");
         }
         // 1.3、密码为8~16位
         if (userPassword.length() < 8 || userPassword.length() > 16)
         {
-            throw new SystemException(AppHttpCodeEnum.PARAMETER_ERROR, "密码为8~16位");
+            throw new SystemException(PARAMETER_ERROR, "密码为8~16位");
         }
         // 1.4、账号不能包含特殊字符
         String validPattern = "[\\s`!@#$%^&*_\\-~()+=|{}':;,\\[\\].<>/\\\\?！￥…（）—【】‘；：”“’。，、？]";
         Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
         if (matcher.find())
         {
-            throw new SystemException(AppHttpCodeEnum.PARAMETER_ERROR, "账号不能包含特殊字符");
+            throw new SystemException(PARAMETER_ERROR, "账号不能包含特殊字符");
         }
         // 1.5、密码不能含有空字符
         String validPattern1 = "[\\s]";
         Matcher matcher1 = Pattern.compile(validPattern1).matcher(userPassword);
         if (matcher1.find())
         {
-            throw new SystemException(AppHttpCodeEnum.PARAMETER_ERROR, "密码不能包含空字符");
+            throw new SystemException(PARAMETER_ERROR, "密码不能包含空字符");
         }
         // 1.6、验证码为1~4位
         if (captcha.length() < 1 || captcha.length() > 4)
         {
-            throw new SystemException(AppHttpCodeEnum.PARAMETER_ERROR, "验证码为1~4位");
+            throw new SystemException(PARAMETER_ERROR, "验证码为1~4位");
         }
         // 1.7、验证码失效
         String key = CAPTCHA_CODES + uuid;
@@ -129,13 +272,13 @@ public class UserLoginServiceImpl implements UserLoginService {
         text = redisCache.getCacheObject(key);
         if (StringUtils.isAnyBlank(text))
         {
-            throw new SystemException(AppHttpCodeEnum.PARAMETER_ERROR, "验证码失效请重试");
+            throw new SystemException(PARAMETER_ERROR, "验证码失效请重试");
         }
 
         String result = text.substring(text.lastIndexOf("@") + 1);
         if (!result.equals(captcha))
         {
-            throw new SystemException(AppHttpCodeEnum.PARAMETER_ERROR, "验证码错误请重试");
+            throw new SystemException(PARAMETER_ERROR, "验证码错误请重试");
         }
 
         // 2、记录用户的登录状态
@@ -217,4 +360,5 @@ public class UserLoginServiceImpl implements UserLoginService {
         redisCache.deleteObject(BLOG_LOGIN + userId);
         return ResponseResult.okResult();
     }
+
 }

@@ -21,8 +21,6 @@ public interface UserService extends IService<User> {
 
     ResponseResult updateUserInfo(User user);
 
-    ResponseResult<AppHttpCodeEnum> register(User user);
-
 
     /**
      * 获取用户登录态
