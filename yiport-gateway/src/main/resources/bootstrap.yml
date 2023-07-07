@@ -20,7 +20,8 @@ spring:
             refresh: true
           - data-id: default-mysql.yaml
             refresh: true
-
+          - data-id: default-mybatis-plus.yaml
+            refresh: true
       discovery:
         namespace: e1d5a1dc-9c21-45a0-9b22-70f501f3d59f
         cluster-name: CN
