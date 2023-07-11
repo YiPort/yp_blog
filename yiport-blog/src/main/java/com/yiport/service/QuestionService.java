@@ -10,6 +10,7 @@ import com.yiport.domain.vo.QuestionVO;
  *
  */
 public interface QuestionService extends IService<Question> {
+
     /**
      * 提交文章问题
      *
@@ -17,4 +18,22 @@ public interface QuestionService extends IService<Question> {
      * @return
      */
     ResponseResult postQuestion(QuestionVO questionVO);
+
+    /**
+     * 获取文章问题列表
+     *
+     * @param userId
+     * @return
+     */
+    ResponseResult getQuestionList(Long userId);
+
+    /**
+     * 删除文章问题
+     *
+     * @param userId
+     * @param id
+     * @return
+     */
+    ResponseResult deleteQuestion(Long userId, Long id);
+
 }
