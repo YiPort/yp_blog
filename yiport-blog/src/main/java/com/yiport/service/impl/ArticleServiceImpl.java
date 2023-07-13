@@ -288,7 +288,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         }
 
-        return ResponseResult.okResult(200, "保存成功！");
+        return ResponseResult.okResult(saveArticle.getId());
     }
 
 
