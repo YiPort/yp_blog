@@ -17,6 +17,12 @@ public class UserInfoVO {
     private String nickName;
 
     /**
+     * 账号
+     */
+    private String userName;
+
+
+    /**
      * 头像
      */
     private String avatar;
@@ -30,6 +36,16 @@ public class UserInfoVO {
      * 邮箱
      */
     private String email;
+
+    /**
+     * 用户状态 0-正常
+     */
+    private Integer status;
+
+    /**
+     * 创建时间
+     */
+    private String createTime;
 
     /**
      * 用户角色 0-普通用户 1-管理员

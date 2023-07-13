@@ -6,22 +6,20 @@ import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.LoginUser;
 import com.yiport.domain.entity.User;
 import com.yiport.domain.vo.UserVO;
-import com.yiport.enums.AppHttpCodeEnum;
 import com.yiport.domain.vo.UserInfoVO;
 import com.yiport.handler.exception.SystemException;
 import com.yiport.mapper.UserMapper;
 import com.yiport.service.UserService;
 import com.yiport.utils.BeanCopyUtils;
 import com.yiport.utils.SecurityUtils;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
@@ -49,6 +47,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public ResponseResult updateUserInfo(User user) {
+        // 获取时间戳,设置创更新时间
+        String updateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        user.setUpdateTime(updateTime);
         updateById(user);
         return ResponseResult.okResult();
     }
