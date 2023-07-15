@@ -300,28 +300,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Override
     public ResponseResult getDraftList(Long id) {
-        // id校验
-        if (id <= 0) {
-            throw new SystemException(PARAMETER_ERROR);
-        }
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = null;
-        if (requestAttributes != null) {
-            request = requestAttributes.getRequest();
-        }
-        // token校验
-        String token = request.getHeader("Token");
-        if (StringUtils.isAnyBlank(token)) {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
-        }
-        String tokenKey = BLOG_TOKEN + id;
-        Object cacheObject = redisCache.getCacheObject(tokenKey);
-        if (cacheObject == null) {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
-        }
-        if (!token.equals(String.valueOf(cacheObject))) {
-            throw new SystemException(NEED_LOGIN, "登录过期，请重新登录");
-        }
+        // 校验登录状态
+        checkLogin(id);
         // 获取草稿
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Article::getStatus, NOT_RELEASE);
@@ -341,28 +321,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Override
     public ResponseResult getEditHistory(Long id) {
-        // id校验
-        if (id <= 0) {
-            throw new SystemException(PARAMETER_ERROR);
-        }
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = null;
-        if (requestAttributes != null) {
-            request = requestAttributes.getRequest();
-        }
-        // token校验
-        String token = request.getHeader("token");
-        if (StringUtils.isAnyBlank(token)) {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
-        }
-        String tokenKey = BLOG_TOKEN + id;
-        Object cacheObject = redisCache.getCacheObject(tokenKey);
-        if (cacheObject == null) {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
-        }
-        if (!token.equals(String.valueOf(cacheObject))) {
-            throw new SystemException(NEED_LOGIN, "登录过期，请重新登录");
-        }
+        // 校验登录状态
+        checkLogin(id);
         // 获取编辑记录
         String editKey = ARTICLE_EDITLIST + id;
         List<Object> cacheList = Arrays.asList(redisCache.getCacheMap(editKey).values().toArray());
@@ -393,28 +353,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Override
     public ResponseResult deleteDraft(Long id, Long articleId) {
-        // id校验
-        if (id <= 0) {
-            throw new SystemException(PARAMETER_ERROR);
-        }
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = null;
-        if (requestAttributes != null) {
-            request = requestAttributes.getRequest();
-        }
-        // token校验
-        String token = request.getHeader("Token");
-        if (StringUtils.isAnyBlank(token)) {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
-        }
-        String tokenKey = BLOG_TOKEN + id;
-        Object cacheObject = redisCache.getCacheObject(tokenKey);
-        if (cacheObject == null) {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
-        }
-        if (!token.equals(String.valueOf(cacheObject))) {
-            throw new SystemException(NEED_LOGIN, "登录过期，请重新登录");
-        }
+        // 校验登录状态
+        checkLogin(id);
         // 获取标题
         String title = getById(articleId).getTitle();
         // 删除草稿
@@ -433,6 +373,31 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         editHistoryMap.put(editHistory.getId().toString(), editHistoryVO);
         redisCache.setCacheMap(editKey, editHistoryMap);
         return ResponseResult.okResult();
+    }
+
+    private void checkLogin(Long userId) {
+        // id校验
+        if (userId <= 0) {
+            throw new SystemException(PARAMETER_ERROR);
+        }
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = null;
+        if (requestAttributes != null) {
+            request = requestAttributes.getRequest();
+        }
+        // token校验
+        String token = request.getHeader("Token");
+        if (StringUtils.isAnyBlank(token)) {
+            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
+        }
+        String tokenKey = BLOG_TOKEN + userId;
+        Object cacheObject = redisCache.getCacheObject(tokenKey);
+        if (cacheObject == null) {
+            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
+        }
+        if (!token.equals(String.valueOf(cacheObject))) {
+            throw new SystemException(NEED_LOGIN, "登录过期，请重新登录");
+        }
     }
 
 }
