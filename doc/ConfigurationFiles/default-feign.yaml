@@ -1,0 +1,22 @@
+feign:
+    hystrix:
+        enabled: true
+    client:
+        config:
+            userservice: # 针对某个微服务的配置
+                loggerLevel: FULL #  日志级别 记录所有请求和响应的明细，包括头信息、请求体、元数据。
+            blogservice:
+                loggerLevel: HEADERS  #在BASIC的基础上，额外记录了请求和响应的头信息
+            default: # 这里用default就是全局配置，如果是写服务名称，则是针对某个微服务的配置
+                loggerLevel: BASIC # 日志级别，BASIC就是基本的请求和响应信息
+    httpclient:
+        enabled: true # 开启feign对HttpClient的支持
+        max-connections: 200 # 最大的连接数
+        max-connections-per-route: 50 # 每个路径的最大连接数
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          strategy: SEMAPHORE

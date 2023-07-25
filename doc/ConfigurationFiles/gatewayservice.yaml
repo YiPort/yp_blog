@@ -1,0 +1,52 @@
+server:
+  port: 10086
+
+spring:
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Vary Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
+      discovery:
+        locator:
+          enabled: true # gateway可以通过开启以下配置来打开根据服务的serviceId来匹配路由,默认是大写
+      globalcors: # 全局的跨域处理
+        add-to-simple-url-handler-mapping: true # 解决options请求被拦截问题
+        corsConfigurations:
+          '[/**]':
+            # allowedOrigins: # 允许哪些网站的跨域请求
+            #   - "127.0.0.1:8080"
+            allowedOriginPatterns: # 允许哪些网站的跨域请求
+              - "*"
+            allowedMethods: # 允许的跨域ajax的请求方式
+              - "GET"
+              - "POST"
+              - "DELETE"
+              - "PUT"
+              - "OPTIONS"
+            allowedHeaders: "*" # 允许在请求中携带的头信息
+            allowCredentials: true # 是否允许携带cookie
+            maxAge: 360000 # 这次跨域检测的有效期
+      # httpserver:
+      #   wiretap: true
+
+      routes:
+        - id: userservice
+          uri: lb://userservice
+          predicates:
+            - Path=/user/**,
+          filters: # 过滤器
+            # - AddRequestHeader=Ye,Ye is freaking awesome!
+            - StripPrefix=0
+        - id: blogservice
+          uri: lb://blogservice
+          predicates:
+            - Path=/blog/**,
+          filters: # 过滤器
+            - AddRequestHeader=Ye,Ye is freaking awesome!
+            - StripPrefix=0
+
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    #日志级别  OFF > FATAL > ERROR > WARN > INFO > DEBUG > TRACE > ALL
