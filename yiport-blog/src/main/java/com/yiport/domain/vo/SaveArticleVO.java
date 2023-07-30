@@ -64,4 +64,10 @@ public class SaveArticleVO implements Serializable {
      * 创建人的用户id
      */
     private Long createBy;
+
+    /**
+     * 访问量
+     */
+    private Long viewCount;
+
 }

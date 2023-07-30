@@ -30,13 +30,12 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -50,7 +49,7 @@ import static com.yiport.constants.SystemConstants.NOT_RELEASE;
 import static com.yiport.constants.SystemConstants.RELEASE;
 import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
 import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
-import static com.yiport.enums.AppHttpCodeEnum.SYSTEM_ERROR;
+
 
 @Service
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
@@ -263,32 +262,23 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         String editKey = ARTICLE_EDITLIST + saveArticle.getCreateBy();
         // 将文章浏览量同步到 redis
-        if (StringUtils.isNotBlank(article.getStatus()) && article.getStatus().equals(RELEASE)) {
-            Map<String, Integer> viewCountMap = new HashMap<>();
-            viewCountMap.put(saveArticle.getId().toString(), 0);
-            //存储到redis中(hash类型)
-            redisCache.setCacheMap(ARTICLE_VIEWCOUNT, viewCountMap);
+        if (article.getStatus().equals(RELEASE)) {   //已发布文章
+            String articleKey = "article:" + saveArticle.getId();
+            long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
+            redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
             // 将事件 push入消息列表
-            EditHistory editHistory = new EditHistory(saveArticle.getCreateBy(), "发布了文章：" + saveArticle.getTitle(), createTime, "#0bbd87");
-            EditHistoryVO editHistoryVO = BeanCopyUtils.copyBean(editHistory, EditHistoryVO.class);
+            EditHistory editHistory = new EditHistory(Long.parseLong(userId), "发布了文章：" + saveArticle.getTitle(), createTime, "#0bbd87");
             editHistoryService.saveOrUpdate(editHistory);
-            Map<String, EditHistoryVO> editHistoryMap = new HashMap();
-            editHistoryMap.put(editHistory.getId().toString(), editHistoryVO);
-            redisCache.setCacheMap(editKey, editHistoryMap);
-
-
+            redisCache.setCacheList(editKey, Arrays.asList(editHistory));
+            return ResponseResult.okResult(saveArticle.getId());
         } else {
-            // 将事件 push入消息列表
-            EditHistory editHistory = new EditHistory(saveArticle.getCreateBy(), "编辑了文章：" + saveArticle.getTitle(), createTime, "#e6a23c");
-            EditHistoryVO editHistoryVO = BeanCopyUtils.copyBean(editHistory, EditHistoryVO.class);
+            // 将事件 push入消息队列
+            EditHistory editHistory = new EditHistory(Long.parseLong(userId), "编辑了文章：" + saveArticle.getTitle(), createTime, "#e6a23c");
             editHistoryService.saveOrUpdate(editHistory);
-            Map<String, EditHistoryVO> editHistoryMap = new HashMap();
-            editHistoryMap.put(editHistory.getId().toString(), editHistoryVO);
-            redisCache.setCacheMap(editKey, editHistoryMap);
-
+            redisCache.setCacheList(editKey, Arrays.asList(editHistory));
         }
 
-        return ResponseResult.okResult(saveArticle.getId());
+        return ResponseResult.okResult(200, "保存成功！");
     }
 
 
@@ -325,20 +315,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         checkLogin(id);
         // 获取编辑记录
         String editKey = ARTICLE_EDITLIST + id;
-        List<Object> cacheList = Arrays.asList(redisCache.getCacheMap(editKey).values().toArray());
+        List<Object> cacheList = redisCache.getCacheList(editKey);
         if (cacheList.isEmpty()) {
             LambdaQueryWrapper<EditHistory> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(EditHistory::getUserId, id);
             List<EditHistory> editHistories = editHistoryService.list(wrapper);
-
             List<EditHistoryVO> editHistoryVOS = BeanCopyUtils.copyBeanList(editHistories, EditHistoryVO.class);
-
-            Map<String, EditHistoryVO> editHistoryMap = editHistories.stream()
-                    .collect(Collectors.toMap(editHistory -> editHistory.getId().toString(), editHistory -> BeanCopyUtils.copyBean(editHistory, EditHistoryVO.class)));
 
             cacheList = new ArrayList<>(editHistoryVOS);
             if (!cacheList.isEmpty()) {
-                redisCache.setCacheMap(editKey, editHistoryMap);
+                redisCache.setCacheList(editKey, editHistoryVOS);
             }
         }
         return ResponseResult.okResult(cacheList);
@@ -368,10 +354,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 将事件 push入消息列表
         EditHistory editHistory = new EditHistory(id, "删除了文章：" + title, createTime, "#F56C6C");
         EditHistoryVO editHistoryVO = BeanCopyUtils.copyBean(editHistory, EditHistoryVO.class);
-        Map<String, EditHistoryVO> editHistoryMap = new HashMap();
         editHistoryService.saveOrUpdate(editHistory);
-        editHistoryMap.put(editHistory.getId().toString(), editHistoryVO);
-        redisCache.setCacheMap(editKey, editHistoryMap);
+        redisCache.setCacheList(editKey, Arrays.asList(editHistoryVO));
         return ResponseResult.okResult();
     }
 

@@ -73,6 +73,14 @@ public class EditHistory {
      */
     private Integer delFlag;
 
+    public EditHistory(String content, String timestamp, String color) {
+
+        this.content = content;
+        this.timestamp = timestamp;
+        this.color = color;
+
+        this.createTime = timestamp;
+    }
 
     public EditHistory(Long userId, String content, String timestamp, String color) {
         this.userId = userId;
