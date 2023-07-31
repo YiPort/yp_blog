@@ -37,7 +37,6 @@ spring:
     multipart:
       max-file-size: 2MB
       max-request-size: 5MB
-
 ```
 
 </details>
@@ -95,7 +94,6 @@ spring:
             - AddRequestHeader=Ye,Ye is freaking awesome!
             - StripPrefix=0
 
-
 logging:
   level:
     org.springframework.cloud.gateway: INFO
@@ -118,7 +116,42 @@ spring:
     username: "root"
     password: "000000"
     driver-class-name: com.mysql.cj.jdbc.Driver
-
+    type: com.alibaba.druid.pool.DruidDataSource
+    # Druid连接池配置
+    druid:
+      initial-size: 5 # 初始化时建立物理连接的个数
+      max-active: 20  # 最大连接池数量
+      min-idle: 5     # 最小连接池数量
+      maxWait: 2000   # 获取连接时最大等待时间，单位毫秒
+      time-between-eviction-runs-millis: 60000 #配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      min-evictable-idle-time-millis: 300000 #连接保持空闲而不被驱逐的最小时间
+      validation-query: select 1 #用来检测连接是否有效的sql 必须是一个查询语句：mysql中为 select 'x' oracle中为 select 1 from dual
+      test-while-idle: true #建议配置为true，不影响性能，并且保证安全性。申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效。
+      test-on-borrow: false #申请连接时会执行validationQuery检测连接是否有效,开启会降低性能,默认为true
+      test-on-return: false #归还连接时会执行validationQuery检测连接是否有效,开启会降低性能,默认为true
+      pool-prepared-statements: true #是否缓存preparedStatement,mysql5.5+建议开启
+      max-pool-prepared-statement-per-connection-size: 100 #要启用PSCache，必须配置大于0，当大于0时，poolPreparedStatements自动触发修改为true。
+      filters: stat,wall #配置监控统计拦截的filters，去掉后监控界面sql无法统计
+      filter:
+        # 开启druidDataSource状态监控
+        stat:
+          enabled: true
+          db-type: mysql
+          # 开启慢SQL监控，当SQL执行时间超过两秒认为是慢SQL记录到日志中
+          log-slow-sql: true
+          slow-sql-millis: 2000
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500 #通过connectProperties属性来打开mergeSql功能；慢SQL记录
+      use-global-data-source-stat: true #合并多个DruidDataSource的监控数据
+      # StatViewServlet配置
+      stat-view-servlet.enabled: true #是否启用StatViewServlet（监控页面）默认值为false
+      stat-view-servlet.login-username: admin #设置访问druid监控页的账号,默认没有
+      stat-view-servlet.login-password: passwd #设置访问druid监控页的密码,默认没有
+      web-stat-filter:
+        enabled: true   # 开启statFilter
+        allow: 127.0.0.1
+        url-pattern: /*                 # 过滤所有url
+        exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*" # 排除一些不必要的url
+        session-stat-enable: true   #开启session统计功能
 ```
 
 </details>
