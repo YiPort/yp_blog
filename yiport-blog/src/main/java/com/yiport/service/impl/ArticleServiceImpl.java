@@ -45,6 +45,7 @@ import static com.yiport.constants.BlogBusinessConstants.ARTICLE_VIEWCOUNT;
 import static com.yiport.constants.BusinessConstants.BLOG_ADMIN;
 import static com.yiport.constants.BusinessConstants.BLOG_LOGIN;
 import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
+import static com.yiport.constants.SystemConstants.ARTICLE_STATUS_NORMAL;
 import static com.yiport.constants.SystemConstants.NOT_RELEASE;
 import static com.yiport.constants.SystemConstants.RELEASE;
 import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
@@ -170,7 +171,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public ResponseResult getArticleDetail(Long id) {
         //根据id查询文章
-        Article article = getById(id);
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Article::getId, id).eq(Article::getStatus, ARTICLE_STATUS_NORMAL);
+        Article article = articleMapper.selectOne(queryWrapper);
+        if (Objects.isNull(article)) {
+            throw new SystemException(PARAMETER_ERROR, "没有找到文章");
+        }
         //从redis中获取viewCount
         Integer viewCount = redisCache.getCacheMapValue(ARTICLE_VIEWCOUNT, id.toString());
         article.setViewCount(viewCount.longValue());
