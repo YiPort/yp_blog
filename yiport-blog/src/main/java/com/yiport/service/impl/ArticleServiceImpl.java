@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -201,8 +202,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public ResponseResult updateViewCount(Long id) {
         //更新redis中对应 id的浏览量
-        redisCache.incrementCacheMapValue(ARTICLE_VIEWCOUNT, id.toString(), 1);
-        return ResponseResult.okResult();
+        Long increment = redisCache.incrementCacheMapValue(ARTICLE_VIEWCOUNT, id.toString(), 1);
+        // 若 increment的结果<=1，则传入的文章 id不存在
+        Optional<Long> increment1 = Optional.ofNullable(increment);
+        if (increment1.isPresent() && increment <= 1) {
+            redisCache.delCacheMapValue(ARTICLE_VIEWCOUNT, id.toString());
+            throw new SystemException(PARAMETER_ERROR);
+        }
+        return ResponseResult.okResult(increment);
     }
 
     /**

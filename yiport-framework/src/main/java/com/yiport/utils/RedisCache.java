@@ -238,12 +238,13 @@ public class RedisCache
 
     /**
      * 往Hash中增加Hash值
+     *
      * @param key  Redis键
      * @param hKey Hash键
-     * @param v Hash值
+     * @param v    Hash值
      */
-    public void incrementCacheMapValue(String key,String hKey,long v){
-        redisTemplate.boundHashOps(key).increment(hKey, v);
+    public Long incrementCacheMapValue(String key, String hKey, long v) {
+        return redisTemplate.boundHashOps(key).increment(hKey, v);
     }
 
 }
