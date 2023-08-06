@@ -249,12 +249,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (redisCache.getCacheObject(adminKey) == null) {
             article.setStatus(NOT_RELEASE);
         }
-        // isComment值转换
-        if (article.getIsComment().equals("true")) {
-            article.setIsComment("1");
-        } else if (article.getIsComment().equals("false")) {
-            article.setIsComment("0");
-        }
+//        // isComment值转换
+//        if (article.getIsComment().equals("true")) {
+//            article.setIsComment("1");
+//        } else if (article.getIsComment().equals("false")) {
+//            article.setIsComment("0");
+//        }
 
 
         Article saveArticle = BeanCopyUtils.copyBean(article, Article.class);
@@ -266,32 +266,49 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 格式化创建时间
         String createTime = currentTime.format(formatter);
         saveArticle.setCreateTime(createTime);
+        String editKey = ARTICLE_EDITLIST + saveArticle.getCreateBy();
         if (article.getId() == null) {
             // 保存文章
             articleMapper.insert(saveArticle);
+            // 将文章浏览量同步到 redis
+            if (article.getStatus().equals(RELEASE)) {   //已发布文章
+                String articleKey = "article:" + saveArticle.getId();
+                long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
+                redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
+                // 将事件 push入消息列表
+                EditHistory editHistory = new EditHistory(Long.parseLong(userId), "发布了文章：" + saveArticle.getTitle(), createTime, "#0bbd87");
+                editHistoryService.saveOrUpdate(editHistory);
+                redisCache.setCacheList(editKey, Arrays.asList(editHistory));
+                return ResponseResult.okResult(saveArticle.getId(), "发布成功");
+            } else {  //草稿
+                // 将事件 push入消息队列
+                EditHistory editHistory = new EditHistory(Long.parseLong(userId), "编辑了文章：" + saveArticle.getTitle(), createTime, "#e6a23c");
+                editHistoryService.saveOrUpdate(editHistory);
+                redisCache.setCacheList(editKey, Arrays.asList(editHistory));
+                return ResponseResult.okResult(200, "保存成功！");
+            }
         } else {
             // 更新文章
             articleMapper.updateById(saveArticle);
+            if (saveArticle.getStatus().equals(RELEASE))  //编辑已发布文章
+            {
+                // 将文章浏览量同步到 redis
+                String articleKey = "article:" + saveArticle.getId();
+                // viewCount为null时为新发布的文章或草稿，不为空时为已发布文章
+                long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
+                redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
+                // 将事件 push入消息队列
+                EditHistory editHistory = new EditHistory(Long.parseLong(userId), "编辑了文章：" + saveArticle.getTitle(), createTime, "#409eff");
+                redisCache.setCacheList(editKey, Arrays.asList(editHistory));
+                return ResponseResult.okResult(saveArticle.getId(), "编辑成功");
+            } else    //编辑草稿
+            {
+                // 将事件 push入消息队列
+                EditHistory editHistory = new EditHistory(Long.parseLong(userId), "编辑了草稿：" + saveArticle.getTitle(), createTime, "#e6a23c");
+                redisCache.setCacheList(editKey, Arrays.asList(editHistory));
+                return ResponseResult.okResult(200, "草稿已保存");
+            }
         }
-        String editKey = ARTICLE_EDITLIST + saveArticle.getCreateBy();
-        // 将文章浏览量同步到 redis
-        if (article.getStatus().equals(RELEASE)) {   //已发布文章
-            String articleKey = "article:" + saveArticle.getId();
-            long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
-            redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
-            // 将事件 push入消息列表
-            EditHistory editHistory = new EditHistory(Long.parseLong(userId), "发布了文章：" + saveArticle.getTitle(), createTime, "#0bbd87");
-            editHistoryService.saveOrUpdate(editHistory);
-            redisCache.setCacheList(editKey, Arrays.asList(editHistory));
-            return ResponseResult.okResult(saveArticle.getId());
-        } else {
-            // 将事件 push入消息队列
-            EditHistory editHistory = new EditHistory(Long.parseLong(userId), "编辑了文章：" + saveArticle.getTitle(), createTime, "#e6a23c");
-            editHistoryService.saveOrUpdate(editHistory);
-            redisCache.setCacheList(editKey, Arrays.asList(editHistory));
-        }
-
-        return ResponseResult.okResult(200, "保存成功！");
     }
 
 
