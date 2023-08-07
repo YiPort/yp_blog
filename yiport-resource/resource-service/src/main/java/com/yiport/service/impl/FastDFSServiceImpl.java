@@ -3,7 +3,8 @@ package com.yiport.service.impl;
 import com.yiport.domain.ResponseResult;
 import com.yiport.enums.AppHttpCodeEnum;
 import com.yiport.handler.exception.SystemException;
-import com.yiport.service.UploadService;
+import com.yiport.service.FastDFSService;
+import com.yiport.service.ResourceService;
 import com.github.tobato.fastdfs.domain.fdfs.StorePath;
 import com.github.tobato.fastdfs.service.FastFileStorageClient;
 import org.apache.commons.lang3.StringUtils;
@@ -17,14 +18,15 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-@Service
-public class FastDFSUploadService implements UploadService {
+@Service("fastDFSService")
+public class FastDFSServiceImpl implements FastDFSService {
 
     private static final List<String> CONTENT_TYPES = Arrays.asList("image/png", "image/jpg");
 
     @Autowired
     private FastFileStorageClient fastFileStorageClient;
 
+    String url = "http://images.yiport.top/";
 
     /**
      * 头像上传
@@ -65,7 +67,7 @@ public class FastDFSUploadService implements UploadService {
 
 
             //4.返回url路径
-            return "http://images.yiport.top/" + storePath.getFullPath();
+            return url + storePath.getFullPath();
         } catch (IOException e) {
             e.printStackTrace();
             //ignore
