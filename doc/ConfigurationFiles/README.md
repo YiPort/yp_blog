@@ -7,7 +7,7 @@
 <details>
 <summary>主体服务-展开查看详情</summary>
 
-[跳转进入文件](./blogservice.yaml )
+[跳转进入文件](./blog-service.yaml )
 
 ```yaml
 server:
@@ -24,7 +24,7 @@ spring:
 <details>
 <summary>用户服务-展开查看详情</summary>
 
-[跳转进入文件](./userservice.yaml )
+[跳转进入文件](./user-service.yaml )
 
 ```yaml
 server:
@@ -44,7 +44,7 @@ spring:
 <details>
 <summary>网关服务-展开查看详情</summary>
 
-[跳转进入文件](./gatewayservice.yaml )
+[跳转进入文件](./gateway-service.yaml )
 
 ```yaml
 server:
@@ -79,15 +79,15 @@ spring:
       #   wiretap: true
 
       routes:
-        - id: userservice
-          uri: lb://userservice
+        - id: user-service
+          uri: lb://user-service
           predicates:
             - Path=/user/**,
           filters: # 过滤器
             # - AddRequestHeader=Ye,Ye is freaking awesome!
             - StripPrefix=0
-        - id: blogservice
-          uri: lb://blogservice
+        - id: blog-service
+          uri: lb://blog-service
           predicates:
             - Path=/blog/**,
           filters: # 过滤器

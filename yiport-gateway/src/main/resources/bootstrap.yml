@@ -3,7 +3,7 @@ spring:
     charset: UTF-8
     location: classpath:banner.txt
   application:
-    name: gatewayservice
+    name: gateway-service
   main:
     web-application-type: reactive
   cloud:
