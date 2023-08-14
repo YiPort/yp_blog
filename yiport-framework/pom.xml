@@ -113,7 +113,12 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-loadbalancer</artifactId>
         </dependency>
-
+        <!-- ExpiringMap -->
+        <dependency>
+            <groupId>net.jodah</groupId>
+            <artifactId>expiringmap</artifactId>
+            <version>${expiringmap.version}</version>
+        </dependency>
         <!--lombk-->
         <dependency>
             <groupId>org.projectlombok</groupId>

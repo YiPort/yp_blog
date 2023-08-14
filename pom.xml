@@ -39,6 +39,7 @@
         <minio.version>8.3.8</minio.version>
         <okhttp.version>4.8.1</okhttp.version>
         <progressbar.version>0.9.2</progressbar.version>
+        <expiringmap.version>0.5.8</expiringmap.version>
     </properties>
     <dependencyManagement>
 
