@@ -59,6 +59,10 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
         if (questionDescription.length() > 150) {
             throw new SystemException(PARAMETER_ERROR, "问题描述超过指定长度");
         }
+        if (questionDescription.length() == 0)
+        {
+            throw new SystemException(PARAMETER_ERROR, "问题描述不能为空");
+        }
         // 校验文章是否存在
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Article::getStatus, RELEASE);
