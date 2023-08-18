@@ -1,5 +1,6 @@
 package com.yiport.controller;
 
+import com.yiport.annotation.LimitRequest;
 import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.vo.SaveArticleVO;
@@ -70,6 +71,7 @@ public class ArticleController {
      */
     @PutMapping("/updateViewCount/{id}")
     @SystemLog(businessName = "更新文章浏览量")
+    @LimitRequest(time = 20*1000)
     public ResponseResult updateViewCount(@PathVariable("id") Long id) {
         return articleService.updateViewCount(id);
     }

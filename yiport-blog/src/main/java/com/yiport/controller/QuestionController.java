@@ -1,6 +1,7 @@
 package com.yiport.controller;
 
 
+import com.yiport.annotation.LimitRequest;
 import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.vo.QuestionVO;
@@ -28,6 +29,7 @@ public class QuestionController {
      */
     @PostMapping("/postQuestion")
     @SystemLog(businessName = "提交文章问题")
+    @LimitRequest(time = 2*60*1000, description = "两分钟后再提交")
     public ResponseResult postQuestion(@RequestBody QuestionVO questionVO) {
         return questionService.postQuestion(questionVO);
     }
