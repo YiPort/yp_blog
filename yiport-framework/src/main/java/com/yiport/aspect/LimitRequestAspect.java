@@ -15,6 +15,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -39,7 +40,7 @@ public class LimitRequestAspect {
         // 获得request对象
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;
-        HttpServletRequest request = sra.getRequest();
+        HttpServletRequest request = Objects.requireNonNull(sra).getRequest();
 
         // 获取真实IP
         String ip = request.getHeader("X-Forwarded-For") == null ? request.getRemoteHost() : request.getHeader("X-Forwarded-For");
@@ -52,9 +53,9 @@ public class LimitRequestAspect {
         if (uCount >= limitRequest.count()) { // 超过次数，不执行目标方法
             return ResponseResult.okResult(limitRequest.description());
         } else if (uCount == 0) { // 第一次请求时，设置有效时间
-            uc.put(request.getRemoteAddr(), uCount + 1, ExpirationPolicy.CREATED, limitRequest.time(), TimeUnit.MILLISECONDS);
+            uc.put(ip, uCount + 1, ExpirationPolicy.CREATED, limitRequest.time(), TimeUnit.MILLISECONDS);
         } else { // 未超过次数， 记录加一
-            uc.put(request.getRemoteAddr(), uCount + 1);
+            uc.put(ip, uCount + 1);
         }
         book.put(request.getRequestURI(), uc);
 
