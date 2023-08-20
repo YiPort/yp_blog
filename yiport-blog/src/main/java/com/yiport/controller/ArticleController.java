@@ -128,4 +128,30 @@ public class ArticleController {
         return articleService.deleteDraft(id, articleId);
     }
 
+
+    /**
+     * 获取我发布的文章总数
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/getMyArticleTotal/{id}")
+    @SystemLog(businessName = "获取我发布的文章总数")
+    public ResponseResult getMyArticleTotal(@PathVariable Long id)
+    {
+        return articleService.getMyArticleTotal(id);
+    }
+
+    /**
+     * 获取我发布的文章总浏览量
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/getTotalView/{id}")
+    @SystemLog(businessName = "获取我发布的文章总浏览量")
+    public ResponseResult getTotalView(@PathVariable Long id)
+    {
+        return articleService.getTotalView(id);
+    }
 }

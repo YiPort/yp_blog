@@ -1,5 +1,6 @@
 package com.yiport.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yiport.constants.SystemConstants;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Article;
@@ -35,6 +36,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -387,6 +389,49 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         editHistoryService.saveOrUpdate(editHistory);
         redisCache.setCacheList(editKey, Arrays.asList(editHistoryVO));
         return ResponseResult.okResult();
+    }
+
+    /**
+     * 获取我发布的文章总数
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public ResponseResult getMyArticleTotal(Long id)
+    {
+        //登录状态校验
+        checkLogin(id);
+        //根据 userId查询已发布文章
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Article::getCreateBy, id)
+                .eq(Article::getStatus, RELEASE);
+        Integer integer = articleMapper.selectCount(queryWrapper);
+        HashMap<Object, Object> map = new HashMap<>();
+        map.put("myArticleTotal", integer);
+        return ResponseResult.okResult(map);
+    }
+
+    /**
+     * 获取我发布的文章总浏览量
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public ResponseResult getTotalView(Long id)
+    {
+        // 登录校验
+        checkLogin(id);
+        // 根据 userId获取发布的文章总浏览量
+        QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("create_by", id);
+        queryWrapper.select("SUM(view_count) AS view_count");
+        Article article = articleMapper.selectOne(queryWrapper);
+        HashMap<Object, Object> map = new HashMap<>();
+        map.put("totalView", article.getViewCount() == null ? 0 : article.getViewCount());
+
+        return ResponseResult.okResult(map);
     }
 
     private void checkLogin(Long userId) {

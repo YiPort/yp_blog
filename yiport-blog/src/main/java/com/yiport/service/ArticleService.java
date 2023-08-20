@@ -74,4 +74,21 @@ public interface ArticleService extends IService<Article> {
      */
     ResponseResult deleteDraft(Long id, Long articleId);
 
+
+    /**
+     * 获取我发布的文章总数
+     *
+     * @param id
+     * @return
+     */
+    ResponseResult getMyArticleTotal(Long id);
+
+    /**
+     * 获取我发布的文章总浏览量
+     *
+     * @param id
+     * @return
+     */
+    ResponseResult getTotalView(Long id);
+
 }
