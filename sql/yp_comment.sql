@@ -30,6 +30,8 @@ CREATE TABLE `yp_comment`(
                              `to_comment_user_id` bigint(20) DEFAULT '-1' COMMENT '所回复的目标评论的userid',
                              `to_comment_id`      bigint(20) DEFAULT '-1' COMMENT '回复目标评论id',
                              `create_nick`        VARCHAR(125) NULL comment '创建人昵称',
+                             `avatar`             VARCHAR(225) NULL comment '创建人头像',
+                             `label`              CHAR DEFAULT '0' NULL comment '标签 (0-普通评论，1-置顶评论)',
                              `status`             CHAR(1)      DEFAULT '0' COMMENT '评论状态（0-未精选，1-精选评论）',
                              `create_by`          bigint(20) DEFAULT NULL COMMENT '创建人的用户id',
                              `create_time`        datetime     DEFAULT NULL COMMENT '创建时间',
