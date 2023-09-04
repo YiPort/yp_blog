@@ -19,7 +19,7 @@ public class JwtUtil {
     //有效期为
     public static final Long JWT_TTL = 24*60 * 60 *1000L;// 60 * 60 *1000  一个小时
     //设置秘钥明文
-    public static final String JWT_KEY = "YiPort";
+    public static final String JWT_KEY = "YiPortBLOG";
 
     public static String getUUID(){
         String token = UUID.randomUUID().toString().replaceAll("-", "");
@@ -27,7 +27,7 @@ public class JwtUtil {
     }
     
     /**
-     * 生成jtw
+     * 生成jwt
      * @param subject token中要存放的数据（json格式）
      * @return
      */
@@ -37,7 +37,7 @@ public class JwtUtil {
     }
 
     /**
-     * 生成jtw
+     * 生成jwt
      * @param subject token中要存放的数据（json格式）
      * @param ttlMillis token超时时间
      * @return
@@ -66,6 +66,27 @@ public class JwtUtil {
                 .setExpiration(expDate);
     }
 
+
+    private static JwtBuilder getJwtBuilder(String subject, Long stlMillis, Long ttlMillis, String uuid)
+    {
+        SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
+        SecretKey secretKey = generalKey();
+        Date start = new Date(stlMillis);
+        if (ttlMillis == null)
+        {
+            ttlMillis = JwtUtil.JWT_TTL;
+        }
+        long expMillis = stlMillis + ttlMillis;
+        Date expDate = new Date(expMillis);
+        return Jwts.builder()
+                .setId(uuid)              //唯一的ID
+                .setSubject(subject)   // 主题  可以是JSON数据
+                .setIssuer("wzy")     // 签发者
+                .setIssuedAt(start)      // 签发时间
+                .signWith(signatureAlgorithm, secretKey) //使用HS256对称加密算法签名, 第二个参数为秘钥
+                .setExpiration(expDate);
+    }
+
     /**
      * 创建token
      * @param id
@@ -78,10 +99,42 @@ public class JwtUtil {
         return builder.compact();
     }
 
-    public static void main(String[] args) throws Exception {
-        String token = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIwZjU4N2U2OTQxYmQ0OTFkOTI3YzhjY2VhMjgyNmNhNiIsInN1YiI6IllpUG9ydCIsImlzcyI6InlwIiwiaWF0IjoxNjgwODAzNjY0LCJleHAiOjE2ODA4OTAwNjR9.eeo1b77oAR63Aw67bSalLnhiY7Qqy1xcXn0R310Ly4A";
-        Claims claims = parseJWT(token);
-        System.out.println(claims);
+    /**
+     * 创建token
+     *
+     * @param id
+     * @param subject
+     * @param ttlMillis
+     * @return
+     */
+    public static String createJWT(String id, String subject, Long stlMillis, Long ttlMillis)
+    {
+        JwtBuilder builder = getJwtBuilder(subject, stlMillis, ttlMillis, id);// 设置过期时间
+        return builder.compact();
+    }
+
+
+    /**
+     * 更新token
+     *
+     * @param id
+     * @param subject
+     * @param startTime
+     * @param expiration
+     * @return
+     */
+    public static String updateJWT(String id, String subject, Date startTime, Date expiration)
+    {
+        SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
+        SecretKey secretKey = generalKey();
+        JwtBuilder builder = Jwts.builder()
+                .setId(id)              //唯一的ID
+                .setSubject(subject)   // 主题  可以是JSON数据
+                .setIssuer("yp")     // 签发者
+                .setIssuedAt(startTime)      // 签发时间
+                .signWith(signatureAlgorithm, secretKey) //使用HS256对称加密算法签名, 第二个参数为秘钥
+                .setExpiration(expiration);
+        return builder.compact();
     }
 
     /**
