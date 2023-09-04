@@ -2,7 +2,7 @@ package com.yiport.filter;
 
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.LoginUser;
-import com.yiport.enums.AppHttpCodeEnum;
+import com.yiport.handler.exception.SystemException;
 import com.yiport.utils.JwtUtil;
 import com.yiport.utils.RedisCache;
 import com.yiport.utils.WebUtils;
@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.Objects;
 
 import static com.yiport.constants.BusinessConstants.BLOG_LOGIN;
+import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
+import static com.yiport.enums.AppHttpCodeEnum.RELOAD_TOKEN;
 
 @Component
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
@@ -33,38 +35,50 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         //获取请求头中的token
-        String token = request.getHeader("token");
+        String token = request.getHeader("Token");
         if(!StringUtils.hasText(token)){
             //说明该接口不需要登录  直接放行
             filterChain.doFilter(request, response);
             return;
         }
-        //解析获取userid
-        Claims claims = null;
-        try {
-            claims = JwtUtil.parseJWT(token);
+        // 解析 Token
+        String userId;
+        try
+        {
+            Claims claims = JwtUtil.parseJWT(token);
+            long now = System.currentTimeMillis();
+            long startTime = claims.getIssuedAt().getTime();
+            if (now - startTime < 5 * 24 * 60 * 60 * 1000L)
+            {
+                long expiration = claims.getExpiration().getTime();
+                if (expiration - now < 6 * 60 * 60 * 1000L)
+                {
+                    throw new SystemException(RELOAD_TOKEN);
+                }
+            }
+            else
+            {
+                throw new SystemException(NEED_LOGIN, "用户未登录");
+            }
+
+            userId = claims.getId();
         } catch (Exception e) {
             e.printStackTrace();
-            //token超时  token非法
-            //响应告诉前端需要重新登录
-            ResponseResult result = ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);
-            WebUtils.renderString(response, JSON.toJSONString(result));
-            return;
+            throw new RuntimeException("Token非法！");
         }
-        String userId = claims.getSubject();
         //从redis中获取用户信息
         LoginUser loginUser = redisCache.getCacheObject(BLOG_LOGIN + userId);
         //如果获取不到
         if (Objects.isNull(loginUser)) {
             //说明登录过期  提示重新登录
-            ResponseResult result = ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);
+            ResponseResult result = ResponseResult.errorResult(NEED_LOGIN);
             WebUtils.renderString(response, JSON.toJSONString(result));
             return;
         }
         //将用户信息(loginUser)和对应的权限信息(permissions)存入 SecurityContextHolder
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-
+        // 放行
         filterChain.doFilter(request, response);
     }
 
