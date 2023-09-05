@@ -83,4 +83,9 @@ public interface UserConstant {
      */
     String NORMAL_STATUS = "0";
 
+    /**
+     * Token过期时间
+     */
+    long EXPIRATION = 48 * 60 * 60 * 1000L;
+
 }
