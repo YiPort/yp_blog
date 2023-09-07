@@ -1,5 +1,6 @@
 package com.yiport.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -9,7 +10,7 @@ import com.yiport.domain.entity.User;
 import com.yiport.domain.request.AccountLoginRequest;
 import com.yiport.domain.request.UserRegisterRequest;
 import com.yiport.domain.vo.UserLoginVO;
-import com.yiport.domain.vo.UserInfoVO;
+import com.yiport.domain.vo.UserVO;
 import com.yiport.handler.exception.SystemException;
 import com.yiport.mapper.UserMapper;
 import com.yiport.service.UserLoginService;
@@ -20,17 +21,18 @@ import com.yiport.utils.RedisCache;
 import com.google.code.kaptcha.Producer;
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import com.yiport.enums.AppHttpCodeEnum;
+import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FastByteArrayOutputStream;
 
 import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
@@ -46,9 +48,10 @@ import static com.yiport.constants.BusinessConstants.BLOG_LOGIN;
 import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
 import static com.yiport.constent.UserBusinessConstants.CAPTCHA_CODES;
 import static com.yiport.constent.UserConstant.ADMIN_ROLE;
-import static com.yiport.constent.UserConstant.SUCCESS;
+import static com.yiport.constent.UserConstant.EXPIRATION;
 import static com.yiport.enums.AppHttpCodeEnum.NICKNAME_EXIST;
 import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
+import static com.yiport.enums.AppHttpCodeEnum.SUCCESS;
 import static com.yiport.enums.AppHttpCodeEnum.SYSTEM_ERROR;
 import static com.yiport.enums.AppHttpCodeEnum.USERNAME_EXIST;
 
@@ -70,8 +73,18 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
     @Autowired
     private Producer captchaProducerMath;
 
+    @Autowired
+    private HttpServletRequest request;
+
+
+    /**
+     * 用户注册（停用）
+     *
+     * @param user
+     * @return
+     */
     @Override
-    public ResponseResult register(User user) {
+    public ResponseResult<AppHttpCodeEnum> register(User user) {
         // 1.校验
         String userAccount = user.getUserName();
         String nickName = user.getNickName();
@@ -126,8 +139,14 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
         return ResponseResult.okResult(SUCCESS);
     }
 
+    /**
+     * 用户注册
+     *
+     * @param userRegisterRequest
+     * @return
+     */
     @Override
-    public ResponseResult userRegister(UserRegisterRequest userRegisterRequest) {
+    public ResponseResult<AppHttpCodeEnum> userRegister(UserRegisterRequest userRegisterRequest) {
         String userAccount = userRegisterRequest.getUserName();
         String userPassword = userRegisterRequest.getPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
@@ -215,8 +234,8 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
         redisCache.setCacheObject(BLOG_LOGIN + userId, loginUser);
 
         //把token和userinfo封装 返回
-        //把User转换成UserInfoVo
-        UserInfoVO userInfoVo = BeanCopyUtils.copyBean(loginUser.getUser(), UserInfoVO.class);
+        //把User转换成UserVo
+        UserVO userInfoVo = BeanCopyUtils.copyBean(loginUser.getUser(), UserVO.class);
         UserLoginVO vo = new UserLoginVO(jwt, userInfoVo);
         return ResponseResult.okResult(vo);
     }
@@ -288,25 +307,26 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
         if (Objects.isNull(authenticate)) {
             throw new SystemException(AppHttpCodeEnum.LOGIN_ERROR, "账号或密码错误");
         }
-        //获取userid 生成token
+        // 根据 userId生成 Token存入 redis(有效期24小时)
         LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
         String userId = loginUser.getUser().getId().toString();
-        String jwt = JwtUtil.createJWT(userId);
+        String jwt = JwtUtil.createJWT(userId, JSON.toJSONString(loginUser.getUser()), EXPIRATION);
         //把用户信息存入redis
-        redisCache.setCacheObject(BLOG_LOGIN + userId, loginUser);
+        String redisKey=BLOG_LOGIN + userId;
+        redisCache.setCacheObject(redisKey, loginUser);
         // 将 token存入 redis
         String tokenKey = BLOG_TOKEN + userId;
-        redisCache.setCacheObject(tokenKey, jwt, 1, TimeUnit.DAYS);
+        redisCache.setCacheObject(tokenKey, jwt);
         // 将管理员权限信息存入 redis
-        if (loginUser.getUser().getUserRole().equals(ADMIN_ROLE)) ;
+        if (loginUser.getUser().getUserRole().equals(ADMIN_ROLE))
         {
             String adminKey = BLOG_ADMIN + userId;
-            redisCache.setCacheObject(adminKey, jwt, 1, TimeUnit.DAYS);
+            redisCache.setCacheObject(adminKey, jwt);
         }
         //把token和userinfo封装 返回
-        //把User转换成UserInfoVo
-        UserInfoVO userInfoVo = BeanCopyUtils.copyBean(loginUser.getUser(), UserInfoVO.class);
-        UserLoginVO vo = new UserLoginVO(jwt, userInfoVo);
+        //把User转换成UserVo
+        UserVO userVo = BeanCopyUtils.copyBean(loginUser.getUser(), UserVO.class);
+        UserLoginVO vo = new UserLoginVO(jwt, userVo);
         return ResponseResult.okResult(vo);
     }
 

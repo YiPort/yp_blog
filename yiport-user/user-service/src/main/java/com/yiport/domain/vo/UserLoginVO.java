@@ -17,5 +17,5 @@ public class UserLoginVO {
     /**
      * 用户信息
      */
-    private UserInfoVO userInfo;
+    private UserVO userInfo;
 }
