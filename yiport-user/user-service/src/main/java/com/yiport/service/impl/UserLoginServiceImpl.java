@@ -368,17 +368,41 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
         return ResponseResult.okResult(map);
     }
 
-
+    /**
+     * 用户登出
+     *
+     * @return
+     */
     @Override
     public ResponseResult<AppHttpCodeEnum> logout() {
-        //获取token 解析获取userid
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        LoginUser loginUser = (LoginUser) authentication.getPrincipal();
-        //获取userid
-        Long userId = loginUser.getUser().getId();
-        //删除redis中的用户信息
-        redisCache.deleteObject(BLOG_LOGIN + userId);
-        return ResponseResult.okResult();
+        // 从 SecurityContextHolder中获取 loginUser
+        String token = request.getHeader("Token");
+        Claims claims;
+        String userId;
+        // 解析token
+        try
+        {
+            claims = JwtUtil.parseJWT(token);
+            userId = claims.getId();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Token非法！");
+        }
+        // 删除 redis中的 authenticate
+        String redisKey = BLOG_LOGIN + userId;
+        redisCache.deleteObject(redisKey);
+        // 删除 redis中的 token
+        String tokenKey = BLOG_TOKEN + userId;
+        redisCache.deleteObject(tokenKey);
+        // 删除 redis中的权限信息
+        User user = JSON.parseObject(claims.getSubject(), User.class);
+        if (user.getUserRole().equals(ADMIN_ROLE))
+        {
+            String adminKey = BLOG_ADMIN+ userId;
+            redisCache.deleteObject(adminKey);
+        }
+        return ResponseResult.okResult(SUCCESS, "退出成功");
     }
 
 }

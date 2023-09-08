@@ -41,18 +41,6 @@ public class UserController {
         return user;
     }
 
-
-    /**
-     * 个人信息查询
-     *
-     * @return
-     */
-    @GetMapping("/userInfo")
-    @SystemLog(businessName = "个人信息查询")
-    public ResponseResult userInfo(){
-        return userService.userInfo();
-    }
-
     /**
      * 更新个人信息
      *
