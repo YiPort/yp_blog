@@ -426,10 +426,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 根据 userId获取发布的文章总浏览量
         QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("create_by", id);
-        queryWrapper.select("SUM(view_count) AS view_count");
+        queryWrapper.select("IFNULL(SUM(view_count),0) AS view_count");
         Article article = articleMapper.selectOne(queryWrapper);
         HashMap<Object, Object> map = new HashMap<>();
-        map.put("totalView", article.getViewCount() == null ? 0 : article.getViewCount());
+        map.put("totalView", article.getViewCount());
 
         return ResponseResult.okResult(map);
     }
