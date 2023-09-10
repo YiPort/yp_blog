@@ -3,21 +3,21 @@ package com.yiport.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yiport.domain.ResponseResult;
-import com.yiport.domain.entity.LoginUser;
 import com.yiport.domain.entity.User;
 import com.yiport.domain.vo.UserVO;
-import com.yiport.domain.vo.UserInfoVO;
 import com.yiport.handler.exception.SystemException;
 import com.yiport.mapper.UserMapper;
 import com.yiport.service.UserService;
 import com.yiport.utils.BeanCopyUtils;
-import com.yiport.utils.SecurityUtils;
+import com.yiport.utils.JwtUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -33,6 +33,8 @@ import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
 @Service("userService")
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
+    @Autowired
+    private HttpServletRequest request;
 
     @Override
     public ResponseResult userInfo() {
@@ -62,11 +64,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public ResponseResult<UserVO> getCurrent() {
-        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String token = request.getHeader("Token");
+        long id;
+        try
+        {
+            Claims claims = JwtUtil.parseJWT(token);
+            id = Long.parseLong(claims.getId());
+        }
+        catch (Exception e)
+        {
+            throw new SystemException("Token非法！");
+        }
+        User user = getById(id);
+        UserVO userVO = BeanCopyUtils.copyBean(user, UserVO.class);
 
-        UserVO newUserVO = BeanCopyUtils.copyBean(loginUser.getUser(), UserVO.class);
-
-        return ResponseResult.okResult(newUserVO);
+        return ResponseResult.okResult(userVO);
     }
 
     /**

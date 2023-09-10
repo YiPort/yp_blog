@@ -4,7 +4,6 @@ import com.yiport.domain.ResponseResult;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yiport.domain.entity.User;
 import com.yiport.domain.vo.UserVO;
-import com.yiport.enums.AppHttpCodeEnum;
 
 import java.util.List;
 
@@ -16,8 +15,6 @@ import java.util.List;
  * @since 2023-05-01 13:50:17
  */
 public interface UserService extends IService<User> {
-
-    ResponseResult userInfo();
 
     ResponseResult updateUserInfo(User user);
 

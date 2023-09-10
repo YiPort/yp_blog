@@ -2,11 +2,12 @@ package com.yiport.domain.vo;
 
 import lombok.Data;
 
+import java.io.Serializable;
 
 
 @SuppressWarnings("serial")
 @Data
-public class UserVO {
+public class UserVO implements Serializable {
 
     /**
      * 主键
@@ -23,10 +24,6 @@ public class UserVO {
      */
     private String nickName;
 
-    /**
-     * 密码
-     */
-    private String password;
 
     /**
      * 用户类型：0代表普通用户，1代表管理员
@@ -58,10 +55,6 @@ public class UserVO {
      */
     private String avatar;
 
-    /**
-     * 创建人的用户id
-     */
-    private Long createBy;
 
     /**
      * 创建时间
