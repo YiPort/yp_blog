@@ -1,24 +1,38 @@
 package com.yiport.service.impl;
 
-import com.yiport.constants.SystemConstants;
 import com.yiport.domain.ResponseResult;
+import com.yiport.domain.entity.Article;
 import com.yiport.domain.entity.Comment;
 import com.yiport.domain.vo.CommentVO;
 import com.yiport.domain.vo.PageVO;
-import com.yiport.enums.AppHttpCodeEnum;
 import com.yiport.handler.exception.SystemException;
+import com.yiport.mapper.ArticleMapper;
 import com.yiport.mapper.CommentMapper;
 import com.yiport.service.CommentService;
 import com.yiport.utils.BeanCopyUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.yiport.utils.JwtUtil;
+import io.jsonwebtoken.Claims;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
+
+import static com.yiport.constants.SystemConstants.ARTICLE_COMMENT;
+import static com.yiport.constants.SystemConstants.IS_COMMENT;
+import static com.yiport.constants.SystemConstants.NORMAL_COMMENT;
+import static com.yiport.constants.SystemConstants.ROOT_COMMENT;
+import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
+import static com.yiport.enums.AppHttpCodeEnum.NO_OPERATOR_AUTH;
+import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
 
 /**
  * 评论表(Comment)表服务实现类
@@ -28,6 +42,13 @@ import java.util.List;
  */
 @Service("commentService")
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements CommentService {
+
+    @Autowired
+    private HttpServletRequest httpServletRequest;
+
+    @Resource
+    private ArticleMapper articleMapper;
+
 
 
     /**
@@ -82,7 +103,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         queryWrapper.eq(Comment::getRootId, id);
         queryWrapper.orderByAsc(Comment::getCreateTime);
         List<Comment> comments = list(queryWrapper);
-
+        // 根评论 id对应的子评论请求体列表
         List<CommentVO> commentVOS = BeanCopyUtils.copyBeanList(comments, CommentVO.class);
         return commentVOS;
     }
@@ -95,9 +116,35 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      */
     @Override
     public ResponseResult addComment(Comment comment) {
+        String type = comment.getType();
+        String content = comment.getContent();
+        Long createBy = comment.getCreateBy();
+
+        //参数不为空
+        if (StringUtils.isAnyBlank(type, content) || createBy == -1) {
+            throw new SystemException(PARAMETER_ERROR);
+        }
+        //限制长度
+        if (content.length() > 300)
+        {
+            throw new SystemException(PARAMETER_ERROR, "评论内容不能超过300字符");
+        }
+        // Token解析
+        String userId = checkToken();
+        if (!userId.equals(createBy.toString()))
+        {
+            throw new SystemException(NO_OPERATOR_AUTH);
+        }
         //评论内容不能为空
-        if (!StringUtils.hasText(comment.getContent())) {
-            throw new SystemException(AppHttpCodeEnum.CONTENT_NOT_NULL);
+        if (type.equals(ARTICLE_COMMENT))
+        {
+            LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Article::getId, comment.getArticleId())
+                    .eq(Article::getIsComment, IS_COMMENT);
+            if (Objects.isNull(articleMapper.selectOne(queryWrapper)))
+            {
+                throw new SystemException(PARAMETER_ERROR, "该文章不允许评论");
+            }
         }
         //设置保存时间
         // 获取当前时间
@@ -107,9 +154,30 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         // 格式化创建时间
         String createTime = currentTime.format(formatter);
         comment.setCreateTime(createTime);
-        save(comment);
-        return ResponseResult.okResult();
+        boolean result = save(comment);
+        return ResponseResult.okResult(result);
     }
+
+    /**
+     * 解析Token
+     *
+     * @return
+     */
+    public String checkToken ()
+    {
+        String token = httpServletRequest.getHeader("Token");
+        if (org.apache.commons.lang3.StringUtils.isBlank(token)) {
+            throw new SystemException(NO_OPERATOR_AUTH);
+        }
+        Claims claims;
+        try {
+            claims = JwtUtil.parseJWT(token);
+        } catch (Exception e) {
+            throw new SystemException(NEED_LOGIN);
+        }
+        return claims.getId();
+    }
+
 }
 
 
