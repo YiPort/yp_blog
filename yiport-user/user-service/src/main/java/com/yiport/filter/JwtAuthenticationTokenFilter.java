@@ -42,30 +42,25 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             return;
         }
         // 解析 Token
+        Claims claims;
         String userId;
         try
         {
-            Claims claims = JwtUtil.parseJWT(token);
-            long now = System.currentTimeMillis();
-            long startTime = claims.getIssuedAt().getTime();
-            if (now - startTime < 5 * 24 * 60 * 60 * 1000L)
-            {
-                long expiration = claims.getExpiration().getTime();
-                if (expiration - now < 6 * 60 * 60 * 1000L)
-                {
-                    throw new SystemException(RELOAD_TOKEN);
-                }
-            }
-            else
-            {
-                throw new SystemException(NEED_LOGIN, "用户未登录");
-            }
-
-            userId = claims.getId();
-        } catch (Exception e) {
-            e.printStackTrace();
+            claims = JwtUtil.parseJWT(token);
+        }
+        catch (Exception e)
+        {
             throw new RuntimeException("Token非法！");
         }
+        long now = System.currentTimeMillis();
+        long startTime = claims.getIssuedAt().getTime();
+        if (now - startTime > 5 * 24 * 60 * 60 * 1000L)
+        {
+            throw new SystemException(NEED_LOGIN, "认证过期，请重新登录");
+        }
+
+        userId = claims.getId();
+
         //从redis中获取用户信息
         LoginUser loginUser = redisCache.getCacheObject(BLOG_LOGIN + userId);
         //如果获取不到

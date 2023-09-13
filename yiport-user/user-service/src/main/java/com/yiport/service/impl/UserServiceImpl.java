@@ -1,5 +1,7 @@
 package com.yiport.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yiport.domain.ResponseResult;
@@ -8,6 +10,7 @@ import com.yiport.domain.vo.UserVO;
 import com.yiport.handler.exception.SystemException;
 import com.yiport.mapper.UserMapper;
 import com.yiport.service.UserService;
+import com.yiport.utils.RedisCache;
 import com.yiport.utils.BeanCopyUtils;
 import com.yiport.utils.JwtUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -20,8 +23,13 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
+import static com.yiport.constent.UserConstant.EXPIRATION;
+import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
 import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
 
 /**
@@ -36,24 +44,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Autowired
     private HttpServletRequest request;
 
-    @Override
-    public ResponseResult userInfo() {
-        //获取当前用户id
-        Long userId = SecurityUtils.getUserId();
-        //根据用户id查询用户信息
-        User user = getById(userId);
-        //封装成UserInfoVo
-        UserInfoVO vo = BeanCopyUtils.copyBean(user, UserInfoVO.class);
-        return ResponseResult.okResult(vo);
-    }
+    @Autowired
+    private RedisCache redisCache;
 
+    /**
+     * 更新个人信息
+     *
+     * @param userVO
+     * @return
+     */
     @Override
-    public ResponseResult updateUserInfo(User user) {
+    public ResponseResult updateUserInfo(UserVO userVO) {
         // 获取时间戳,设置创更新时间
         String updateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        user.setUpdateTime(updateTime);
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getId, userVO.getId());
+        User user = getOne(queryWrapper);
+
+        queryWrapper.eq(User::getId, user.getId());
+        user.setNickName(userVO.getNickName());
+        user.setEmail(userVO.getEmail());
+        user.setSex(userVO.getSex());
         updateById(user);
-        return ResponseResult.okResult();
+        return reloadToken();
     }
 
 
@@ -140,6 +153,55 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         removeById(id);
         return ResponseResult.okResult(null);
+    }
+
+
+    /**
+     * 刷新 Token
+     *
+     * @return
+     */
+    public ResponseResult reloadToken()
+    {
+        String token = request.getHeader("Token");
+        Claims claims;
+        String jwt;
+        // 解析token
+        try
+        {
+            claims = JwtUtil.parseJWT(token);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new RuntimeException("Token非法！");
+        }
+        String userId = claims.getId();
+        long now = System.currentTimeMillis();
+        long startTime = claims.getIssuedAt().getTime();
+        // 距离登录时间超过五天重新登录
+        if (now - startTime < 5 * 24 * 60 * 60 * 1000L)
+        {
+            long expiration = claims.getExpiration().getTime();
+            User user = getById(userId);
+            // 距离过期时间小于6小时刷新token过期时间
+            if (expiration - now < 6 * 60 * 60 * 1000L)
+            {
+                jwt = JwtUtil.createJWT(userId, JSON.toJSONString(user), EXPIRATION);
+            }
+            else
+            {
+                jwt = JwtUtil.updateJWT(userId, JSON.toJSONString(user), claims.getIssuedAt(), claims.getExpiration());
+            }
+        }
+        else
+        {
+            throw new SystemException(NEED_LOGIN, "用户未登录");
+        }
+        redisCache.setCacheObject(BLOG_TOKEN + userId, jwt);
+        Map<Object, Object> map = new HashMap<>();
+        map.put("Token", jwt);
+        return ResponseResult.okResult(map);
     }
 
 }

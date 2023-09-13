@@ -16,7 +16,13 @@ import java.util.List;
  */
 public interface UserService extends IService<User> {
 
-    ResponseResult updateUserInfo(User user);
+    /**
+     * 更新个人信息
+     *
+     * @param userVO
+     * @return
+     */
+    ResponseResult updateUserInfo(UserVO userVO);
 
 
     /**
@@ -24,7 +30,7 @@ public interface UserService extends IService<User> {
      *
      * @return
      */
-    ResponseResult<UserVO> getCurrent();
+    ResponseResult getCurrent();
 
     /**
      * 管理员根据用户昵称查询用户

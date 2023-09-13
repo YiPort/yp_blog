@@ -47,10 +47,10 @@ public class UserController {
      * @param user
      * @return
      */
-    @PutMapping("/userInfo")
+    @PutMapping("/saveUserInfo")
     @SystemLog(businessName = "更新个人信息")
-    public ResponseResult updateUserInfo(@RequestBody User user){
-        return userService.updateUserInfo(user);
+    public ResponseResult updateUserInfo(@RequestBody UserVO userVO){
+        return userService.updateUserInfo(userVO);
     }
 
     /**
@@ -78,7 +78,7 @@ public class UserController {
      */
     @GetMapping("/current")
     @SystemLog(businessName = "获取用户登录态")
-    public ResponseResult<UserVO> current() {
+    public ResponseResult current() {
         return userService.getCurrent();
     }
 
