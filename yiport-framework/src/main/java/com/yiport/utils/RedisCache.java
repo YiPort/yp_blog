@@ -3,6 +3,7 @@ package com.yiport.utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
@@ -226,6 +227,39 @@ public class RedisCache
     }
 
     /**
+     * 获取整个Hash对象
+     *
+     * @param key Redis键
+     * @return 整个Hash对象
+     */
+    public <HK, HV> Map<HK, HV> getEntriesCacheMapValue(final String key)
+    {
+        return redisTemplate.opsForHash().entries(key);
+    }
+
+    /**
+     * 获取Hash的大小
+     *
+     * @param key Redis键
+     * @return Hash的大小
+     */
+    public Long getCacheMapSize(final String key)
+    {
+        return redisTemplate.opsForHash().size(key);
+    }
+
+    /**
+     * 将指定的Hash的HashKey加一
+     *
+     * @param key Redis键
+     * @return Hash的大小
+     */
+    public Long incrHash(final String key, final String hashKey)
+    {
+        return redisTemplate.opsForHash().increment(key, hashKey, 1);
+    }
+
+    /**
      * 获得缓存的基本对象列表
      *
      * @param pattern 字符串前缀
@@ -247,4 +281,26 @@ public class RedisCache
         return redisTemplate.boundHashOps(key).increment(hKey, v);
     }
 
+    /**
+     * 将键值下存储为字符串的整数值加一
+     *
+     * @param key Redis键
+     * @return
+     */
+    public Long increment(final String key)
+    {
+        return redisTemplate.opsForValue().increment(key);
+    }
+
+    /**
+     * 执行给定的操作对象
+     *
+     * @param action
+     * @param <T>
+     * @return
+     */
+    public <T> Object execute(RedisCallback<T> action)
+    {
+        return redisTemplate.execute(action);
+    }
 }
