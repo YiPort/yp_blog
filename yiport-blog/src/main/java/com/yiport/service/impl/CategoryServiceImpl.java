@@ -24,7 +24,7 @@ import java.util.List;
 
 
 import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
-import static com.yiport.constants.SystemConstants.STATUS_NORMAL;
+import static com.yiport.constants.BlogConstants.STATUS_NORMAL;
 import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
 import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
 

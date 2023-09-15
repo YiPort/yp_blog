@@ -1,7 +1,7 @@
 package com.yiport.controller;
 
 import com.yiport.annotation.SystemLog;
-import com.yiport.constants.SystemConstants;
+import com.yiport.constants.BlogConstants;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Comment;
 import com.yiport.service.CommentService;
@@ -26,7 +26,7 @@ public class CommentController {
     @GetMapping("/commentList")
     @SystemLog(businessName = "查询评论列表")
     public ResponseResult commentList(Long articleId, Integer pageNum, Integer pageSize){
-        return commentService.commentList(SystemConstants.ARTICLE_COMMENT,articleId,pageNum,pageSize);
+        return commentService.commentList(BlogConstants.ARTICLE_COMMENT,articleId,pageNum,pageSize);
     }
 
     /**
@@ -51,6 +51,6 @@ public class CommentController {
     @GetMapping("/linkCommentList")
     @SystemLog(businessName = "查询友链评论")
     public ResponseResult linkCommentList(Integer pageNum,Integer pageSize){
-        return commentService.commentList(SystemConstants.LINK_COMMENT,null,pageNum,pageSize);
+        return commentService.commentList(BlogConstants.LINK_COMMENT,null,pageNum,pageSize);
     }
 }

@@ -1,6 +1,6 @@
 package com.yiport.service.impl;
 
-import com.yiport.constants.SystemConstants;
+import com.yiport.constants.BlogConstants;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Link;
 import com.yiport.domain.vo.LinkVO;
@@ -31,7 +31,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
     public ResponseResult getAllLink() {
         //查询所有审核通过的
         LambdaQueryWrapper<Link> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Link::getStatus, SystemConstants.LINK_STATUS_NORMAL);
+        queryWrapper.eq(Link::getStatus, BlogConstants.LINK_STATUS_NORMAL);
         List<Link> links = list(queryWrapper);
         //转换成vo
         List<LinkVO> linkVOS = BeanCopyUtils.copyBeanList(links, LinkVO.class);

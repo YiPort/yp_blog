@@ -24,7 +24,7 @@ import java.util.List;
 
 import static com.yiport.constants.BusinessConstants.BLOG_ADMIN;
 import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
-import static com.yiport.constants.SystemConstants.RELEASE;
+import static com.yiport.constants.BlogConstants.RELEASE;
 import static com.yiport.enums.AppHttpCodeEnum.*;
 
 /**

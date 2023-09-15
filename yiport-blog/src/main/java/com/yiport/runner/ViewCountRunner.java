@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.yiport.constants.BlogBusinessConstants.ARTICLE_VIEWCOUNT;
-import static com.yiport.constants.SystemConstants.RELEASE;
+import static com.yiport.constants.BlogConstants.RELEASE;
 
 @Component
 public class ViewCountRunner implements CommandLineRunner {

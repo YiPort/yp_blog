@@ -1,6 +1,6 @@
 package com.yiport.constants;
 
-public class SystemConstants
+public class BlogConstants
 {
     /**
      * 文章是草稿
