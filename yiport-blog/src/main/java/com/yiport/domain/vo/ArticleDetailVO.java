@@ -14,6 +14,16 @@ public class ArticleDetailVO {
     private Long id;
 
     /**
+     * 是否允许评论 1是，0否
+     */
+    private String isComment;
+
+    /**
+     * 创建人的用户id
+     */
+    private Long createBy;
+
+    /**
      * 标题
      */
     private String title;

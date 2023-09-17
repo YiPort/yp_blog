@@ -56,6 +56,16 @@ public class CommentVO {
     private String createNick;
 
     /**
+     * 创建人的头像
+     */
+    private String avatar;
+
+    /**
+     * 评论标签
+     */
+    private String label;
+
+    /**
      * 评论状态 0-未精选，1-精选评论
      */
     private String status;

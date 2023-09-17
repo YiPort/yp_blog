@@ -1,7 +1,7 @@
 package com.yiport.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.yiport.constants.SystemConstants;
+import com.yiport.constants.BlogConstants;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Article;
 import com.yiport.domain.entity.Category;
@@ -48,9 +48,9 @@ import static com.yiport.constants.BlogBusinessConstants.ARTICLE_VIEWCOUNT;
 import static com.yiport.constants.BusinessConstants.BLOG_ADMIN;
 import static com.yiport.constants.BusinessConstants.BLOG_LOGIN;
 import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
-import static com.yiport.constants.SystemConstants.ARTICLE_STATUS_NORMAL;
-import static com.yiport.constants.SystemConstants.NOT_RELEASE;
-import static com.yiport.constants.SystemConstants.RELEASE;
+import static com.yiport.constants.BlogConstants.ARTICLE_STATUS_NORMAL;
+import static com.yiport.constants.BlogConstants.NOT_RELEASE;
+import static com.yiport.constants.BlogConstants.RELEASE;
 import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
 import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
 
@@ -81,7 +81,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         //查询热门文章 封装成ResponseResult返回
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
         //必须是正式文章
-        queryWrapper.eq(Article::getStatus, SystemConstants.ARTICLE_STATUS_NORMAL);
+        queryWrapper.eq(Article::getStatus, BlogConstants.ARTICLE_STATUS_NORMAL);
         //按照浏览量进行排序
         queryWrapper.orderByDesc(Article::getViewCount);
         //最多只查询10条
@@ -130,7 +130,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 如果 有categoryId 就要 查询时要和传入的相同
         lambdaQueryWrapper.eq(Objects.nonNull(categoryId)&&categoryId>0 ,Article::getCategoryId,categoryId);
         // 状态是正式发布的
-        lambdaQueryWrapper.eq(Article::getStatus,SystemConstants.ARTICLE_STATUS_NORMAL);
+        lambdaQueryWrapper.eq(Article::getStatus, BlogConstants.ARTICLE_STATUS_NORMAL);
         // 对isTop进行降序
         lambdaQueryWrapper.orderByDesc(Article::getIsTop);
 
