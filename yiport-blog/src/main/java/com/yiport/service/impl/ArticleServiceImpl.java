@@ -274,9 +274,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             articleMapper.insert(saveArticle);
             // 将文章浏览量同步到 redis
             if (article.getStatus().equals(RELEASE)) {   //已发布文章
-                String articleKey = "article:" + saveArticle.getId();
+                String articleKey = ARTICLE_VIEWCOUNT ;
                 long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
-                redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
+                redisCache.setCacheMapValue(articleKey,saveArticle.getId().toString(), BigInteger.valueOf(viewCount));
                 // 将事件 push入消息列表
                 EditHistory editHistory = new EditHistory(Long.parseLong(userId), "发布了文章：" + saveArticle.getTitle(), createTime, "#0bbd87");
                 editHistoryService.saveOrUpdate(editHistory);
@@ -295,10 +295,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             if (saveArticle.getStatus().equals(RELEASE))  //编辑已发布文章
             {
                 // 将文章浏览量同步到 redis
-                String articleKey = "article:" + saveArticle.getId();
+                String articleKey = ARTICLE_VIEWCOUNT ;
                 // viewCount为null时为新发布的文章或草稿，不为空时为已发布文章
                 long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
-                redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
+                redisCache.setCacheMapValue(articleKey,saveArticle.getId().toString(), BigInteger.valueOf(viewCount));
                 // 将事件 push入消息队列
                 EditHistory editHistory = new EditHistory(Long.parseLong(userId), "编辑了文章：" + saveArticle.getTitle(), createTime, "#409eff");
                 redisCache.setCacheList(editKey, Arrays.asList(editHistory));
