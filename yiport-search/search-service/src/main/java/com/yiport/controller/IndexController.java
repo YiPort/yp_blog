@@ -19,7 +19,7 @@ import java.util.List;
  * 文章索引控制层
  */
 @RestController
-@RequestMapping("/index")
+@RequestMapping("/search/index")
 public class IndexController {
     @Autowired
     private IndexService indexService;
