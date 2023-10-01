@@ -8,7 +8,7 @@ spring:
     web-application-type: reactive
   cloud:
     nacos:
-      server-addr: localhost:8848 # nacos地址
+      server-addr: 127.0.0.1:8848 # nacos地址
       username: nacos
       password: nacos
       config:
