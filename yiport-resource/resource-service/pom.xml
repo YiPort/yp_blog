@@ -19,7 +19,7 @@
     <dependencies>
         <dependency>
             <groupId>com.yiport</groupId>
-            <artifactId>yiport-framework</artifactId>
+            <artifactId>yiport-framework-web</artifactId>
             <version>1.0.0</version>
         </dependency>
         <!-- 文件上传的三种方式依赖 -->

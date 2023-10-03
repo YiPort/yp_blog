@@ -1,6 +1,5 @@
 package com.yiport.utils;
 
-import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;

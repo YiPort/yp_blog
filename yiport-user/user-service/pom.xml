@@ -23,10 +23,10 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-        <!-- 博客通用依赖 -->
+        <!-- 博客通用web依赖 -->
         <dependency>
             <groupId>com.yiport</groupId>
-            <artifactId>yiport-framework</artifactId>
+            <artifactId>yiport-framework-web</artifactId>
             <version>${global.version}</version>
         </dependency>
 

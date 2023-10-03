@@ -25,7 +25,7 @@
 
         <dependency>
             <groupId>com.yiport</groupId>
-            <artifactId>yiport-framework</artifactId>
+            <artifactId>yiport-framework-web</artifactId>
             <version>1.0.0</version>
         </dependency>
         <dependency>

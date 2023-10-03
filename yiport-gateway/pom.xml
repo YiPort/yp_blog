@@ -19,7 +19,7 @@
     <dependencies>
         <dependency>
             <groupId>com.yiport</groupId>
-            <artifactId>yiport-framework</artifactId>
+            <artifactId>yiport-framework-web</artifactId>
              <version>${global.version}</version>
         </dependency>
 
