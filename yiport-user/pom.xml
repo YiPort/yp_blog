@@ -15,7 +15,7 @@
 
     <modules>
         <module>user-service</module>
-        <module>user-client</module>
+        <module>yiport-user-client</module>
     </modules>
 
     <properties>
