@@ -13,7 +13,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>resource-service</module>
+        <module>yiport-resource-service</module>
         <module>yiport-resource-client</module>
     </modules>
 

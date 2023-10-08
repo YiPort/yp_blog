@@ -13,7 +13,7 @@
     <artifactId>yiport-search</artifactId>
 
     <modules>
-        <module>search-service</module>
+        <module>yiport-search-service</module>
         <module>yiport-search-client</module>
     </modules>
 
