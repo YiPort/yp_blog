@@ -120,6 +120,18 @@
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
 
+        <!-- feign熔断功能所需依赖 -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-circuitbreaker-resilience4j</artifactId>
+        </dependency>
+
+        <!-- 使用Apache HttpClient替换Feign原生httpclient -->
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-httpclient</artifactId>
+        </dependency>
+
         <!-- Feign Client for loadBalancing -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -130,7 +142,6 @@
         <dependency>
             <groupId>net.jodah</groupId>
             <artifactId>expiringmap</artifactId>
-            <version>${expiringmap.version}</version>
         </dependency>
 
 
@@ -146,6 +157,18 @@
             <artifactId>fastjson</artifactId>
         </dependency>
 
+        <!-- spring boot 测试依赖 -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test</artifactId>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 

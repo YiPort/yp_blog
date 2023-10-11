@@ -27,7 +27,7 @@
         <dependency>
             <groupId>com.yiport</groupId>
             <artifactId>yiport-framework-web</artifactId>
-            <version>${global.version}</version>
+            <version>1.0.0</version>
         </dependency>
 
         <!-- 验证码 -->

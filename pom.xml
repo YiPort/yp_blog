@@ -42,6 +42,10 @@
         <progressbar.version>0.9.2</progressbar.version>
         <expiringmap.version>0.5.8</expiringmap.version>
         <elasticsearch.version>7.12.1</elasticsearch.version>
+        <flexmark.version>0.50.42</flexmark.version>
+        <lang.version>2.6</lang.version>
+        <lang3.version>3.4</lang3.version>
+        <feign-httpclient.version>10.1.0</feign-httpclient.version>
     </properties>
     <dependencyManagement>
 
@@ -160,7 +164,65 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
+            <!-- 使用Apache HttpClient替换Feign原生httpclient -->
+            <dependency>
+                <groupId>io.github.openfeign</groupId>
+                <artifactId>feign-httpclient</artifactId>
+                <version>${feign-httpclient.version}</version>
+            </dependency>
+            <!--apache lang3 依赖-->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${lang3.version}</version>
+            </dependency>
+            <!--apache lang 依赖-->
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>${lang.version}</version>
+            </dependency>
+            <!--flexmark 依赖-->
+            <dependency>
+                <groupId>com.vladsch.flexmark</groupId>
+                <artifactId>flexmark-all</artifactId>
+                <version>${flexmark.version}</version>
+            </dependency>
+            <!-- ExpiringMap -->
+            <dependency>
+                <groupId>net.jodah</groupId>
+                <artifactId>expiringmap</artifactId>
+                <version>${expiringmap.version}</version>
+            </dependency>
+            <!-- 文件上传的三种方式依赖 -->
+            <!--七牛云OSS依赖-->
+            <dependency>
+                <groupId>com.qiniu</groupId>
+                <artifactId>qiniu-java-sdk</artifactId>
+                <version>${qiniu.version}</version>
+            </dependency>
+            <!--FastDFS依赖-->
+            <dependency>
+                <groupId>com.github.tobato</groupId>
+                <artifactId>fastdfs-client</artifactId>
+                <version>${fastdfs-client.version}</version>
+            </dependency>
+            <!-- MinIO 及相关依赖（紧接着的后两个） -->
+            <dependency>
+                <groupId>io.minio</groupId>
+                <artifactId>minio</artifactId>
+                <version>${minio.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>me.tongfei</groupId>
+                <artifactId>progressbar</artifactId>
+                <version>${progressbar.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>${okhttp.version}</version>
+            </dependency>
         </dependencies>
 
 
