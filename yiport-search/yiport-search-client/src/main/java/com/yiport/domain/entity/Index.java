@@ -1,7 +1,6 @@
 package com.yiport.domain.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableName;
+
 import lombok.Data;
 
 import java.io.Serializable;
@@ -12,10 +11,9 @@ import java.math.BigDecimal;
  *
  * @TableName yp_index
  */
-@TableName(value = "yp_index")
 @Data
 public class Index implements Serializable {
-    @TableField(exist = false)
+
     private static final long serialVersionUID = 1L;
     /**
      * 主键
@@ -32,7 +30,6 @@ public class Index implements Serializable {
     /**
      * 索引内容
      */
-    @TableField("index_value")
     private String value;
     /**
      * 索引位置

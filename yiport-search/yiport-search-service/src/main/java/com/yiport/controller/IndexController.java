@@ -32,7 +32,7 @@ public class IndexController {
      */
     @PostMapping("/postArticleIndex/{userId}")
     @SystemLog(businessName = "提交文章目录索引")
-    public ResponseResult postArticleIndex(@RequestBody List<Index> directoryIndex, @PathVariable Long userId) {
+    public ResponseResult postArticleIndex(@RequestBody List<Index> directoryIndex, @PathVariable("userId") Long userId) {
         return indexService.postArticleIndex(directoryIndex, userId);
     }
 
