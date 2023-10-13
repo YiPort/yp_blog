@@ -56,7 +56,7 @@ public class FeignConfig {
         FastJsonConfig config = new FastJsonConfig();//采用默认 SerializerFeatures
         config.setSerializerFeatures(
                 SerializerFeature.QuoteFieldNames,
-                //SerializerFeature.WriteMapNullValue,
+                SerializerFeature.WriteMapNullValue,
                 SerializerFeature.WriteNullBooleanAsFalse,
                 SerializerFeature.BrowserCompatible,
                 SerializerFeature.WriteSlashAsSpecial,
