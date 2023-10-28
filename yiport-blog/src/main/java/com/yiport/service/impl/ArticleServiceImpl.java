@@ -1,5 +1,6 @@
 package com.yiport.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yiport.constants.BlogConstants;
 import com.yiport.domain.ResponseResult;
@@ -18,11 +19,13 @@ import com.yiport.service.ArticleService;
 import com.yiport.service.CategoryService;
 import com.yiport.service.EditHistoryService;
 import com.yiport.utils.BeanCopyUtils;
+import com.yiport.utils.MarkdownUtils;
 import com.yiport.utils.RedisCache;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -51,6 +54,9 @@ import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
 import static com.yiport.constants.BlogConstants.ARTICLE_STATUS_NORMAL;
 import static com.yiport.constants.BlogConstants.NOT_RELEASE;
 import static com.yiport.constants.BlogConstants.RELEASE;
+import static com.yiport.constants.MQConstants.BLOG_INSERT_KEY;
+import static com.yiport.constants.MQConstants.BLOG_TOPIC_EXCHANGE;
+import static com.yiport.constants.MQConstants.BLOG_UPDATE_KEY;
 import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
 import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
 
@@ -70,6 +76,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Autowired
     private EditHistoryService editHistoryService;
+
+    @Resource
+    private RabbitTemplate rabbitTemplate;
 
     /**
      * 查询热门文章列表
@@ -268,6 +277,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 格式化创建时间
         String createTime = currentTime.format(formatter);
         saveArticle.setCreateTime(createTime);
+        saveArticle.setCategoryName(categoryService.getById(article.getCategoryId()).getName());
         String editKey = ARTICLE_EDITLIST + saveArticle.getCreateBy();
         if (article.getId() == null) {
             // 保存文章
@@ -281,6 +291,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 EditHistory editHistory = new EditHistory(Long.parseLong(userId), "发布了文章：" + saveArticle.getTitle(), createTime, "#0bbd87");
                 editHistoryService.saveOrUpdate(editHistory);
                 redisCache.setCacheList(editKey, Arrays.asList(editHistory));
+
+                //设置文章摘要为当前文章的内容节选,用于文章搜索
+                saveArticle.setSummary(MarkdownUtils.markdown2PlainText(saveArticle.getContent()));
+                //清空内容，减轻网络传输压力
+                saveArticle.setContent("");
+                //保存文章，发送MQ消息
+                String articleDocs = JSON.toJSONString(saveArticle);
+                rabbitTemplate.convertAndSend(BLOG_TOPIC_EXCHANGE, BLOG_INSERT_KEY, articleDocs);
+
                 return ResponseResult.okResult(saveArticle.getId(), "发布成功");
             } else {  //草稿
                 // 将事件 push入消息队列
@@ -302,6 +321,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 // 将事件 push入消息队列
                 EditHistory editHistory = new EditHistory(Long.parseLong(userId), "编辑了文章：" + saveArticle.getTitle(), createTime, "#409eff");
                 redisCache.setCacheList(editKey, Arrays.asList(editHistory));
+
+                //设置文章摘要为当前文章的内容节选,用于文章搜索
+                saveArticle.setSummary(MarkdownUtils.markdown2PlainText(saveArticle.getContent()));
+                //清空内容，减轻网络传输压力
+                saveArticle.setContent("");
+                //保存文章，发送MQ消息
+                String articleDocs = JSON.toJSONString(saveArticle);
+                rabbitTemplate.convertAndSend(BLOG_TOPIC_EXCHANGE, BLOG_UPDATE_KEY, articleDocs);
+
                 return ResponseResult.okResult(saveArticle.getId(), "编辑成功");
             } else    //编辑草稿
             {

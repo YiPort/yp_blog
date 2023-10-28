@@ -8,9 +8,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * @author 阿杆
- */
 public interface MinioService extends ResourceService {
 
 	/**
