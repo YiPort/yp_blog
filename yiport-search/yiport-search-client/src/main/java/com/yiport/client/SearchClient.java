@@ -23,7 +23,7 @@ public interface SearchClient {
      * @return 博客列表
      */
     @RequestMapping(method = RequestMethod.GET,value = "/search/searchArticle")
-    ResponseResult searchArticle(@RequestParam(value = "searchQuery") SearchQuery searchQuery);
+    ResponseResult searchArticle( SearchQuery searchQuery);
 
     /**
      * 提交文章目录索引
