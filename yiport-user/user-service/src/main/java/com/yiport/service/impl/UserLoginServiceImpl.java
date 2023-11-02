@@ -181,23 +181,23 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
         if (!userPassword.equals(checkPassword)) {
             throw new SystemException(PARAMETER_ERROR, "密码和校验密码不相同");
         }
-        // 1.6、验证码为1~4位
+        // 1.7、验证码为1~4位
         if (captcha.length() < 1 || captcha.length() > 4) {
             throw new SystemException(PARAMETER_ERROR, "验证码为1~4位");
         }
-        // 1.7、验证码失效
+        // 1.8、验证码失效
         String key = CAPTCHA_CODES + uuid;
         String text;
         text = redisCache.getCacheObject(key);
         if (StringUtils.isAnyBlank(text)) {
             throw new SystemException(PARAMETER_ERROR, "验证码失效请重试");
         }
-        // 1.8、验证码错误
+        // 1.9、验证码错误
         String result = text.substring(text.lastIndexOf("@") + 1);
         if (!result.equals(captcha)) {
             throw new SystemException(PARAMETER_ERROR, "验证码错误请重试");
         }
-        // 1.9、账号不能重复（将数据库查询校验放到最后）
+        // 1.10、账号不能重复（将数据库查询校验放到最后）
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getUserName, userAccount);
         long count = this.count(queryWrapper);

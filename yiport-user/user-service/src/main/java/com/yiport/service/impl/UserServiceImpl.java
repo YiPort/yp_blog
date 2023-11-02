@@ -65,6 +65,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setNickName(userVO.getNickName());
         user.setEmail(userVO.getEmail());
         user.setSex(userVO.getSex());
+        user.setAvatar(userVO.getAvatar());
+        //设置保存时间
+        // 获取当前时间
+        LocalDateTime currentTime = LocalDateTime.now();
+        user.setUpdateTime(String.valueOf(currentTime));
+        user.setUpdateBy(userVO.getId());
         updateById(user);
         return reloadToken();
     }
