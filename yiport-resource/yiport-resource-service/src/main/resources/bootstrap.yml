@@ -14,7 +14,7 @@ spring:
         file-extension: yaml   # 文件后缀名
         namespace: e1d5a1dc-9c21-45a0-9b22-70f501f3d59f
         shared-configs:
-          - data-id: default-redis.yaml
+          - data-id: default-redis-dev.yaml
             refresh: true
           - data-id: default-mysql.yaml
             refresh: true

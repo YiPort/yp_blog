@@ -13,7 +13,7 @@ spring:
         group: DEFAULT_GROUP
         file-extension: yaml   # 文件后缀名
         shared-configs:
-          - data-id: default-redis.yaml
+          - data-id: default-redis-dev.yaml
             refresh: true
           - data-id: default-mysql.yaml
             refresh: true
