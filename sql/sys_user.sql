@@ -23,6 +23,7 @@ DROP TABLE IF EXISTS `sys_user`;
 
 CREATE TABLE `sys_user`(
                            `id`          bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+                           `uid`         bigint NOT NULL comment '用户UID',
                            `user_name`   varchar(64) NOT NULL DEFAULT 'NULL' COMMENT '用户名',
                            `nick_name`   varchar(64) NOT NULL DEFAULT 'NULL' COMMENT '昵称',
                            `password`    varchar(64) NOT NULL DEFAULT 'NULL' COMMENT '密码',
