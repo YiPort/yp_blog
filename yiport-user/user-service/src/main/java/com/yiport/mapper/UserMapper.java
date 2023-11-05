@@ -12,4 +12,11 @@ import com.yiport.domain.entity.User;
  */
 public interface UserMapper extends BaseMapper<User> {
 
+    /**
+     * 通过uid区间标识（usedFor）分配一个 UID。
+     * @param usedFor
+     * @return
+     */
+    Long getUidForRegister(String usedFor);
+
 }

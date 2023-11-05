@@ -31,6 +31,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FastByteArrayOutputStream;
 
+import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.image.BufferedImage;
@@ -75,6 +76,10 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
 
     @Autowired
     private HttpServletRequest request;
+
+    @Resource
+    private UserMapper userMapper;
+
 
 
     /**
@@ -211,10 +216,12 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
         User user = new User();
         user.setUserName(userAccount);
         user.setPassword(encryptPassword);
-        boolean saveResult = this.save(user);
-        if (!saveResult) {
-            throw new SystemException(SYSTEM_ERROR, "系统错误");
-        }
+        // 分配UID
+        Long common = userMapper.getUidForRegister("common");
+        user.setUid(common);
+        // 3.插入数据
+        save(user);
+
         return ResponseResult.okResult(SUCCESS);
     }
 

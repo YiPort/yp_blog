@@ -28,6 +28,11 @@ public class User {
     private Long id;
 
     /**
+     * UID
+     */
+    private Long uid;
+
+    /**
      * 用户名（账号）
      */
     private String userName;
