@@ -26,10 +26,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 
-import static com.yiport.constants.SystemConstants.ARTICLE_COMMENT;
-import static com.yiport.constants.SystemConstants.IS_COMMENT;
-import static com.yiport.constants.SystemConstants.NORMAL_COMMENT;
-import static com.yiport.constants.SystemConstants.ROOT_COMMENT;
+import static com.yiport.constants.BlogConstants.ARTICLE_COMMENT;
+import static com.yiport.constants.BlogConstants.IS_COMMENT;
+import static com.yiport.constants.BlogConstants.NORMAL_COMMENT;
+import static com.yiport.constants.BlogConstants.NOT_TOP_COMMENT;
+import static com.yiport.constants.BlogConstants.ROOT_COMMENT;
+import static com.yiport.constants.BlogConstants.TOP_COMMENT;
 import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
 import static com.yiport.enums.AppHttpCodeEnum.NO_OPERATOR_AUTH;
 import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
@@ -156,6 +158,65 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         comment.setCreateTime(createTime);
         boolean result = save(comment);
         return ResponseResult.okResult(result);
+    }
+
+
+    /**
+     * 置顶/取消置顶文章评论
+     *
+     * @param id
+     * @param label
+     * @return
+     */
+    @Override
+    public ResponseResult setCommentLabel(Long id, String label)
+    {
+        // Token解析
+        String userId = checkToken();
+        // 判断是否为文章博主
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Comment::getId, id)
+                .eq(Comment::getStatus, NORMAL_COMMENT);
+        Comment comment = getOne(queryWrapper);
+        if (Objects.isNull(comment))
+        {
+            // 无法获取当前评论，抛出异常
+            throw new SystemException(NO_OPERATOR_AUTH);
+        }
+        Long articleId = comment.getArticleId();
+        LambdaQueryWrapper<Article> articleWrapper = new LambdaQueryWrapper<>();
+        articleWrapper.eq(Article::getId, articleId);
+        Long createBy = articleMapper.selectOne(articleWrapper).getCreateBy();
+        if (!userId.equals(createBy.toString()))
+        {
+            // 当前文章，归属关系不符
+            throw new SystemException(NO_OPERATOR_AUTH);
+        }
+
+        String oldLabel = comment.getLabel();
+        // 当前评论为非置顶评论
+        if (oldLabel.equals(NOT_TOP_COMMENT))
+        {
+            LambdaQueryWrapper<Comment> commentWrapper = new LambdaQueryWrapper<>();
+            commentWrapper.eq(Comment::getArticleId, articleId)
+                    .eq(Comment::getStatus, NORMAL_COMMENT)
+                    .eq(Comment::getLabel, TOP_COMMENT);
+            Comment topComment = getOne(commentWrapper);
+            if (Objects.nonNull(topComment))
+            {
+                topComment.setLabel(NOT_TOP_COMMENT);
+                updateById(topComment);
+            }
+            comment.setLabel(label);
+        }
+        // 当前评论为置顶评论
+        if (oldLabel.equals(TOP_COMMENT))
+        {
+            comment.setLabel(label);
+        }
+        // 修改label
+        updateById(comment);
+        return ResponseResult.okResult();
     }
 
     /**

@@ -23,4 +23,14 @@ public interface CommentService extends IService<Comment> {
      * @return
      */
     ResponseResult addComment(Comment comment);
+
+    /**
+     * 置顶/取消置顶文章评论
+     *
+     * @param id
+     * @param label
+     * @return
+     */
+    ResponseResult setCommentLabel(Long id, String label);
+
 }

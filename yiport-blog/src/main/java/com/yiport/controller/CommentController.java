@@ -53,4 +53,19 @@ public class CommentController {
     public ResponseResult linkCommentList(Integer pageNum,Integer pageSize){
         return commentService.commentList(BlogConstants.LINK_COMMENT,null,pageNum,pageSize);
     }
+
+    /**
+     * 置顶/取消置顶文章评论
+     *
+     * @param id
+     * @param label
+     * @return
+     */
+    @PutMapping("/setCommentTop/{id}/{label}")
+    @SystemLog(businessName = "置顶/取消置顶文章评论")
+    public ResponseResult setCommentLabel(@PathVariable Long id, @PathVariable String label)
+    {
+        return commentService.setCommentLabel(id, label);
+    }
+
 }
