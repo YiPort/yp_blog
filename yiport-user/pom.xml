@@ -14,7 +14,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>user-service</module>
+        <module>yiport-user-service</module>
         <module>yiport-user-client</module>
     </modules>
 
