@@ -1,0 +1,7 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.yiport.client.ArticleClientResolver,\
+  com.yiport.client.CategoryClientResolver,\
+  com.yiport.client.CollectionClient,\
+  com.yiport.client.CommentClientResolver,\
+  com.yiport.client.LinkClientResolver,\
+  com.yiport.client.QuestionClientResolver
