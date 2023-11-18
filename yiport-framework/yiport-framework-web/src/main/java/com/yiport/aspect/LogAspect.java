@@ -1,10 +1,12 @@
 package com.yiport.aspect;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.ttl.TransmittableThreadLocal;
 import com.yiport.annotation.SystemLog;
 import com.yiport.utils.AddressUtils;
 import com.yiport.utils.RedisCache;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -35,6 +37,11 @@ public class LogAspect
     @Autowired
     private AddressUtils addressUtils;
 
+    @Autowired
+    private HttpServletRequest request;
+
+    private final TransmittableThreadLocal<StopWatch> invokeTimeTL = new TransmittableThreadLocal<>();
+
     @Pointcut("@annotation(com.yiport.annotation.SystemLog)")
     public void pt()
     {
@@ -54,7 +61,14 @@ public class LogAspect
         }
         finally
         {
-            log.info("=======End=======" + System.lineSeparator());
+            StopWatch stopWatch = invokeTimeTL.get();
+            stopWatch.stop();
+            log.info("结束请求 => {}/{} URL:[{}] 耗时:[{}毫秒]",
+                    request.getMethod(),
+                    getSystemLog(joinPoint).businessName(),
+                    request.getRequestURI(),
+                    stopWatch.getTime());
+            invokeTimeTL.remove();
         }
         return ret;
     }
@@ -63,7 +77,7 @@ public class LogAspect
     private void handlerAfter(Object ret)
     {
         // 打印出参
-        log.info("Response       : {}", JSON.toJSONString(ret));
+        log.info("响应体 => {}", JSON.toJSONString(ret));
     }
 
     /**
@@ -73,13 +87,6 @@ public class LogAspect
      */
     private void handlerBefore(ProceedingJoinPoint joinPoint)
     {
-
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = null;
-        if (requestAttributes != null)
-        {
-            request = requestAttributes.getRequest();
-        }
         // 获取真实ip对应的地址存入RedisHash
         String ip = request.getHeader("X-Forwarded-For") == null ? request.getRemoteHost() : request.getHeader("X-Forwarded-For");
         String realAddressByIP = addressUtils.getRealAddressByIP(ip);
@@ -92,21 +99,16 @@ public class LogAspect
         // 获取被增强方法上的注解对象
         SystemLog systemLog = getSystemLog(joinPoint);
 
-        log.info("=======Start=======");
-        // 打印请求 URL
-        log.info("URL            : {}", request.getRequestURL());
-        // 打印描述信息
-        log.info("BusinessName   : {}", systemLog.businessName());
-        // 打印 Http method
-        log.info("HTTP Method    : {}", request.getMethod());
-        // 打印调用 controller 的全路径以及执行方法
-        log.info("Class Method   : {}.{}",
-                joinPoint.getSignature().getDeclaringTypeName(),
-                joinPoint.getSignature().getName());
-        // 打印请求的 IP
-        log.info("IP             : {}-{}", ip, realAddressByIP);
-        // 打印请求入参
-        log.info("Request Args   : {}", JSON.toJSONString(joinPoint.getArgs()));
+        log.info("开始请求 => {}/{} URL:[{}] 参数:{} IP:[{}-{}]",
+                request.getMethod(),
+                systemLog.businessName(),
+                request.getRequestURI(),
+                JSON.toJSONString(joinPoint.getArgs()),
+                ip, realAddressByIP);
+
+        StopWatch stopWatch = new StopWatch();
+        invokeTimeTL.set(stopWatch);
+        stopWatch.start();
     }
 
     /**

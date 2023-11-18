@@ -5,7 +5,8 @@ import java.lang.annotation.*;
 @Documented
 @Target(ElementType.METHOD) // 说明该注解只能放在方法上面
 @Retention(RetentionPolicy.RUNTIME)
-public @interface LimitRequest {
+public @interface LimitRequest
+{
     /**
      * 限制时间 单位：毫秒
      */
@@ -17,7 +18,19 @@ public @interface LimitRequest {
     int count() default 1;
 
     /**
+     * 限流类型
+     * <p>根据ip-IP
+     * <p>根据用户-USER
+     */
+    String type() default "IP";
+
+    /**
      * 返回描述
      */
-    String description() default "接口请求超过次数";
+    String description() default "接口请求超过次数，请不要频繁操作";
+
+    /**
+     * 前端是否提示
+     */
+    boolean tip() default false;
 }

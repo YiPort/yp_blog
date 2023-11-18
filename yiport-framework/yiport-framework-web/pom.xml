@@ -170,6 +170,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- TLog日志追踪 -->
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>tlog-all-spring-boot-starter</artifactId>
+            <version>1.3.6</version>
+        </dependency>
+
     </dependencies>
 
 </project>
