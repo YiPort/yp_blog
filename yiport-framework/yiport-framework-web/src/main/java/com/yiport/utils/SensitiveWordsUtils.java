@@ -10,8 +10,15 @@ import java.util.*;
  */
 public class SensitiveWordsUtils
 {
+    /**
+     * 一个敏感词子树结束标志
+     */
     private static final String END_FLAG = "@END";
 
+    /**
+     * 无效字符
+     * <p>防止敏感词中使用一些字符隔开而不被过滤</p>
+     */
     public static final String INVALID_CHAR = " \n*-+=#@!$%^&()！￥……，。,./[]{}【】·~`‘’':;：；|、\\1234567890";
 
     /**
@@ -33,8 +40,8 @@ public class SensitiveWordsUtils
         while (iterator.hasNext())
         {
             currentWord = iterator.next();
-            if (currentWord == null || currentWord.trim().length() < 2)
-            {  //敏感词长度必须大于等于2
+            if (currentWord == null)
+            {  //敏感词不为空
                 continue;
             }
             currentMap = sensitiveWordsMap;
