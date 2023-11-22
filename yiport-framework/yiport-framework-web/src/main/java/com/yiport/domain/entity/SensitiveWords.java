@@ -10,7 +10,7 @@ import java.io.Serializable;
 /**
  * 敏感词
  */
-@TableName(value = "sensitive_words")
+@TableName(value = "yp_sensitive_words")
 @Data
 public class SensitiveWords implements Serializable
 {
