@@ -46,6 +46,11 @@ public class Comment implements Serializable{
     private String content;
 
     /**
+     * 过滤敏感词后的评论内容
+     */
+    private String filterContent;
+
+    /**
      * 所回复的目标评论的userid
      */
     private Long toCommentUserId;

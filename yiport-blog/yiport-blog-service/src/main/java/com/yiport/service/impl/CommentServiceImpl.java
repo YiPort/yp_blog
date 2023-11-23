@@ -14,6 +14,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yiport.utils.JwtUtil;
+import com.yiport.utils.RedisCache;
+import com.yiport.utils.SensitiveWordsUtils;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static com.yiport.constants.BlogConstants.ARTICLE_COMMENT;
@@ -51,6 +54,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Resource
     private ArticleMapper articleMapper;
 
+    @Autowired
+    private RedisCache redisCache;
 
 
     /**
@@ -156,6 +161,10 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         // 格式化创建时间
         String createTime = currentTime.format(formatter);
         comment.setCreateTime(createTime);
+        // 过滤敏感词
+        Map<Object, Object> sensitiveWordsMap = redisCache.getCacheObject("sensitiveWordsMap");
+        Map<String, Object> filterResult = SensitiveWordsUtils.getFilterResult(content, SensitiveWordsUtils.MatchType.MAX_MATCH, sensitiveWordsMap);
+        comment.setFilterContent(filterResult.get("text").toString());
         boolean result = save(comment);
         return ResponseResult.okResult(result);
     }

@@ -27,6 +27,7 @@ CREATE TABLE `yp_comment`(
                              `article_id`         bigint(20) DEFAULT NULL COMMENT '文章id',
                              `root_id`            bigint(20) DEFAULT '-1' COMMENT '根评论id',
                              `content`            varchar(512) DEFAULT NULL COMMENT '评论内容',
+                             `filter_content`     VARCHAR(512) DEFAULT NULL COMMENT '过滤敏感词后的评论内容',
                              `to_comment_user_id` bigint(20) DEFAULT '-1' COMMENT '所回复的目标评论的userid',
                              `to_comment_id`      bigint(20) DEFAULT '-1' COMMENT '回复目标评论id',
                              `create_nick`        VARCHAR(125) NULL comment '创建人昵称',

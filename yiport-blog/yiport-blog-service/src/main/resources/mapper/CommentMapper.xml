@@ -10,6 +10,7 @@
         <result property="articleId" column="article_id" jdbcType="BIGINT"/>
         <result property="rootId" column="root_id" jdbcType="BIGINT"/>
         <result property="content" column="content" jdbcType="VARCHAR"/>
+        <result property="filterContent" column="filter_content" jdbcType="VARCHAR"/>
         <result property="toCommentUserId" column="to_comment_user_id" jdbcType="BIGINT"/>
         <result property="toCommentId" column="to_comment_id" jdbcType="BIGINT"/>
         <result property="createBy" column="create_by" jdbcType="BIGINT"/>
@@ -25,9 +26,10 @@
     <sql id="Base_Column_List">
         id
         ,type,article_id,
-        root_id,content,to_comment_user_id,
-        to_comment_id,create_by,create_nick,
-        avatar,label,create_time,
-        update_by,update_time,del_flag
+        root_id,content,filter_content,
+        to_comment_user_id,to_comment_id,create_by,
+        create_nick,avatar,label,
+        create_time,update_by,update_time,
+        del_flag
     </sql>
 </mapper>
