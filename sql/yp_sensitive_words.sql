@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS `sensitive_words`;
+DROP TABLE IF EXISTS `yp_sensitive_words`;
 
 CREATE TABLE `yp_sensitive_words` (
                                       id BIGINT(200) NOT NULL COMMENT '主键ID',

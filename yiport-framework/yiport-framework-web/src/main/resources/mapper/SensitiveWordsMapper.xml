@@ -15,6 +15,6 @@
 
     <select id="getAllWords" resultType="string">
         SELECT word
-        FROM sensitive_words
+        FROM yp_sensitive_words
     </select>
 </mapper>
