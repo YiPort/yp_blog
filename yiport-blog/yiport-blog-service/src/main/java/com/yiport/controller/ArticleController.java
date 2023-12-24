@@ -36,6 +36,17 @@ public class ArticleController {
         return result;
     }
 
+    /**
+     * 查询最新发布文章
+     *
+     * @return
+     */
+    @GetMapping("/latestArticleList")
+    @SystemLog(businessName = "查询最新发布文章")
+    public ResponseResult latestArticleList()
+    {
+        return articleService.getLatestArticleList();
+    }
 
     /**
      * 分页查询文章列表

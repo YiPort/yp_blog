@@ -462,6 +462,27 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return ResponseResult.okResult(map);
     }
 
+    /**
+     * 查询最新发布文章
+     *
+     * @return
+     */
+    @Override
+    public ResponseResult getLatestArticleList()
+    {
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Article::getStatus, RELEASE)
+                .orderByDesc(Article::getCreateTime)
+                .last("limit 0,3");
+        List<Article> articles = articleMapper.selectList(queryWrapper);
+
+        List<ArticleListVO> articleListVOS = BeanCopyUtils.copyBeanList(articles, ArticleListVO.class);
+        articleListVOS.forEach(articleListVO ->
+                articleListVO.setCreateTime(articleListVO.getCreateTime().substring(0, 16))
+        );
+        return ResponseResult.okResult(articleListVOS);
+    }
+
     private void checkLogin(Long userId) {
         // id校验
         if (userId <= 0) {

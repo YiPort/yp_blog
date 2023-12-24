@@ -91,4 +91,11 @@ public interface ArticleService extends IService<Article> {
      */
     ResponseResult getTotalView(Long id);
 
+    /**
+     * 查询最新发布文章
+     *
+     * @return
+     */
+    ResponseResult getLatestArticleList();
+
 }
