@@ -41,3 +41,56 @@ CREATE TABLE `sys_user`(
                            PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
+
+DROP TABLE wzy.uid_common_generator;
+-- 可用UID表
+create table uid_common_generator
+(
+    random_value bigint auto_increment
+        primary key,
+    uid          int not null
+);
+
+
+DROP TABLE wzy.uid_common_not_available;
+-- 不可用UID表
+create table uid_common_not_available
+(
+    random_value bigint not null
+        primary key,
+    uid          int    not null
+);
+
+
+DROP TABLE wzy.uid_generate_range;
+-- UID类型及范围表
+create table uid_generate_range
+(
+    id           int auto_increment
+        primary key,
+    min_uid      int                                not null,
+    max_uid      int                                not null,
+    create_date  datetime default CURRENT_TIMESTAMP not null,
+    using_status smallint default 0                 not null,
+    user_for     varchar(50)                        not null
+);
+
+
+-- UID分配事务
+create
+definer = root@localhost procedure GET_UID_FOR_REGISTER(IN p_used_for varchar(50))
+BEGIN
+	DECLARE userUid INT DEFAULT 0;
+    DECLARE randomValue BIGINT DEFAULT 0;
+CASE p_used_for
+		WHEN 'common' THEN
+		START TRANSACTION;
+SELECT uid, random_value INTO userUid, randomValue FROM uid_common_generator LIMIT 1 FOR UPDATE;
+IF userUid > 0 THEN
+DELETE FROM uid_common_generator WHERE random_value = randomValue;
+INSERT INTO `uid_common_not_available` VALUES (randomValue, userUid);
+END IF;
+COMMIT;
+END CASE;
+SELECT userUid FROM DUAL;
+END;
