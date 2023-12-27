@@ -97,8 +97,11 @@ public enum AppHttpCodeEnum {
     /**
      * 昵称已存在
      */
-    NICKNAME_EXIST(514, "昵称已存在");
-
+    NICKNAME_EXIST(514, "昵称已存在"),
+    /**
+     * 请不要频繁操作
+     */
+    LIMIT_ERROR(515, "请不要频繁操作");
     /** 状态码 */
     int code;
     /** 信息提示 */
