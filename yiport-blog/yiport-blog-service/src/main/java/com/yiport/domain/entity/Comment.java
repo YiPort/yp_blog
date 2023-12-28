@@ -21,7 +21,10 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @TableName("yp_comment")
-public class Comment implements Serializable{
+public class Comment implements Serializable
+{
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
     @TableId
     private Long id;
 
@@ -110,8 +113,6 @@ public class Comment implements Serializable{
      */
     private Integer delFlag;
 
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
 
 
     @Override

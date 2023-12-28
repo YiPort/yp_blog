@@ -1,6 +1,6 @@
 package com.yiport.service;
 
-import com.yiport.handler.exception.SystemException;
+import com.yiport.exception.SystemException;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;

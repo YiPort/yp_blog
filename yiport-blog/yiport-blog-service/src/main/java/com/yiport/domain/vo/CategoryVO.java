@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotEmpty;
+
 /**
  * 分类响应体
  */
@@ -20,6 +22,7 @@ public class CategoryVO {
     /**
      * 分类名
      */
+    @NotEmpty(message = "分类名不能为空")
     private String name;
 
     /**
@@ -30,6 +33,7 @@ public class CategoryVO {
     /**
      * 描述
      */
+    @NotEmpty(message = "描述不能为空")
     private String description;
 
     /**

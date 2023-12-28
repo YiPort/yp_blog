@@ -20,8 +20,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @TableName("yp_category")
-public class Category {
-
+public class Category
+{
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
     private Long id;
     /**
      * 分类名

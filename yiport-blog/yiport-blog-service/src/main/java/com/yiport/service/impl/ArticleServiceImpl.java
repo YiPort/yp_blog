@@ -231,11 +231,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Override
     public ResponseResult postArticle(SaveArticleVO article) {
-        // 必要参数校验
-        if (StringUtils.isAnyBlank(article.getTitle(), article.getContent()) || article.getCategoryId() == null) {
-            throw new SystemException(PARAMETER_ERROR, "文章标题、内容、分类不能为空");
-        }
-
         String userId = article.getCreateBy().toString();
         String loginKey = BLOG_LOGIN + userId;
         String tokenKey = BLOG_TOKEN + userId;

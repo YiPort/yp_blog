@@ -20,8 +20,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @TableName("yp_link")
-public class Link {
-
+public class Link
+{
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
     /**
      * 主键id
      */

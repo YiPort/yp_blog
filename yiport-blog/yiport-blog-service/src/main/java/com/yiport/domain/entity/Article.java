@@ -22,8 +22,10 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @TableName("yp_article")
 @Accessors(chain = true)
-public class Article {
-
+public class Article
+{
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
     /**
      * 主键id
      */

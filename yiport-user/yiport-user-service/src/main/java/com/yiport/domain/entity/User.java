@@ -20,8 +20,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @TableName("sys_user")
-public class User {
-
+public class User
+{
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
     /**
      * 主键
      */

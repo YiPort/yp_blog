@@ -14,7 +14,8 @@ import java.util.Date;
  */
 @TableName(value = "yp_question")
 @Data
-public class Question implements Serializable {
+public class Question implements Serializable
+{
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
     /**

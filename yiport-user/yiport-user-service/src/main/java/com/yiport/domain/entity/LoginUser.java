@@ -15,10 +15,9 @@ import static com.yiport.constent.UserConstant.NORMAL_STATUS;
 
 @Data
 @NoArgsConstructor
-public class LoginUser implements UserDetails {
-
-    private static final long serialVersionUID = -1754674097819059609L;
-
+public class LoginUser implements UserDetails
+{
+    private static final long serialVersionUID = 1L;
     /**
      * 登录用户
      */

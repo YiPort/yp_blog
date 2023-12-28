@@ -14,6 +14,8 @@ import java.io.Serializable;
 @Data
 public class SensitiveWords implements Serializable
 {
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
     /**
      * 主键ID
      */
@@ -24,9 +26,6 @@ public class SensitiveWords implements Serializable
      * 敏感词
      */
     private String word;
-
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
 
     @Override
     public boolean equals(Object that)

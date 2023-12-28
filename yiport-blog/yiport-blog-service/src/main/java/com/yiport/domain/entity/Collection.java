@@ -13,15 +13,14 @@ import java.io.Serializable;
  */
 @TableName(value = "yp_collection")
 @Data
-public class Collection implements Serializable {
-
+public class Collection implements Serializable
+{
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
     /**
      * 主键
      */
     private Long id;
-
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
     /**
      * 文章id
      */
