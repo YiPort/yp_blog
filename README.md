@@ -74,12 +74,15 @@ SQL文件位于根目录下 [sql](./sql) 文件夹下面
 │   ├── yiport-framework-common  -- 公用框架基础模块
 │   ├── yiport-framework-utils   -- 公用框架工具模块
 │   └── yiport-framework-web     -- 公用框架web模块
-├─yiport-resource                -- 资源管理微服务
-│   ├── yiport-resource-service  -- 资源服务功能模块
-│   └── yiport-resource-client   -- 资源服务客户端服务模块
+├─yiport-user                    -- 用户管理微服务
+│   ├── yiport-user-service      -- 用户服务功能模块
+│   └── yiport-user-client       -- 用户服务客户端服务模块
 ├─yiport-search                  -- 搜索微服务
 │   ├── yiport-search-service    -- 搜索服务功能模块
 │   └── yiport-search-client     -- 搜索客户端服务模块
+├─yiport-resource                -- 资源管理微服务
+│   ├── yiport-resource-service  -- 资源服务功能模块
+│   └── yiport-resource-client   -- 资源服务客户端服务模块
 └── yiport-gateway               -- 网关微服务
 ```
 
