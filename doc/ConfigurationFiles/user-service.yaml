@@ -3,8 +3,3 @@ server:
   # session 失效时间
   session:
     timeout: 60m
-spring:
-  servlet:
-    multipart:
-      max-file-size: 2MB
-      max-request-size: 5MB

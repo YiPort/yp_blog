@@ -37,14 +37,27 @@ spring:
           filters: # 过滤器
             # - AddRequestHeader=Ye,Ye is freaking awesome!
             - StripPrefix=0
+        - id: resource-service
+          uri: lb://resource-service
+          predicates:
+            - Path=/resource/**,
+          filters: # 过滤器
+            # - AddRequestHeader=Ye,Ye is freaking awesome!
+            - StripPrefix=1
         - id: blog-service
           uri: lb://blog-service
           predicates:
             - Path=/blog/**,
           filters: # 过滤器
-            - AddRequestHeader=Ye,Ye is freaking awesome!
+            # - AddRequestHeader=Ye,Ye is freaking awesome!
+            - StripPrefix=1
+        - id: search-service
+          uri: lb://search-service
+          predicates:
+            - Path=/search/**,
+          filters: # 过滤器
+            # - AddRequestHeader=Ye,Ye is freaking awesome!
             - StripPrefix=0
-
 
 logging:
   level:

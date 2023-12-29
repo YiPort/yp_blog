@@ -1,3 +1,7 @@
+user-service:
+  ribbon:
+    NFLoadBalancerRuleClassName: com.alibaba.cloud.nacos.ribbon.NacosRule # 负载均衡规则
+
 server:
   port: 7777
 spring:

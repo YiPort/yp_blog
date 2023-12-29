@@ -1,0 +1,47 @@
+# security配置
+security:
+  # 拦截路径
+  Intercepts:
+    - /**
+  #    - /article/postArticle
+  #    - /article/getDraft
+  #    - /article/getEditHistory
+  #    - /article/deleteDraft/**
+  #    - /article/getMyArticleTotal
+  #    - /article/getTotalView
+  #    - /category/addCategory
+  #    - /collection/addCollection/**
+  #    - /collection/getCollectList
+  #    - /collection/deleteCollection/**
+  #    - /comment/saveComment
+  #    - /comment/allCommentList/**
+  #    - /comment/setCommentTop/**
+  #    - /index/postArticleIndex
+  #    - /question/postQuestion
+  #    - /question/getQuestionList
+  #    - /question/deleteQuestion/**
+  # 排除路径
+  excludes:
+    - /article/hotArticleList
+    - /article/latestArticleList
+    - /article/articleList
+    - /article/articleDetail/**
+    - /article/updateViewCount/**
+    - /category/getCategoryList
+    - /comment/commentList
+    - /comment/linkCommentList
+    - /link/getAllLink
+    - /index/getArticleIndex
+    # 静态资源
+    - /*.html
+    - /**/*.html
+    - /**/*.css
+    - /**/*.js
+    # swagger 文档配置
+    - /favicon.ico
+    - /doc.html
+    - /swagger-resources/**
+    - /webjars/**
+    - /*/api-docs
+    # druid 监控配置
+    - /druid/**

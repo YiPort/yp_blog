@@ -1,7 +1,9 @@
 mybatis-plus:
   configuration:
     # 日志
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+
   global-config:
     db-config:
       logic-delete-field: delFlag

@@ -15,3 +15,9 @@ fdfs: #FastDFS
     height: 60
   tracker-list: # tracker地址：你的虚拟机服务器地址+端口（默认是22122）
     - 192.168.10.123:22122
+minio:
+  # url: http://files.yiport.top:18110
+  url: http://192.168.10.123:9002
+  username: miniouser
+  password: miniopasswd
+  bucket: yp-blog

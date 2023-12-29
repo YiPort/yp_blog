@@ -1,0 +1,7 @@
+server:
+  port: 21010
+spring:
+  elasticsearch:
+    uris: "http://192.168.10.123:19200"
+    username: "elastic"
+    password: "password"

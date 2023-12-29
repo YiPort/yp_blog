@@ -1,0 +1,6 @@
+# 日志配置
+logging:
+  level:
+    com.yiport: debug
+    org.springframework: warn
+  config: classpath:logback.xml

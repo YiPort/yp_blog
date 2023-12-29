@@ -10,6 +10,10 @@
 [跳转进入文件](./blog-service.yaml )
 
 ```yaml
+user-service:
+  ribbon:
+    NFLoadBalancerRuleClassName: com.alibaba.cloud.nacos.ribbon.NacosRule # 负载均衡规则
+
 server:
   port: 7777
 spring:
@@ -32,11 +36,41 @@ server:
   # session 失效时间
   session:
     timeout: 60m
+```
+
+</details>
+
+<details>
+<summary>搜索服务-展开查看详情</summary>
+
+[跳转进入文件](./blog-service.yaml )
+
+```yaml
+server:
+  port: 21010
+spring:
+  elasticsearch:
+    uris: "http://192.168.10.123:19200"
+    username: "elastic"
+    password: "password"
+```
+
+</details>
+
+
+<details>
+<summary>资源服务-展开查看详情</summary>
+
+[跳转进入文件](./blog-service.yaml )
+
+```yaml
+server:
+  port: 8001
 spring:
   servlet:
     multipart:
-      max-file-size: 2MB
-      max-request-size: 5MB
+      max-file-size: 5MB #限定文件上传大小
+      max-request-size: 10MB
 ```
 
 </details>
@@ -86,12 +120,26 @@ spring:
           filters: # 过滤器
             # - AddRequestHeader=Ye,Ye is freaking awesome!
             - StripPrefix=0
+        - id: resource-service
+          uri: lb://resource-service
+          predicates:
+            - Path=/resource/**,
+          filters: # 过滤器
+            # - AddRequestHeader=Ye,Ye is freaking awesome!
+            - StripPrefix=1
         - id: blog-service
           uri: lb://blog-service
           predicates:
             - Path=/blog/**,
           filters: # 过滤器
-            - AddRequestHeader=Ye,Ye is freaking awesome!
+            # - AddRequestHeader=Ye,Ye is freaking awesome!
+            - StripPrefix=1
+        - id: search-service
+          uri: lb://search-service
+          predicates:
+            - Path=/search/**,
+          filters: # 过滤器
+            # - AddRequestHeader=Ye,Ye is freaking awesome!
             - StripPrefix=0
 
 logging:
@@ -105,7 +153,7 @@ logging:
 ### 共享
 
 <details>
-<summary>mysql</summary>
+<summary>MySQL</summary>
 
 [跳转进入文件](./default-mysql.yaml )
 
@@ -157,9 +205,9 @@ spring:
 </details>
 
 <details>
-<summary>redis</summary>
+<summary>Redis</summary>
 
-[跳转进入文件](./default-redis.yaml )
+[跳转进入文件](./default-redis-dev.yaml )
 
 ```yaml
 spring:
@@ -173,7 +221,7 @@ spring:
 </details>
 
 <details>
-<summary>mybatis-plus</summary>
+<summary>Mybatis-Plus</summary>
 
 [跳转进入文件](./default-mybatis-plus.yaml )
 
@@ -181,7 +229,8 @@ spring:
 mybatis-plus:
   configuration:
     # 日志
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+
   global-config:
     db-config:
       logic-delete-field: delFlag
@@ -193,12 +242,12 @@ mybatis-plus:
 </details>
 
 <details>
-<summary>upload-files</summary>
+<summary>Upload-Files</summary>
 
 [跳转进入文件](./default-upload-files.yaml )
 
 ```yaml
-oss: #七牛云OSS
+oss:  #七牛云OSS
   accessKey: xxxx
   secretKey: xxxx
   bucket: yp-blog
@@ -215,12 +264,19 @@ fdfs: #FastDFS
     height: 60
   tracker-list: # tracker地址：你的虚拟机服务器地址+端口（默认是22122）
     - 192.168.10.123:22122
+
+minio:
+  # url: http://files.yiport.top:18110
+  url: http://192.168.10.123:9002
+  username: miniouser
+  password: miniopasswd
+  bucket: yp-blog
 ```
 
 </details>
 
 <details>
-<summary>feign</summary>
+<summary>Feign</summary>
 
 [跳转进入文件](./default-feign.yaml )
 
@@ -248,5 +304,96 @@ hystrix:
         isolation:
           strategy: SEMAPHORE
 ```
+</details>
+
+<details>
+<summary>Log</summary>
+
+[跳转进入文件](./default-log.yaml )
+
+```yaml
+# 日志配置
+logging:
+  level:
+    com.yiport: debug
+    org.springframework: warn
+  config: classpath:logback.xml
+```
+</details>
 
 
+<details>
+<summary>Security</summary>
+
+[跳转进入文件](./default-security.yaml )
+
+```yaml
+# security配置
+security:
+  # 拦截路径
+  Intercepts:
+    - /**
+  #    - /article/postArticle
+  #    - /article/getDraft
+  #    - /article/getEditHistory
+  #    - /article/deleteDraft/**
+  #    - /article/getMyArticleTotal
+  #    - /article/getTotalView
+  #    - /category/addCategory
+  #    - /collection/addCollection/**
+  #    - /collection/getCollectList
+  #    - /collection/deleteCollection/**
+  #    - /comment/saveComment
+  #    - /comment/allCommentList/**
+  #    - /comment/setCommentTop/**
+  #    - /index/postArticleIndex
+  #    - /question/postQuestion
+  #    - /question/getQuestionList
+  #    - /question/deleteQuestion/**
+  # 排除路径
+  excludes:
+    - /article/hotArticleList
+    - /article/latestArticleList
+    - /article/articleList
+    - /article/articleDetail/**
+    - /article/updateViewCount/**
+    - /category/getCategoryList
+    - /comment/commentList
+    - /comment/linkCommentList
+    - /link/getAllLink
+    - /index/getArticleIndex
+    # 静态资源
+    - /*.html
+    - /**/*.html
+    - /**/*.css
+    - /**/*.js
+    # swagger 文档配置
+    - /favicon.ico
+    - /doc.html
+    - /swagger-resources/**
+    - /webjars/**
+    - /*/api-docs
+    # druid 监控配置
+    - /druid/**
+```
+</details>
+
+
+<details>
+<summary>RabbitMQ</summary>
+
+[跳转进入文件](./default-log.yaml )
+
+```yaml
+spring:
+  rabbitmq:
+    host: 192.168.10.123 # 主机名
+    port: 5672 # 端口
+    virtual-host: ypblog # 虚拟主机
+    username: admin # 用户名
+    password: 123 # 密码
+    listener:
+      simple:
+        prefetch: 1 # 每次只能获取一条消息，处理完成才能获取下一个消息
+```
+</details>
