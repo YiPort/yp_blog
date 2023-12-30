@@ -7,7 +7,7 @@ import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Article;
 import com.yiport.domain.entity.Collection;
 import com.yiport.domain.vo.ArticleListVO;
-import com.yiport.handler.exception.SystemException;
+import com.yiport.exception.SystemException;
 import com.yiport.mapper.ArticleMapper;
 import com.yiport.mapper.CollectionMapper;
 import com.yiport.service.CollectionService;

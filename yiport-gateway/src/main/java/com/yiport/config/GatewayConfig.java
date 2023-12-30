@@ -1,7 +1,7 @@
 package com.yiport.config;
 
 
-import com.yiport.handler.exception.GlobalExceptionHandler;
+import com.yiport.exception.GlobalExceptionHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

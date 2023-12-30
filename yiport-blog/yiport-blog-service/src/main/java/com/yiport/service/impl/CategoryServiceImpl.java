@@ -4,7 +4,7 @@ import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Category;
 import com.yiport.domain.vo.CategoryVO;
 import com.yiport.mapper.CategoryMapper;
-import com.yiport.handler.exception.SystemException;
+import com.yiport.exception.SystemException;
 import com.yiport.service.CategoryService;
 import com.yiport.utils.BeanCopyUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;

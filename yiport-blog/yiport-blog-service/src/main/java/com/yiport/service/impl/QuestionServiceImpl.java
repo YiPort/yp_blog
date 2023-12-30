@@ -6,7 +6,7 @@ import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Article;
 import com.yiport.domain.entity.Question;
 import com.yiport.domain.vo.QuestionVO;
-import com.yiport.handler.exception.SystemException;
+import com.yiport.exception.SystemException;
 import com.yiport.mapper.ArticleMapper;
 import com.yiport.mapper.QuestionMapper;
 import com.yiport.service.QuestionService;

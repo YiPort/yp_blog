@@ -5,7 +5,7 @@ import com.yiport.domain.entity.Article;
 import com.yiport.domain.entity.Comment;
 import com.yiport.domain.vo.CommentVO;
 import com.yiport.domain.vo.PageVO;
-import com.yiport.handler.exception.SystemException;
+import com.yiport.exception.SystemException;
 import com.yiport.mapper.ArticleMapper;
 import com.yiport.mapper.CommentMapper;
 import com.yiport.service.CommentService;

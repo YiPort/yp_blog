@@ -2,7 +2,7 @@ package com.yiport.filter;
 
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.LoginUser;
-import com.yiport.handler.exception.SystemException;
+import com.yiport.exception.SystemException;
 import com.yiport.utils.JwtUtil;
 import com.yiport.utils.RedisCache;
 import com.yiport.utils.WebUtils;
@@ -24,7 +24,6 @@ import java.util.Objects;
 
 import static com.yiport.constants.BusinessConstants.BLOG_LOGIN;
 import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
-import static com.yiport.enums.AppHttpCodeEnum.RELOAD_TOKEN;
 
 @Component
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {

@@ -2,10 +2,9 @@ package com.yiport.controller;
 
 import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
-import com.yiport.domain.entity.User;
 import com.yiport.domain.request.AccountLoginRequest;
 import com.yiport.enums.AppHttpCodeEnum;
-import com.yiport.handler.exception.SystemException;
+import com.yiport.exception.SystemException;
 import com.yiport.service.UserLoginService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

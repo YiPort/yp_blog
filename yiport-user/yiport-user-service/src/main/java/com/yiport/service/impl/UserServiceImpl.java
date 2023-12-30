@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.User;
 import com.yiport.domain.vo.UserVO;
-import com.yiport.handler.exception.SystemException;
+import com.yiport.exception.SystemException;
 import com.yiport.mapper.UserMapper;
 import com.yiport.service.UserService;
 import com.yiport.utils.RedisCache;

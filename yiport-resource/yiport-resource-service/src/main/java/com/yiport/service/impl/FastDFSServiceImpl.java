@@ -2,9 +2,8 @@ package com.yiport.service.impl;
 
 import com.yiport.domain.ResponseResult;
 import com.yiport.enums.AppHttpCodeEnum;
-import com.yiport.handler.exception.SystemException;
+import com.yiport.exception.SystemException;
 import com.yiport.service.FastDFSService;
-import com.yiport.service.ResourceService;
 import com.github.tobato.fastdfs.domain.fdfs.StorePath;
 import com.github.tobato.fastdfs.service.FastFileStorageClient;
 import org.apache.commons.lang3.StringUtils;

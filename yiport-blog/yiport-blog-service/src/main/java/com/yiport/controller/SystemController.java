@@ -2,7 +2,7 @@ package com.yiport.controller;
 
 import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
-import com.yiport.handler.exception.SystemException;
+import com.yiport.exception.SystemException;
 import com.yiport.utils.JwtUtil;
 import com.yiport.utils.RedisCache;
 import io.jsonwebtoken.Claims;

@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Index;
 import com.yiport.domain.vo.IndexVO;
-import com.yiport.handler.exception.SystemException;
+import com.yiport.exception.SystemException;
 import com.yiport.mapper.IndexMapper;
 import com.yiport.service.IndexService;
 import com.yiport.utils.BeanCopyUtils;

@@ -1,4 +1,4 @@
-package com.yiport.handler.exception;
+package com.yiport.exception;
 
 import com.yiport.domain.ResponseResult;
 import com.yiport.enums.AppHttpCodeEnum;

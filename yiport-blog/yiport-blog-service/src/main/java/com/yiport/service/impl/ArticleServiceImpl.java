@@ -13,7 +13,7 @@ import com.yiport.domain.vo.EditHistoryVO;
 import com.yiport.domain.vo.HotArticleVO;
 import com.yiport.domain.vo.PageVO;
 import com.yiport.domain.vo.SaveArticleVO;
-import com.yiport.handler.exception.SystemException;
+import com.yiport.exception.SystemException;
 import com.yiport.mapper.ArticleMapper;
 import com.yiport.service.ArticleService;
 import com.yiport.service.CategoryService;

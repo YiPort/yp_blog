@@ -2,7 +2,7 @@ package com.yiport.service.impl;
 
 import com.yiport.domain.ResponseResult;
 import com.yiport.enums.AppHttpCodeEnum;
-import com.yiport.handler.exception.SystemException;
+import com.yiport.exception.SystemException;
 import com.yiport.service.MinioService;
 import com.yiport.utils.PathUtils;
 import io.minio.BucketExistsArgs;

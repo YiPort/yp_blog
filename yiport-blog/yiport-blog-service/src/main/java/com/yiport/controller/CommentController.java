@@ -1,5 +1,6 @@
 package com.yiport.controller;
 
+import com.yiport.annotation.LimitRequest;
 import com.yiport.annotation.SystemLog;
 import com.yiport.constants.BlogConstants;
 import com.yiport.domain.ResponseResult;
@@ -36,6 +37,7 @@ public class CommentController {
      * @return
      */
     @PostMapping("/")
+    @LimitRequest(time = 60 * 1000, count = 2, type = "USER", tip = true, description = "休息一下再评论吧~")
     @SystemLog(businessName = "保存评论")
     public ResponseResult addComment(@RequestBody Comment comment) {
         return commentService.addComment(comment);
