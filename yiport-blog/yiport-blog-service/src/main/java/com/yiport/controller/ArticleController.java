@@ -67,7 +67,7 @@ public class ArticleController {
      * @Author: YiPort
      * @Date: 2023/4/5
      */
-    @GetMapping("/{id}")
+    @GetMapping("/articleDetail/{id}")
     @SystemLog(businessName = "查询文章详情")
     public ResponseResult getArticleDetail(@PathVariable("id") Long id) {
         return articleService.getArticleDetail(id);
