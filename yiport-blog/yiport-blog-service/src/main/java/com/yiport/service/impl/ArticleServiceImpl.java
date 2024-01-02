@@ -116,11 +116,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         List<HotArticleVO> articleVos = BeanCopyUtils.copyBeanList(articles, HotArticleVO.class);
         // 从 redis中获取浏览量
         articleVos.forEach(hotArticleVO -> {
-            String redisKey = ARTICLE_VIEWCOUNT;
-            Integer viewCount = redisCache.getCacheMapValue(redisKey, hotArticleVO.getId().toString());
-            if (viewCount != null) {
-                hotArticleVO.setViewCount(Long.valueOf(viewCount));
-            }
+            String redisKey = ARTICLE_VIEWCOUNT+ hotArticleVO.getId().toString();;
+            hotArticleVO.setViewCount(Long.valueOf(redisCache.getCacheObject(redisKey).toString()));
         });
 
 
@@ -164,11 +161,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         List<ArticleListVO> articleListVOS = BeanCopyUtils.copyBeanList(page.getRecords(), ArticleListVO.class);
         // 从 redis中获取浏览量
         articleListVOS.forEach(articleListVO -> {
-            String redisKey = ARTICLE_VIEWCOUNT;
-            Integer viewCount = redisCache.getCacheMapValue(redisKey, articleListVO.getId().toString());
-            if (viewCount != null) {
-                articleListVO.setViewCount(Long.valueOf(viewCount));
-            }
+            String redisKey = ARTICLE_VIEWCOUNT+ articleListVO.getId().toString();
+            articleListVO.setViewCount(Long.valueOf(redisCache.getCacheObject(redisKey).toString()));
         });
         PageVO pageVo = new PageVO(articleListVOS, page.getTotal());
         return ResponseResult.okResult(pageVo);
@@ -190,8 +184,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             throw new SystemException(PARAMETER_ERROR, "没有找到文章");
         }
         //从redis中获取viewCount
-        Integer viewCount = redisCache.getCacheMapValue(ARTICLE_VIEWCOUNT, id.toString());
-        article.setViewCount(viewCount.longValue());
+        String redisKey = ARTICLE_VIEWCOUNT + article.getId().toString();
+        article.setViewCount(Long.valueOf(redisCache.getCacheObject(redisKey).toString()));
         //转换成VO
         ArticleDetailVO articleDetailVo = BeanCopyUtils.copyBean(article, ArticleDetailVO.class);
         //根据分类id查询分类名
@@ -212,12 +206,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Override
     public ResponseResult updateViewCount(Long id) {
+        String redisKey = ARTICLE_VIEWCOUNT + id.toString();
         //更新redis中对应 id的浏览量
-        Long increment = redisCache.incrementCacheMapValue(ARTICLE_VIEWCOUNT, id.toString(), 1);
+        Long increment = redisCache.increment(redisKey);
         // 若 increment的结果<=1，则传入的文章 id不存在
         Optional<Long> increment1 = Optional.ofNullable(increment);
         if (increment1.isPresent() && increment <= 1) {
-            redisCache.delCacheMapValue(ARTICLE_VIEWCOUNT, id.toString());
+            redisCache.deleteObject(redisKey);
             throw new SystemException(PARAMETER_ERROR);
         }
         return ResponseResult.okResult(increment);
@@ -271,17 +266,17 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         // 格式化创建时间
         String createTime = currentTime.format(formatter);
-        saveArticle.setCreateTime(createTime);
         saveArticle.setCategoryName(categoryService.getById(article.getCategoryId()).getName());
         String editKey = ARTICLE_EDITLIST + saveArticle.getCreateBy();
         if (article.getId() == null) {
             // 保存文章
+            saveArticle.setCreateTime(createTime);
             articleMapper.insert(saveArticle);
             // 将文章浏览量同步到 redis
             if (article.getStatus().equals(RELEASE)) {   //已发布文章
-                String articleKey = ARTICLE_VIEWCOUNT ;
+                String articleKey = ARTICLE_VIEWCOUNT + saveArticle.getId() ;
                 long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
-                redisCache.setCacheMapValue(articleKey,saveArticle.getId().toString(), BigInteger.valueOf(viewCount));
+                redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
                 // 将事件 push入消息列表
                 EditHistory editHistory = new EditHistory(Long.parseLong(userId), "发布了文章：" + saveArticle.getTitle(), createTime, "#0bbd87");
                 editHistoryService.saveOrUpdate(editHistory);
@@ -309,10 +304,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             if (saveArticle.getStatus().equals(RELEASE))  //编辑已发布文章
             {
                 // 将文章浏览量同步到 redis
-                String articleKey = ARTICLE_VIEWCOUNT ;
+                String articleKey = ARTICLE_VIEWCOUNT +saveArticle.getId();;
                 // viewCount为null时为新发布的文章或草稿，不为空时为已发布文章
                 long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
-                redisCache.setCacheMapValue(articleKey,saveArticle.getId().toString(), BigInteger.valueOf(viewCount));
+                redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
                 // 将事件 push入消息队列
                 EditHistory editHistory = new EditHistory(Long.parseLong(userId), "编辑了文章：" + saveArticle.getTitle(), createTime, "#409eff");
                 redisCache.setCacheList(editKey, Arrays.asList(editHistory));

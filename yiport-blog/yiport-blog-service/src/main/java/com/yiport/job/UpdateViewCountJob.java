@@ -2,6 +2,7 @@ package com.yiport.job;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.yiport.domain.entity.Article;
+import com.yiport.mapper.ArticleMapper;
 import com.yiport.service.ArticleService;
 import com.yiport.utils.RedisCache;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,10 @@ import static com.yiport.constants.BlogConstants.RELEASE;
 @Component
 @Slf4j
 public class UpdateViewCountJob {
+
+
+    @Autowired
+    private ArticleMapper articleMapper;
 
     @Autowired
     private RedisCache redisCache;
@@ -36,13 +41,14 @@ public class UpdateViewCountJob {
         queryWrapper.eq(Article::getStatus, RELEASE);
         List<Article> articles = articleService.list(queryWrapper);
 
-        Map<String, Integer> viewCountMap = redisCache.getCacheMap(ARTICLE_VIEWCOUNT);
-
         articles.forEach(article ->
         {
             String id = article.getId().toString();
-            Long viewCount = Long.valueOf(viewCountMap.get(id));
-            article.setViewCount(viewCount);
+            String redisKey = ARTICLE_VIEWCOUNT +id;
+            String viewCount = redisCache.getCacheObject(redisKey).toString();
+            log.info(redisKey + "\t" + viewCount);
+            article.setViewCount(Long.valueOf(viewCount));
+            articleMapper.updateById(article);
         });
 
         articleService.updateBatchById(articles);
