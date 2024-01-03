@@ -326,6 +326,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 // 将事件 push入消息队列
                 EditHistory editHistory = new EditHistory(Long.parseLong(userId), "编辑了草稿：" + saveArticle.getTitle(), createTime, "#e6a23c");
                 redisCache.setCacheList(editKey, Arrays.asList(editHistory));
+                //消息队列发送删除文章，发送MQ消息
+                rabbitTemplate.convertAndSend(BLOG_TOPIC_EXCHANGE, BLOG_DELETE_KEY, article.getId());
                 return ResponseResult.okResult(200, "草稿已保存");
             }
         }

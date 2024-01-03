@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Optional;
 
 import static com.yiport.constants.MQConstants.BLOG_DELETE_KEY;
 import static com.yiport.constants.MQConstants.BLOG_DELETE_QUEUE;
@@ -72,16 +73,25 @@ public class ArticleServerListener {
 	/**
 	 * 根据文章id删除搜索文档
 	 *
-	 * @param ArticleId
+	 * @param articleId
 	 */
 	@RabbitListener(bindings = @QueueBinding(
 			exchange = @Exchange(name = BLOG_TOPIC_EXCHANGE, type = ExchangeTypes.TOPIC),
 			value = @Queue(name = BLOG_DELETE_QUEUE),
 			key = BLOG_DELETE_KEY
 	))
-	public void deleteListener(Long ArticleId) {
-		log.debug("delete Article ,id->{}", ArticleId);
-		articleRepository.deleteById(ArticleId);
+	public void deleteListener(Long articleId) {
+		// Use findById to obtain an Optional<ArticleDoc>
+		Optional<ArticleDoc> optionalArticle = articleRepository.findById(articleId);
+
+		// Check if the Optional contains a value before proceeding
+		if (optionalArticle.isPresent()) {
+			log.debug("Deleting article, id -> {}", articleId);
+			articleRepository.deleteById(articleId);
+		} else {
+			// Optionally log if the article was not found
+			log.warn("Article not found, id -> {}", articleId);
+		}
 	}
 
 }
