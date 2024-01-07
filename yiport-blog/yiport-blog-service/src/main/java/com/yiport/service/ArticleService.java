@@ -50,46 +50,41 @@ public interface ArticleService extends IService<Article> {
     /**
      * 获取草稿
      *
-     * @param id
      * @return
      */
-    ResponseResult getDraftList(Long id);
+    ResponseResult getDraftList();
 
 
     /**
      * 获取编辑记录
      *
-     * @param id
      * @return
      */
-    ResponseResult getEditHistory(Long id);
+    ResponseResult getEditHistory();
 
 
     /**
      * 删除草稿
      *
-     * @param id
      * @param articleId
      * @return
      */
-    ResponseResult deleteDraft(Long id, Long articleId);
+    ResponseResult deleteDraft(Long articleId);
 
 
     /**
      * 获取我发布的文章总数
      *
-     * @param id
      * @return
      */
-    ResponseResult getMyArticleTotal(Long id);
+    ResponseResult getMyArticleTotal();
 
     /**
      * 获取我发布的文章总浏览量
      *
-     * @param id
      * @return
      */
-    ResponseResult getTotalView(Long id);
+    ResponseResult getTotalView();
 
     /**
      * 查询最新发布文章

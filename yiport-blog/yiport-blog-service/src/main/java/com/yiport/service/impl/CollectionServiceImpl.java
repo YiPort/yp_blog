@@ -11,6 +11,7 @@ import com.yiport.exception.SystemException;
 import com.yiport.mapper.ArticleMapper;
 import com.yiport.mapper.CollectionMapper;
 import com.yiport.service.CollectionService;
+import com.yiport.utils.JwtUtil;
 import com.yiport.utils.RedisCache;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,17 +44,19 @@ public class CollectionServiceImpl extends ServiceImpl<CollectionMapper, Collect
     @Resource
     private CollectionMapper collectionMapper;
 
+    @Autowired
+    private  HttpServletRequest httpServletRequest;
+
     /**
      * 收藏文章
      *
-     * @param userId
      * @param articleId
      * @return
      */
     @Override
-    public ResponseResult addCollection(Long userId, Long articleId) {
+    public ResponseResult addCollection( Long articleId) {
         //校验登录状态
-        checkLogin(userId);
+        Long userId = Long.valueOf(JwtUtil.checkToken(httpServletRequest));
         // 校验文章是否存在
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Article::getStatus, RELEASE);
@@ -79,14 +82,12 @@ public class CollectionServiceImpl extends ServiceImpl<CollectionMapper, Collect
     /**
      * 获取收藏文章列表
      *
-     * @param userId
      * @return
      */
     @Override
-    public ResponseResult getCollectList(Long userId) {
+    public ResponseResult getCollectList() {
         //校验登录状态
-        checkLogin(userId);
-
+        Long userId = Long.valueOf(JwtUtil.checkToken(httpServletRequest));
         List<ArticleListVO> collectList = collectionMapper.getCollectList(userId);
 
         return ResponseResult.okResult(collectList);
@@ -95,14 +96,13 @@ public class CollectionServiceImpl extends ServiceImpl<CollectionMapper, Collect
     /**
      * 取消收藏文章
      *
-     * @param userId
      * @param articleId
      * @return
      */
     @Override
-    public ResponseResult deleteCollection(Long userId, Long articleId) {
+    public ResponseResult deleteCollection(Long articleId) {
         //校验登录状态
-        checkLogin(userId);
+        Long userId = Long.valueOf(JwtUtil.checkToken(httpServletRequest));
         //删除收藏文章
         LambdaQueryWrapper<Collection> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Collection::getCreateBy, userId);
@@ -111,34 +111,5 @@ public class CollectionServiceImpl extends ServiceImpl<CollectionMapper, Collect
         return ResponseResult.okResult();
     }
 
-    /**
-     * 校验登录状态
-     *
-     * @param userId
-     */
-    private void checkLogin(Long userId) {
-        // id校验
-        if (userId <= 0) {
-            throw new SystemException(PARAMETER_ERROR);
-        }
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = null;
-        if (requestAttributes != null) {
-            request = requestAttributes.getRequest();
-        }
-        // token校验
-        String token = request.getHeader("Token");
-        if (StringUtils.isAnyBlank(token)) {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
-        }
-        String tokenKey = BLOG_TOKEN + userId;
-        Object cacheObject = redisCache.getCacheObject(tokenKey);
-        if (cacheObject == null) {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
-        }
-        if (!token.equals(String.valueOf(cacheObject))) {
-            throw new SystemException(NEED_LOGIN, "登录过期，请重新登录");
-        }
-    }
 }
 

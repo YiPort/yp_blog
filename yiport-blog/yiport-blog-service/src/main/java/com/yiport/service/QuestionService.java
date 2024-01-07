@@ -25,7 +25,7 @@ public interface QuestionService extends IService<Question> {
      * @param userId
      * @return
      */
-    ResponseResult getQuestionList(Long userId);
+    ResponseResult getQuestionList();
 
     /**
      * 删除文章问题
@@ -34,6 +34,6 @@ public interface QuestionService extends IService<Question> {
      * @param id
      * @return
      */
-    ResponseResult deleteQuestion(Long userId, Long id);
+    ResponseResult deleteQuestion(Long id);
 
 }

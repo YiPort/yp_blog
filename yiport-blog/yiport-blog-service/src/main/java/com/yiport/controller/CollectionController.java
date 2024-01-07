@@ -25,39 +25,36 @@ public class CollectionController {
     /**
      * 收藏文章
      *
-     * @param userId
      * @param articleId
      * @return
      */
-    @PutMapping("/addCollection/{userId}/{articleId}")
+    @PutMapping("/addCollection/{articleId}")
     @SystemLog(businessName = "收藏文章")
-    public ResponseResult addCollection(@PathVariable Long userId, @PathVariable Long articleId) {
-        return collectionService.addCollection(userId, articleId);
+    public ResponseResult addCollection( @PathVariable Long articleId) {
+        return collectionService.addCollection(articleId);
     }
 
     /**
      * 获取收藏文章列表
      *
-     * @param userId 用户id
      * @return
      */
-    @GetMapping("/getCollectList/{userId}")
+    @GetMapping("/getCollectList")
     @SystemLog(businessName = "获取收藏文章列表")
-    public ResponseResult getCollectList(@PathVariable Long userId) {
-        return collectionService.getCollectList(userId);
+    public ResponseResult getCollectList() {
+        return collectionService.getCollectList();
     }
 
     /**
      * 取消收藏文章
      *
-     * @param userId
      * @param articleId
      * @return
      */
-    @DeleteMapping("/deleteCollection/{userId}/{articleId}")
+    @DeleteMapping("/deleteCollection/{articleId}")
     @SystemLog(businessName = "取消收藏文章")
-    public ResponseResult deleteCollection(@PathVariable Long userId, @PathVariable Long articleId) {
-        return collectionService.deleteCollection(userId, articleId);
+    public ResponseResult deleteCollection(@PathVariable Long articleId) {
+        return collectionService.deleteCollection( articleId);
     }
 
 }

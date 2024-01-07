@@ -10,6 +10,7 @@ import com.yiport.exception.SystemException;
 import com.yiport.mapper.IndexMapper;
 import com.yiport.service.IndexService;
 import com.yiport.utils.BeanCopyUtils;
+import com.yiport.utils.LoginUtils;
 import com.yiport.utils.RedisCache;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,17 +35,19 @@ public class IndexServiceImpl extends ServiceImpl<IndexMapper, Index> implements
     @Autowired
     private RedisCache redisCache;
 
+    @Resource
+    private  HttpServletRequest httpServletRequest;
+
+
     /**
      * 提交文章目录索引
      *
      * @param directoryIndex
-     * @param userId
      * @return
      */
     @Override
-    public ResponseResult postArticleIndex(List<Index> directoryIndex, Long userId) {
-        // 校验登录状态
-        checkLogin(userId);
+    public ResponseResult postArticleIndex(List<Index> directoryIndex) {
+        LoginUtils.checkRole(httpServletRequest);
         if (directoryIndex.isEmpty()) {
             throw new SystemException(PARAMETER_ERROR, "索引为空");
         }
@@ -64,40 +67,12 @@ public class IndexServiceImpl extends ServiceImpl<IndexMapper, Index> implements
      */
     @Override
     public ResponseResult getArticleIndex() {
-        List<Index> indices = indexMapper.selectList(new QueryWrapper<>());
+        List<Index> indices = indexMapper.selectList(new LambdaQueryWrapper<Index>()
+                .orderByDesc(Index::getArticleId));
         List<IndexVO> indexVOS = BeanCopyUtils.copyBeanList(indices, IndexVO.class);
         return ResponseResult.okResult(indexVOS);
     }
 
-    /**
-     * 校验登录状态
-     *
-     * @param userId
-     */
-    private void checkLogin(Long userId) {
-        // id校验
-        if (userId <= 0) {
-            throw new SystemException(PARAMETER_ERROR);
-        }
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = null;
-        if (requestAttributes != null) {
-            request = requestAttributes.getRequest();
-        }
-        // token校验
-        String token = request.getHeader("Token");
-        if (StringUtils.isAnyBlank(token)) {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
-        }
-        String tokenKey = BLOG_TOKEN + userId;
-        Object cacheObject = redisCache.getCacheObject(tokenKey);
-        if (cacheObject == null) {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
-        }
-        if (!token.equals(String.valueOf(cacheObject))) {
-            throw new SystemException(NEED_LOGIN, "登录过期，请重新登录");
-        }
-    }
 }
 
 

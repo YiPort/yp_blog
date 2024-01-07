@@ -9,6 +9,7 @@ import com.yiport.service.CategoryService;
 import com.yiport.utils.BeanCopyUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.yiport.utils.LoginUtils;
 import com.yiport.utils.RedisCache;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     @Autowired
     private RedisCache redisCache;
 
+    @Autowired
+    private  HttpServletRequest httpServletRequest;
+
     /**
      * 查询分类列表
      *
@@ -67,15 +71,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
      * @return
      */
     @Override
-    public ResponseResult addCategory(CategoryVO category) {
-        // 非空校验
-        if (StringUtils.isAnyBlank(category.getName(), category.getDescription())) {
-            throw new SystemException(PARAMETER_ERROR, "分类名和描述不能为空");
-        }
-        // 登陆校验
-        if (category.getCreateBy() <= 0) {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后再试");
-        }
+    public ResponseResult addCategory(CategoryVO category)
+    {
+        LoginUtils.checkRole(httpServletRequest);
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = null;
         if (requestAttributes != null) {

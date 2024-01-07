@@ -5,7 +5,7 @@ public class BlogBusinessConstants {
     /**
      * 文章访问量
      */
-    public static final String ARTICLE_VIEWCOUNT = "ypblog:article:viewCount";
+    public static final String ARTICLE_VIEWCOUNT = "ypblog:article:viewCount:";
 
     /**
      * 文章编辑记录

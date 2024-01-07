@@ -30,10 +30,10 @@ public class IndexController {
      * @param directoryIndex
      * @return
      */
-    @PostMapping("/postArticleIndex/{userId}")
+    @PostMapping("/postArticleIndex")
     @SystemLog(businessName = "提交文章目录索引")
-    public ResponseResult postArticleIndex(@RequestBody List<Index> directoryIndex, @PathVariable("userId") Long userId) {
-        return indexService.postArticleIndex(directoryIndex, userId);
+    public ResponseResult postArticleIndex(@RequestBody List<Index> directoryIndex) {
+        return indexService.postArticleIndex(directoryIndex);
     }
 
     /**

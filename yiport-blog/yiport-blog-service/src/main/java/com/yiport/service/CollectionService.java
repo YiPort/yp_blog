@@ -9,27 +9,24 @@ public interface CollectionService extends IService<Collection> {
     /**
      * 收藏文章
      *
-     * @param userId
      * @param articleId
      * @return
      */
-    ResponseResult addCollection(Long userId, Long articleId);
+    ResponseResult addCollection(Long articleId);
 
     /**
      * 获取收藏文章列表
      *
-     * @param userId
      * @return
      */
-    ResponseResult getCollectList(Long userId);
+    ResponseResult getCollectList();
 
     /**
      * 取消收藏文章
      *
-     * @param userId
      * @param articleId
      * @return
      */
-    ResponseResult deleteCollection(Long userId, Long articleId);
+    ResponseResult deleteCollection(Long articleId);
 
 }

@@ -103,66 +103,61 @@ public class ArticleController {
     /**
      * 获取草稿
      *
-     * @param id
      * @return
      */
-    @GetMapping("/getDraft/{id}")
+    @GetMapping("/getDraft")
     @SystemLog(businessName = "获取草稿")
-    public ResponseResult getDraftList(@PathVariable Long id) {
-        return articleService.getDraftList(id);
+    public ResponseResult getDraftList() {
+        return articleService.getDraftList();
     }
 
 
     /**
      * 获取编辑记录
      *
-     * @param id
      * @return
      */
-    @GetMapping("/getEditHistory/{id}")
+    @GetMapping("/getEditHistory")
     @SystemLog(businessName = "获取编辑记录")
-    public ResponseResult getEditHistory(@PathVariable Long id) {
-        return articleService.getEditHistory(id);
+    public ResponseResult getEditHistory() {
+        return articleService.getEditHistory();
     }
 
 
     /**
      * 删除草稿
      *
-     * @param id
      * @param articleId
      * @return
      */
-    @DeleteMapping("/deleteDraft/{id}/{articleId}")
+    @DeleteMapping("/deleteDraft/{articleId}")
     @SystemLog(businessName = "删除草稿")
-    public ResponseResult deleteDraft(@PathVariable Long id, @PathVariable Long articleId) {
-        return articleService.deleteDraft(id, articleId);
+    public ResponseResult deleteDraft(@PathVariable Long articleId) {
+        return articleService.deleteDraft(articleId);
     }
 
 
     /**
      * 获取我发布的文章总数
      *
-     * @param id
      * @return
      */
-    @GetMapping("/getMyArticleTotal/{id}")
+    @GetMapping("/getMyArticleTotal")
     @SystemLog(businessName = "获取我发布的文章总数")
-    public ResponseResult getMyArticleTotal(@PathVariable Long id)
+    public ResponseResult getMyArticleTotal()
     {
-        return articleService.getMyArticleTotal(id);
+        return articleService.getMyArticleTotal();
     }
 
     /**
      * 获取我发布的文章总浏览量
      *
-     * @param id
      * @return
      */
-    @GetMapping("/getTotalView/{id}")
+    @GetMapping("/getTotalView")
     @SystemLog(businessName = "获取我发布的文章总浏览量")
-    public ResponseResult getTotalView(@PathVariable Long id)
+    public ResponseResult getTotalView()
     {
-        return articleService.getTotalView(id);
+        return articleService.getTotalView();
     }
 }

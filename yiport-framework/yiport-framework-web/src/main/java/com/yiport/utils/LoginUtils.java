@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Objects;
 
+import static com.yiport.constants.BusinessConstants.ADMIN_ID;
 import static com.yiport.constants.BusinessConstants.BLOG_ADMIN;
 import static com.yiport.constants.BusinessConstants.TOKEN_KEY;
 import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
@@ -22,7 +23,7 @@ public class LoginUtils
     /**
      * 权限检查
      */
-    public static void checkRole(RedisCache redisCache, HttpServletRequest httpServletRequest)
+    public static void checkRole(HttpServletRequest httpServletRequest)
     {
         // token校验
         String token = httpServletRequest.getHeader(TOKEN_KEY);
@@ -39,8 +40,7 @@ public class LoginUtils
         {
             throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
         }
-        Object admin = redisCache.getCacheObject(BLOG_ADMIN + claims.getId());
-        if (Objects.isNull(admin))
+        if (!Long.valueOf(claims.getId()).equals(ADMIN_ID))
         {
             throw new SystemException(NO_OPERATOR_AUTH);
         }

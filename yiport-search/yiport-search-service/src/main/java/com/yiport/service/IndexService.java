@@ -15,7 +15,7 @@ public interface IndexService extends IService<Index> {
      * @param directoryIndex
      * @return
      */
-    ResponseResult postArticleIndex(List<Index> directoryIndex, Long userId);
+    ResponseResult postArticleIndex(List<Index> directoryIndex);
 
     /**
      * 获取文章目录索引

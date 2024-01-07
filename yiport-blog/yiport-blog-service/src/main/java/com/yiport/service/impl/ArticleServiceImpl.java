@@ -19,17 +19,16 @@ import com.yiport.service.ArticleService;
 import com.yiport.service.CategoryService;
 import com.yiport.service.EditHistoryService;
 import com.yiport.utils.BeanCopyUtils;
+import com.yiport.utils.JwtUtil;
+import com.yiport.utils.LoginUtils;
 import com.yiport.utils.MarkdownUtils;
 import com.yiport.utils.RedisCache;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 
 import javax.annotation.Resource;
@@ -48,16 +47,13 @@ import java.util.stream.Collectors;
 
 import static com.yiport.constants.BlogBusinessConstants.ARTICLE_EDITLIST;
 import static com.yiport.constants.BlogBusinessConstants.ARTICLE_VIEWCOUNT;
-import static com.yiport.constants.BusinessConstants.BLOG_ADMIN;
-import static com.yiport.constants.BusinessConstants.BLOG_LOGIN;
-import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
 import static com.yiport.constants.BlogConstants.ARTICLE_STATUS_NORMAL;
 import static com.yiport.constants.BlogConstants.NOT_RELEASE;
 import static com.yiport.constants.BlogConstants.RELEASE;
+import static com.yiport.constants.MQConstants.BLOG_DELETE_KEY;
 import static com.yiport.constants.MQConstants.BLOG_INSERT_KEY;
 import static com.yiport.constants.MQConstants.BLOG_TOPIC_EXCHANGE;
 import static com.yiport.constants.MQConstants.BLOG_UPDATE_KEY;
-import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
 import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
 
 
@@ -79,6 +75,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Resource
     private RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    private  HttpServletRequest httpServletRequest;
 
     /**
      * 查询热门文章列表
@@ -226,37 +225,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Override
     public ResponseResult postArticle(SaveArticleVO article) {
-        String userId = article.getCreateBy().toString();
-        String loginKey = BLOG_LOGIN + userId;
-        String tokenKey = BLOG_TOKEN + userId;
-        Object loginObj = redisCache.getCacheObject(loginKey);
-        Object tokenObj = redisCache.getCacheObject(tokenKey);
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = null;
-        if (requestAttributes != null) {
-            request = requestAttributes.getRequest();
-        }
-        String token = request.getHeader("Token");
-        // 登录校验
-        if (loginObj == null || tokenObj == null || token == null) {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后操作");
-        }
-        // 登录过期校验
-        if (!token.equals(String.valueOf(tokenObj))) {
-            throw new SystemException(NEED_LOGIN, "登录过期，请重新登录");
-        }
-        // 管理员权限校验
-        String adminKey = BLOG_ADMIN + userId;
-        if (redisCache.getCacheObject(adminKey) == null) {
-            article.setStatus(NOT_RELEASE);
-        }
-//        // isComment值转换
-//        if (article.getIsComment().equals("true")) {
-//            article.setIsComment("1");
-//        } else if (article.getIsComment().equals("false")) {
-//            article.setIsComment("0");
-//        }
 
+        LoginUtils.checkRole(httpServletRequest);
 
         Article saveArticle = BeanCopyUtils.copyBean(article, Article.class);
         //设置保存时间
@@ -278,7 +248,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
                 redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
                 // 将事件 push入消息列表
-                EditHistory editHistory = new EditHistory(Long.parseLong(userId), "发布了文章：" + saveArticle.getTitle(), createTime, "#0bbd87");
+                EditHistory editHistory = new EditHistory(saveArticle.getCreateBy(), "发布了文章：" + saveArticle.getTitle(), createTime, "#0bbd87");
                 editHistoryService.saveOrUpdate(editHistory);
                 redisCache.setCacheList(editKey, Arrays.asList(editHistory));
 
@@ -293,7 +263,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 return ResponseResult.okResult(saveArticle.getId(), "发布成功");
             } else {  //草稿
                 // 将事件 push入消息队列
-                EditHistory editHistory = new EditHistory(Long.parseLong(userId), "编辑了文章：" + saveArticle.getTitle(), createTime, "#e6a23c");
+                EditHistory editHistory = new EditHistory(saveArticle.getCreateBy(), "编辑了文章：" + saveArticle.getTitle(), createTime, "#e6a23c");
                 editHistoryService.saveOrUpdate(editHistory);
                 redisCache.setCacheList(editKey, Arrays.asList(editHistory));
                 return ResponseResult.okResult(200, "保存成功！");
@@ -309,7 +279,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
                 redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
                 // 将事件 push入消息队列
-                EditHistory editHistory = new EditHistory(Long.parseLong(userId), "编辑了文章：" + saveArticle.getTitle(), createTime, "#409eff");
+                EditHistory editHistory = new EditHistory(saveArticle.getCreateBy(), "编辑了文章：" + saveArticle.getTitle(), createTime, "#409eff");
                 redisCache.setCacheList(editKey, Arrays.asList(editHistory));
 
                 //设置文章摘要为当前文章的内容节选,用于文章搜索
@@ -324,7 +294,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             } else    //编辑草稿
             {
                 // 将事件 push入消息队列
-                EditHistory editHistory = new EditHistory(Long.parseLong(userId), "编辑了草稿：" + saveArticle.getTitle(), createTime, "#e6a23c");
+                EditHistory editHistory = new EditHistory(saveArticle.getCreateBy(), "编辑了草稿：" + saveArticle.getTitle(), createTime, "#e6a23c");
                 redisCache.setCacheList(editKey, Arrays.asList(editHistory));
                 //消息队列发送删除文章，发送MQ消息
                 rabbitTemplate.convertAndSend(BLOG_TOPIC_EXCHANGE, BLOG_DELETE_KEY, article.getId());
@@ -337,17 +307,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     /**
      * 获取草稿
      *
-     * @param id
      * @return
      */
     @Override
-    public ResponseResult getDraftList(Long id) {
-        // 校验登录状态
-        checkLogin(id);
+    public ResponseResult getDraftList() {
+        Long userId = Long.valueOf(JwtUtil.checkToken(httpServletRequest));
         // 获取草稿
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Article::getStatus, NOT_RELEASE);
-        queryWrapper.eq(Article::getCreateBy, id);
+        queryWrapper.eq(Article::getCreateBy, userId);
         List<Article> articles = articleMapper.selectList(queryWrapper);
         List<SaveArticleVO> saveArticleVOS = BeanCopyUtils.copyBeanList(articles, SaveArticleVO.class);
 
@@ -358,19 +326,18 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     /**
      * 获取编辑记录
      *
-     * @param id 用户id
      * @return
      */
     @Override
-    public ResponseResult getEditHistory(Long id) {
+    public ResponseResult getEditHistory() {
         // 校验登录状态
-        checkLogin(id);
+        Long userId = Long.valueOf(JwtUtil.checkToken(httpServletRequest));
         // 获取编辑记录
-        String editKey = ARTICLE_EDITLIST + id;
+        String editKey = ARTICLE_EDITLIST + userId;
         List<Object> cacheList = redisCache.getCacheList(editKey);
         if (cacheList.isEmpty()) {
             LambdaQueryWrapper<EditHistory> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(EditHistory::getUserId, id);
+            wrapper.eq(EditHistory::getUserId, userId);
             List<EditHistory> editHistories = editHistoryService.list(wrapper);
             List<EditHistoryVO> editHistoryVOS = BeanCopyUtils.copyBeanList(editHistories, EditHistoryVO.class);
 
@@ -385,26 +352,25 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     /**
      * 删除草稿
      *
-     * @param id
      * @param articleId
      * @return
      */
     @Override
-    public ResponseResult deleteDraft(Long id, Long articleId) {
+    public ResponseResult deleteDraft(Long articleId) {
         // 校验登录状态
-        checkLogin(id);
+        Long userId = Long.valueOf(JwtUtil.checkToken(httpServletRequest));
         // 获取标题
         String title = getById(articleId).getTitle();
         // 删除草稿
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Article::getCreateBy, id);
+        queryWrapper.eq(Article::getCreateBy, userId);
         queryWrapper.eq(Article::getId, articleId);
         articleMapper.delete(queryWrapper);
         // 获取时间戳,设置创建时间
         String createTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        String editKey = ARTICLE_EDITLIST + id;
+        String editKey = ARTICLE_EDITLIST + userId;
         // 将事件 push入消息列表
-        EditHistory editHistory = new EditHistory(id, "删除了文章：" + title, createTime, "#F56C6C");
+        EditHistory editHistory = new EditHistory(userId, "删除了文章：" + title, createTime, "#F56C6C");
         EditHistoryVO editHistoryVO = BeanCopyUtils.copyBean(editHistory, EditHistoryVO.class);
         editHistoryService.saveOrUpdate(editHistory);
         redisCache.setCacheList(editKey, Arrays.asList(editHistoryVO));
@@ -414,17 +380,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     /**
      * 获取我发布的文章总数
      *
-     * @param id
      * @return
      */
     @Override
-    public ResponseResult getMyArticleTotal(Long id)
+    public ResponseResult getMyArticleTotal()
     {
         //登录状态校验
-        checkLogin(id);
+        Long userId = Long.valueOf(JwtUtil.checkToken(httpServletRequest));
         //根据 userId查询已发布文章
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Article::getCreateBy, id)
+        queryWrapper.eq(Article::getCreateBy, userId)
                 .eq(Article::getStatus, RELEASE);
         Integer integer = articleMapper.selectCount(queryWrapper);
         HashMap<Object, Object> map = new HashMap<>();
@@ -435,17 +400,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     /**
      * 获取我发布的文章总浏览量
      *
-     * @param id
      * @return
      */
     @Override
-    public ResponseResult getTotalView(Long id)
+    public ResponseResult getTotalView()
     {
         // 登录校验
-        checkLogin(id);
+        Long userId = Long.valueOf(JwtUtil.checkToken(httpServletRequest));
         // 根据 userId获取发布的文章总浏览量
         QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("create_by", id);
+        queryWrapper.eq("create_by", userId);
         queryWrapper.select("IFNULL(SUM(view_count),0) AS view_count");
         Article article = articleMapper.selectOne(queryWrapper);
         HashMap<Object, Object> map = new HashMap<>();
@@ -473,31 +437,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 articleListVO.setCreateTime(articleListVO.getCreateTime().substring(0, 16))
         );
         return ResponseResult.okResult(articleListVOS);
-    }
-
-    private void checkLogin(Long userId) {
-        // id校验
-        if (userId <= 0) {
-            throw new SystemException(PARAMETER_ERROR);
-        }
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = null;
-        if (requestAttributes != null) {
-            request = requestAttributes.getRequest();
-        }
-        // token校验
-        String token = request.getHeader("Token");
-        if (StringUtils.isAnyBlank(token)) {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
-        }
-        String tokenKey = BLOG_TOKEN + userId;
-        Object cacheObject = redisCache.getCacheObject(tokenKey);
-        if (cacheObject == null) {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
-        }
-        if (!token.equals(String.valueOf(cacheObject))) {
-            throw new SystemException(NEED_LOGIN, "登录过期，请重新登录");
-        }
     }
 
 }

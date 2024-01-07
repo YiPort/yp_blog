@@ -38,26 +38,24 @@ public class QuestionController {
     /**
      * 获取文章问题列表
      *
-     * @param userId 用户id
      * @return
      */
-    @GetMapping("/getQuestionList/{userId}")
+    @GetMapping("/getQuestionList")
     @SystemLog(businessName = "获取文章问题列表")
-    public ResponseResult getQuestionList(@PathVariable Long userId) {
-        return questionService.getQuestionList(userId);
+    public ResponseResult getQuestionList() {
+        return questionService.getQuestionList();
     }
 
     /**
      * 删除文章问题
      *
-     * @param userId
-     * @param id
+     * @param articleId
      * @return
      */
-    @DeleteMapping("/deleteQuestion/{userId}/{id}")
+    @DeleteMapping("/deleteQuestion/{articleId}")
     @SystemLog(businessName = "删除文章问题")
-    public ResponseResult deleteQuestion(@PathVariable Long userId, @PathVariable Long id) {
-        return questionService.deleteQuestion(userId, id);
+    public ResponseResult deleteQuestion(@PathVariable Long articleId) {
+        return questionService.deleteQuestion(articleId);
     }
 
 }
