@@ -7,7 +7,9 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /**
  * 分类表(Category)表实体类
@@ -17,6 +19,8 @@ import lombok.NoArgsConstructor;
  */
 @SuppressWarnings("serial")
 @Data
+@ToString
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @TableName("yp_category")

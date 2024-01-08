@@ -3,6 +3,8 @@ package com.yiport.domain.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.io.Serializable;
 
@@ -11,8 +13,10 @@ import java.io.Serializable;
  *
  * @TableName yp_collection
  */
-@TableName(value = "yp_collection")
 @Data
+@ToString
+@EqualsAndHashCode
+@TableName(value = "yp_collection")
 public class Collection implements Serializable
 {
     @TableField(exist = false)
