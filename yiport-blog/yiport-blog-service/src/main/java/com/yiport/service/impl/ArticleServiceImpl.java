@@ -270,6 +270,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             }
         } else {
             // 更新文章
+            saveArticle.setUpdateTime(createTime);
             articleMapper.updateById(saveArticle);
             if (saveArticle.getStatus().equals(RELEASE))  //编辑已发布文章
             {

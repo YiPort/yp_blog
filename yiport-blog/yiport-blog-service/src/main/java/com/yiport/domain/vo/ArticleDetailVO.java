@@ -62,4 +62,8 @@ public class ArticleDetailVO {
      * 创建时间
      */
     private String createTime;
+    /**
+     * 最后编辑时间
+     */
+    private String updateTime;
 }
