@@ -36,7 +36,7 @@ public class CommentController {
      * @param comment
      * @return
      */
-    @PostMapping("/")
+    @PostMapping("/saveComment")
     @LimitRequest(time = 60 * 1000, count = 2, type = "USER", tip = true, description = "休息一下再评论吧~")
     @SystemLog(businessName = "保存评论")
     public ResponseResult addComment(@RequestBody Comment comment) {
@@ -68,6 +68,17 @@ public class CommentController {
     public ResponseResult setCommentLabel(@PathVariable Long id, @PathVariable String label)
     {
         return commentService.setCommentLabel(id, label);
+    }
+
+
+    /**
+     * 管理员删除评论
+     */
+    @DeleteMapping("/deleteComment/{id}")
+    @SystemLog(businessName = "管理员删除评论")
+    public ResponseResult<Void> deleteComment(@PathVariable Long id)
+    {
+        return commentService.deleteComment(id);
     }
 
 }

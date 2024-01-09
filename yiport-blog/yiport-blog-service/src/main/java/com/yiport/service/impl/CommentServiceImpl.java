@@ -14,6 +14,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yiport.utils.JwtUtil;
+import com.yiport.utils.LoginUtils;
 import com.yiport.utils.RedisCache;
 import com.yiport.utils.SensitiveWordsUtils;
 import io.jsonwebtoken.Claims;
@@ -94,6 +95,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             commentVo.setChildren(children);
         }
 
+//        System.out.println(commentVOList+"yeye");
         return ResponseResult.okResult(new PageVO(commentVOList, page.getTotal()));
     }
 
@@ -123,24 +125,20 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      */
     @Override
     public ResponseResult addComment(Comment comment) {
+        // Token解析
+        Long userId = Long.valueOf(JwtUtil.checkToken(httpServletRequest));
+        comment.setCreateBy(userId);
         String type = comment.getType();
         String content = comment.getContent();
-        Long createBy = comment.getCreateBy();
 
         //参数不为空
-        if (StringUtils.isAnyBlank(type, content) || createBy == -1) {
+        if (StringUtils.isAnyBlank(type, content) ) {
             throw new SystemException(PARAMETER_ERROR);
         }
         //限制长度
         if (content.length() > 300)
         {
             throw new SystemException(PARAMETER_ERROR, "评论内容不能超过300字符");
-        }
-        // Token解析
-        String userId = checkToken();
-        if (!userId.equals(createBy.toString()))
-        {
-            throw new SystemException(NO_OPERATOR_AUTH);
         }
         //评论内容不能为空
         if (type.equals(ARTICLE_COMMENT))
@@ -181,7 +179,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     public ResponseResult setCommentLabel(Long id, String label)
     {
         // Token解析
-        String userId = checkToken();
+        Long userId = Long.valueOf(JwtUtil.checkToken(httpServletRequest));
         // 判断是否为文章博主
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getId, id)
@@ -229,23 +227,14 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     /**
-     * 解析Token
-     *
-     * @return
+     * 管理员删除评论
      */
-    public String checkToken ()
+    @Override
+    public ResponseResult<Void> deleteComment(Long id)
     {
-        String token = httpServletRequest.getHeader("Token");
-        if (org.apache.commons.lang3.StringUtils.isBlank(token)) {
-            throw new SystemException(NO_OPERATOR_AUTH);
-        }
-        Claims claims;
-        try {
-            claims = JwtUtil.parseJWT(token);
-        } catch (Exception e) {
-            throw new SystemException(NEED_LOGIN);
-        }
-        return claims.getId();
+        LoginUtils.checkRole(httpServletRequest);
+        removeById(id);
+        return ResponseResult.okResult();
     }
 
 }

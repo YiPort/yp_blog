@@ -33,4 +33,5 @@ public interface CommentService extends IService<Comment> {
      */
     ResponseResult setCommentLabel(Long id, String label);
 
+    ResponseResult<Void> deleteComment(Long id);
 }
