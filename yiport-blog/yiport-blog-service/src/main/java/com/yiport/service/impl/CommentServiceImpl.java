@@ -32,6 +32,7 @@ import java.util.Objects;
 
 import static com.yiport.constants.BlogConstants.ARTICLE_COMMENT;
 import static com.yiport.constants.BlogConstants.IS_COMMENT;
+import static com.yiport.constants.BlogConstants.LINK_COMMENT;
 import static com.yiport.constants.BlogConstants.NORMAL_COMMENT;
 import static com.yiport.constants.BlogConstants.NOT_TOP_COMMENT;
 import static com.yiport.constants.BlogConstants.ROOT_COMMENT;
@@ -58,64 +59,116 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Autowired
     private RedisCache redisCache;
 
+    @Autowired
+    private CommentMapper commentMapper;
+
 
     /**
-     * 查询评论列表
-     *
-     * @param articleId
-     * @param pageNum
-     * @param pageSize
-     * @return
+     * 查询文章评论列表
      */
     @Override
-    public ResponseResult commentList(String commentType, Long articleId, Integer pageNum, Integer pageSize) {
-        //查询对应文章的根评论
-        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        //对articleId进行判断
-        queryWrapper.eq(ARTICLE_COMMENT.equals(commentType), Comment::getArticleId, articleId);
-        queryWrapper.eq(Comment::getStatus, NORMAL_COMMENT);
-        //根评论 rootId为-1
-        queryWrapper.eq(Comment::getRootId, ROOT_COMMENT);
-        //评论类型
-        queryWrapper.eq(Comment::getType,commentType);
-        queryWrapper.orderByDesc(Comment::getLabel);
-        queryWrapper.orderByAsc(Comment::getCreateTime);
-
-        //分页查询
-        Page<Comment> page = new Page(pageNum,pageSize);
-        page(page,queryWrapper);
-
-        List<CommentVO> commentVOList = BeanCopyUtils.copyBeanList(page.getRecords(), CommentVO.class);
-
-        //查询所有根评论对应的子评论集合，并且赋值给对应的属性
-        for (CommentVO commentVo : commentVOList) {
-            //查询对应的子评论
-            List<CommentVO> children = getChildren(commentVo.getId());
-            //赋值
-            commentVo.setChildren(children);
+    public ResponseResult<PageVO> getCommentList(Long articleId, Integer pageNum, Integer pageSize)
+    {
+        // 查询 当前文章下的 精选 文章 根评论
+        LambdaQueryWrapper<Comment> lambdaQueryWrapper = new LambdaQueryWrapper<Comment>()
+                .eq(Comment::getArticleId, articleId)
+                .eq(Comment::getType, ARTICLE_COMMENT)
+                .eq(Comment::getStatus, NORMAL_COMMENT)
+                .eq(Comment::getToCommentId, ROOT_COMMENT)
+                .orderByDesc(Comment::getLabel)
+                .orderByAsc(Comment::getCreateTime);
+        // 分页
+        Page<Comment> page = new Page<>(pageNum, pageSize);
+        page(page, lambdaQueryWrapper);
+        // 根评论列表
+        List<Comment> rootComments = page.getRecords();
+        // 根评论请求体集合
+        List<CommentVO> rootArticleCommentVOS = BeanCopyUtils.copyBeanList(rootComments, CommentVO.class);
+        // 遍历根评论请求体集合
+        for (CommentVO rootArticleCommentVO : rootArticleCommentVOS)
+        {
+            LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Comment::getArticleId, articleId);
+            queryWrapper.eq(Comment::getType, ARTICLE_COMMENT);
+            queryWrapper.eq(Comment::getStatus, NORMAL_COMMENT);
+            queryWrapper.eq(Comment::getToCommentId, rootArticleCommentVO.getId());
+            queryWrapper.orderByAsc(Comment::getCreateTime);
+            // 根评论 id对应的子评论列表
+            List<Comment> comments = commentMapper.selectList(queryWrapper);
+            // 根评论 id对应的子评论请求体列表
+            List<CommentVO> articleCommentVOS = BeanCopyUtils.copyBeanList(comments, CommentVO.class);
+            // 将子评论请求体列表放入对应的根评论请求体列表中
+            rootArticleCommentVO.setChildren(articleCommentVOS);
+        }
+        // 查询评论总数
+        List<Comment> rootCommentTotal = commentMapper.selectList(lambdaQueryWrapper);
+        long total = page.getTotal();   //评论总条数
+        for (Comment rootComment : rootCommentTotal)
+        {
+            LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Comment::getArticleId, articleId);
+            queryWrapper.eq(Comment::getType, ARTICLE_COMMENT);
+            queryWrapper.eq(Comment::getStatus, NORMAL_COMMENT);
+            queryWrapper.eq(Comment::getToCommentId, rootComment.getId());
+            // 根评论 id对应的子评论列表
+            List<Comment> comments = commentMapper.selectList(queryWrapper);
+            total += comments.size();
         }
 
-//        System.out.println(commentVOList+"yeye");
-        return ResponseResult.okResult(new PageVO(commentVOList, page.getTotal()));
-    }
+        PageVO pageVO = new PageVO(rootArticleCommentVOS, total);
 
+        return ResponseResult.okResult(pageVO);
+    }
 
     /**
-     * 根据根评论的id查询所对应的子评论的集合
-     *
-     * @param id 根评论的id
-     * @return
+     * 查询友链评论列表
      */
-    private List<CommentVO> getChildren(Long id) {
+    @Override
+    public ResponseResult<PageVO> getLinkCommentList(Integer pageNum, Integer pageSize)
+    {
+        LambdaQueryWrapper<Comment> rootQueryWrapper = new LambdaQueryWrapper<>();
+        // 查询 友链评论 根评论
+        rootQueryWrapper.eq(Comment::getType, LINK_COMMENT)
+                .eq(Comment::getRootId, ROOT_COMMENT)
+                .eq(Comment::getStatus, NORMAL_COMMENT)
+                .orderByAsc(Comment::getCreateTime);
+        // 分页
+        Page<Comment> page = new Page<>(pageNum, pageSize);
+        page(page, rootQueryWrapper);
+        // 获取根评论响应请求体集合
+        List<Comment> rootComments = page.getRecords();
+        List<CommentVO> rootLinkCommentVOS = BeanCopyUtils.copyBeanList(rootComments, CommentVO.class);
+        // 遍历，将子评论插入
+        for (CommentVO rootLinkCommentVO : rootLinkCommentVOS)
+        {
+            LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Comment::getToCommentId, rootLinkCommentVO.getId());
+            queryWrapper.eq(Comment::getType, LINK_COMMENT);
+            queryWrapper.eq(Comment::getStatus, NORMAL_COMMENT);
+            queryWrapper.orderByAsc(Comment::getCreateTime);
+            List<Comment> comments = list(queryWrapper);
+            List<CommentVO> linkCommentVOS = BeanCopyUtils.copyBeanList(comments, CommentVO.class);
+            rootLinkCommentVO.setChildren(linkCommentVOS);
+        }
+        // 查询评论总数
+        List<Comment> linkCommentRootTotal = commentMapper.selectList(rootQueryWrapper);
+        long total = page.getTotal();   //评论总条数
+        for (Comment linkCommentRoot : linkCommentRootTotal)
+        {
+            LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Comment::getToCommentId, linkCommentRoot.getId());
+            queryWrapper.eq(Comment::getType, LINK_COMMENT);
+            queryWrapper.eq(Comment::getStatus, NORMAL_COMMENT);
+            List<Comment> comments = list(queryWrapper);
+            total += comments.size();
+        }
 
-        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Comment::getRootId, id);
-        queryWrapper.orderByAsc(Comment::getCreateTime);
-        List<Comment> comments = list(queryWrapper);
-        // 根评论 id对应的子评论请求体列表
-        List<CommentVO> commentVOS = BeanCopyUtils.copyBeanList(comments, CommentVO.class);
-        return commentVOS;
+        PageVO pageVO = new PageVO(rootLinkCommentVOS, total);
+
+        return ResponseResult.okResult(pageVO);
     }
+
+
 
     /**
      * 发表评论

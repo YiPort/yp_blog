@@ -27,7 +27,7 @@ public class CommentController {
     @GetMapping("/commentList")
     @SystemLog(businessName = "查询评论列表")
     public ResponseResult commentList(Long articleId, Integer pageNum, Integer pageSize){
-        return commentService.commentList(BlogConstants.ARTICLE_COMMENT,articleId,pageNum,pageSize);
+        return commentService.getCommentList(articleId, pageNum, pageSize);
     }
 
     /**
@@ -53,7 +53,7 @@ public class CommentController {
     @GetMapping("/linkCommentList")
     @SystemLog(businessName = "查询友链评论")
     public ResponseResult linkCommentList(Integer pageNum,Integer pageSize){
-        return commentService.commentList(BlogConstants.LINK_COMMENT,null,pageNum,pageSize);
+        return commentService.getLinkCommentList(pageNum, pageSize);
     }
 
     /**
