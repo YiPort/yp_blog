@@ -81,22 +81,6 @@ public interface UserClient {
     @PostMapping("/user/delete")
     ResponseResult deleteUser(@RequestParam("id") String id);
 
-    /**
-     * 用户登录。
-     *
-     * @param accountLoginRequest 登录请求信息，包括用户名、密码、验证码和UUID。
-     * @return 操作结果。
-     */
-    @PostMapping("/user/login")
-    ResponseResult login(@RequestBody AccountLoginRequest accountLoginRequest);
-
-    /**
-     * 用户退出登录。
-     *
-     * @return 操作结果。
-     */
-    @PostMapping("/user/logout")
-    ResponseResult logout();
 
     /**
      * 获取图片验证码。

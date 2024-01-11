@@ -26,7 +26,7 @@ public class ResourceController {
 
 
     /**
-     * 头像上传
+     * 图片上传
      * 需要token
      *
      * @param img

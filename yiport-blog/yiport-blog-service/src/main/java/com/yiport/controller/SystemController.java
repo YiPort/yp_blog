@@ -25,8 +25,6 @@ import static com.yiport.enums.AppHttpCodeEnum.NO_OPERATOR_AUTH;
 /**
  * 系统控制层
  *
- * @author wzy
- * @version 2022/6/29 16:06
  */
 @RestController
 @RequestMapping("/system")

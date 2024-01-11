@@ -5,8 +5,6 @@ import java.util.*;
 /**
  * 敏感词工具类
  *
- * @author wzy
- * @version 2022/7/2 10:19
  */
 public class SensitiveWordsUtils
 {

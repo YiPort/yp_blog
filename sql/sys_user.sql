@@ -42,7 +42,7 @@ CREATE TABLE `sys_user`(
 ) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
 
-DROP TABLE wzy.uid_common_generator;
+DROP TABLE uid_common_generator;
 -- 可用UID表
 create table uid_common_generator
 (
@@ -52,7 +52,7 @@ create table uid_common_generator
 );
 
 
-DROP TABLE wzy.uid_common_not_available;
+DROP TABLE uid_common_not_available;
 -- 不可用UID表
 create table uid_common_not_available
 (
@@ -62,7 +62,7 @@ create table uid_common_not_available
 );
 
 
-DROP TABLE wzy.uid_generate_range;
+DROP TABLE uid_generate_range;
 -- UID类型及范围表
 create table uid_generate_range
 (

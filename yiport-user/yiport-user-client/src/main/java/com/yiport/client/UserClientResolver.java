@@ -101,29 +101,6 @@ public class UserClientResolver implements UserClient{
     }
 
     /**
-     * 当服务不可用时，为用户登录提供默认响应。
-     *
-     * @param accountLoginRequest 登录请求数据
-     * @return 表示系统错误的错误结果。
-     */
-    @Override
-    public ResponseResult login(AccountLoginRequest accountLoginRequest) {
-        log.error("用户登录服务异常：用户登录请求失败");
-        return ResponseResult.errorResult(AppHttpCodeEnum.SYSTEM_ERROR, "用户登录服务不可用");
-    }
-
-    /**
-     * 当服务不可用时，为用户退出登录提供默认响应。
-     *
-     * @return 表示系统错误的错误结果。
-     */
-    @Override
-    public ResponseResult logout() {
-        log.error("用户登录服务异常：用户退出登录请求失败");
-        return ResponseResult.errorResult(AppHttpCodeEnum.SYSTEM_ERROR, "用户登录服务不可用");
-    }
-
-    /**
      * 当服务不可用时，为获取图片验证码提供默认响应。
      *
      * @return 表示系统错误的错误结果。
