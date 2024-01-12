@@ -10,11 +10,11 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@Configuration(proxyBeanMethods = false)
-@ConditionalOnClass({MinioClient.class})
-@EnableConfigurationProperties(OssProperties.class)
-@ConditionalOnExpression("${oss.enabled}")
-@ConditionalOnProperty(value = "oss.type", havingValue = "minio")
+//@Configuration(proxyBeanMethods = false)
+//@ConditionalOnClass({MinioClient.class})
+//@EnableConfigurationProperties(OssProperties.class)
+//@ConditionalOnExpression("${oss.enabled}")
+//@ConditionalOnProperty(value = "oss.type", havingValue = "minio")
 public class MinioConfiguration
 {
 

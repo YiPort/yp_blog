@@ -20,7 +20,7 @@ import static com.yiport.constants.HTTPConstants.JPG;
 import static com.yiport.constants.HTTPConstants.PNG;
 import static com.yiport.enums.AppHttpCodeEnum.SYSTEM_ERROR;
 
-@Service("minioResourceService")
+//@Service("minioResourceService")
 public class ResourceServiceImpl implements OSSResourceService {
 
     @Autowired

@@ -4,6 +4,7 @@ import com.yiport.domain.ResponseResult;
 import com.yiport.enums.AppHttpCodeEnum;
 import com.yiport.exception.SystemException;
 import com.yiport.service.MinioService;
+import com.yiport.utils.JwtUtil;
 import com.yiport.utils.PathUtils;
 import io.minio.BucketExistsArgs;
 import io.minio.GetObjectArgs;
@@ -15,11 +16,14 @@ import io.minio.Result;
 import io.minio.errors.MinioException;
 import io.minio.messages.Item;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,14 +32,21 @@ import java.io.InputStream;
 @Service("minioService")
 public class MinioServiceImpl implements MinioService {
 
+	@Autowired
+	HttpServletRequest httpServletRequest;
 
-	String buckName = "blog-images";
-	String preUrl = "http://images.yiport.top/";
+	@Value("${minio.defaultBucketName}")
+	private String buckName;
+
+	@Value("${minio.domainName}")
+	String preUrl ;
+
 	@Resource
 	private MinioClient minioClient;
 
 	@Override
 	public ResponseResult uploadImg(MultipartFile img) {
+		String userId = JwtUtil.checkToken(httpServletRequest);
 		//判断文件类型
 		//获取原始文件名
 		String originalFilename = img.getOriginalFilename();

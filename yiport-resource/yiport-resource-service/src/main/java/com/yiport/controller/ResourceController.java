@@ -1,6 +1,7 @@
 package com.yiport.controller;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.yiport.annotation.LimitRequest;
 import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.service.FastDFSService;
@@ -34,7 +35,21 @@ public class ResourceController {
      */
     @PostMapping("/upload")
 //    @SystemLog(businessName = "上传文件头像")
-    public ResponseResult uploadImg(MultipartFile img){
+     public ResponseResult uploadImg(MultipartFile img){
+        return minioService.uploadImg(img);
+    }
+
+    /**
+     * 图片上传
+     * 需要token
+     *
+     * @param img
+     * @return
+     */
+    @PostMapping("/uploadAvatar")
+//    @SystemLog(businessName = "上传文件头像")
+    @LimitRequest(time = 24 * 60 * 60 * 1000, count = 2, type = "USER", limitAdmin = false, description = "每日只能修改两次头像", tip = true)
+    public ResponseResult uploadAvatar(MultipartFile img){
         return minioService.uploadImg(img);
     }
 }
