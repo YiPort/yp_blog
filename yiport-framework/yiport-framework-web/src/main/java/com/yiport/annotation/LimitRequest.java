@@ -25,6 +25,11 @@ public @interface LimitRequest
     String type() default "IP";
 
     /**
+     * 是否对管理员限制
+     */
+    boolean limitAdmin() default true;
+
+    /**
      * 返回描述
      */
     String description() default "接口请求超过次数，请不要频繁操作";

@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import static com.yiport.constants.BusinessConstants.ADMIN_ID;
 import static com.yiport.enums.AppHttpCodeEnum.LIMIT_ERROR;
 import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
 import static com.yiport.enums.AppHttpCodeEnum.NO_OPERATOR_AUTH;
@@ -76,6 +77,11 @@ public class LimitRequestAspect {
                 throw new SystemException(NEED_LOGIN);
             }
             key = claims.getId();
+            if (!limitRequest.limitAdmin() && key.equals(String.valueOf(ADMIN_ID)))
+            {
+                return pjp.proceed();
+            }
+
         }
 
         // 获取Map对象， 如果没有则返回默认值
