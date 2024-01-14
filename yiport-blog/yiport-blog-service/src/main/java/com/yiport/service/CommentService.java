@@ -2,6 +2,7 @@ package com.yiport.service;
 
 import com.yiport.domain.ResponseResult;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yiport.domain.bo.CommentBO;
 import com.yiport.domain.entity.Comment;
 import com.yiport.domain.vo.PageVO;
 
@@ -26,6 +27,11 @@ public interface CommentService extends IService<Comment> {
      * 置顶/取消置顶文章评论
      */
     ResponseResult<Void> setCommentLabel(Long id, String label);
+
+    /**
+     * 管理员查询评论
+     */
+    ResponseResult<PageVO> getAllCommentList(CommentBO commentBO);
 
     /**
      * 管理员删除评论
