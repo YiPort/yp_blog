@@ -81,4 +81,13 @@ public class CommentController {
         return commentService.deleteComment(id);
     }
 
+    /**
+     * 管理员查询评论
+     */
+    @GetMapping("/allCommentList")
+    @SystemLog(businessName = "管理员查询所有评论")
+    public ResponseResult<PageVO> allCommentList(CommentBO commentBO)
+    {
+        return commentService.getAllCommentList(commentBO);
+    }
 }

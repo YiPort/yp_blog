@@ -82,7 +82,7 @@ public class ArticleController {
      */
     @PutMapping("/updateViewCount/{id}")
     @SystemLog(businessName = "更新文章浏览量")
-    @LimitRequest(time = 20*1000)
+    @LimitRequest(time = 60*1000)
     public ResponseResult updateViewCount(@PathVariable("id") Long id) {
         return articleService.updateViewCount(id);
     }

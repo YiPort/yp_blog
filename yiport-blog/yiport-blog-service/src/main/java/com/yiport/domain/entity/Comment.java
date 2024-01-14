@@ -79,7 +79,7 @@ public class Comment implements Serializable
     private String avatar;
 
     /**
-     * 评论标签
+     * 评论标签 (0-普通评论，1-置顶评论)
      */
     private String label;
 

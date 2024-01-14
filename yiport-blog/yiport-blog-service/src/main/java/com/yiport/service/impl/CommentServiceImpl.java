@@ -247,7 +247,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         LambdaQueryWrapper<Article> articleWrapper = new LambdaQueryWrapper<>();
         articleWrapper.eq(Article::getId, articleId);
         Long createBy = articleMapper.selectOne(articleWrapper).getCreateBy();
-        if (!userId.equals(createBy.toString()))
+        if (userId != createBy)
         {
             // 当前文章，归属关系不符
             throw new SystemException(NO_OPERATOR_AUTH);
@@ -288,6 +288,26 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         LoginUtils.checkRole(httpServletRequest);
         removeById(id);
         return ResponseResult.okResult();
+    }
+
+    /**
+     * 管理员查询评论
+     */
+    @Override
+    public ResponseResult<PageVO> getAllCommentList(CommentBO commentBO)
+    {
+        LoginUtils.checkRole(httpServletRequest);
+        Page<Comment> page = new Page<>(commentBO.getPageNum(), commentBO.getPageSize());
+        page(page, new LambdaQueryWrapper<Comment>()
+                .orderByDesc(Comment::getCreateTime)
+                .eq(!StringUtils.isEmpty(commentBO.getType()), Comment::getType, commentBO.getType())
+                .eq(Objects.nonNull(commentBO.getArticleId()), Comment::getArticleId, commentBO.getArticleId())
+                .ge(!StringUtils.isEmpty(commentBO.getStartTime()), Comment::getCreateTime, commentBO.getStartTime())
+                .le(!StringUtils.isEmpty(commentBO.getEndTime()), Comment::getCreateTime, commentBO.getEndTime()));
+        List<Comment> comments = page.getRecords();
+        PageVO pageVO = new PageVO(comments, page.getTotal());
+
+        return ResponseResult.okResult(pageVO);
     }
 
 }
