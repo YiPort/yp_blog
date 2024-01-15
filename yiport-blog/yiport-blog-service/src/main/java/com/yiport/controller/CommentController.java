@@ -4,7 +4,10 @@ import com.yiport.annotation.LimitRequest;
 import com.yiport.annotation.SystemLog;
 import com.yiport.constants.BlogConstants;
 import com.yiport.domain.ResponseResult;
+import com.yiport.domain.bo.CommentBO;
 import com.yiport.domain.entity.Comment;
+import com.yiport.domain.vo.PageVO;
+import com.yiport.domain.vo.UpdateCommentVO;
 import com.yiport.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -90,4 +93,25 @@ public class CommentController {
     {
         return commentService.getAllCommentList(commentBO);
     }
+
+    /**
+     * 用户删除评论
+     */
+    @DeleteMapping("/deleteMyComment/{id}")
+    @SystemLog(businessName = "用户删除评论")
+    public ResponseResult<Void> deleteMyComment(@PathVariable Long id)
+    {
+        return commentService.deleteMyComment(id);
+    }
+
+    /**
+     * 更新评论用户信息
+     */
+    @PutMapping("/updateComment")
+    @SystemLog(businessName = "更新评论用户信息")
+    public ResponseResult<Void> updateComment(@RequestBody UpdateCommentVO updateCommentVO)
+    {
+        return commentService.updateComment(updateCommentVO);
+    }
+
 }

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.yiport.domain.bo.CommentBO;
 import com.yiport.domain.entity.Comment;
 import com.yiport.domain.vo.PageVO;
+import com.yiport.domain.vo.UpdateCommentVO;
 
 public interface CommentService extends IService<Comment> {
 
@@ -37,4 +38,16 @@ public interface CommentService extends IService<Comment> {
      * 管理员删除评论
      */
     ResponseResult<Void> deleteComment(Long id);
+
+
+    /**
+     * 用户删除评论
+     */
+    ResponseResult<Void> deleteMyComment(Long id);
+
+    /**
+     * 更新评论用户信息
+     */
+    ResponseResult<Void> updateComment(UpdateCommentVO updateCommentVO);
+
 }

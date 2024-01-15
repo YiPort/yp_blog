@@ -1,10 +1,12 @@
 package com.yiport.service.impl;
 
 import com.yiport.domain.ResponseResult;
+import com.yiport.domain.bo.CommentBO;
 import com.yiport.domain.entity.Article;
 import com.yiport.domain.entity.Comment;
 import com.yiport.domain.vo.CommentVO;
 import com.yiport.domain.vo.PageVO;
+import com.yiport.domain.vo.UpdateCommentVO;
 import com.yiport.exception.SystemException;
 import com.yiport.mapper.ArticleMapper;
 import com.yiport.mapper.CommentMapper;
@@ -308,6 +310,32 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         PageVO pageVO = new PageVO(comments, page.getTotal());
 
         return ResponseResult.okResult(pageVO);
+    }
+
+    /**
+     * 用户删除评论
+     */
+    @Override
+    public ResponseResult<Void> deleteMyComment(Long id)
+    {
+        Long userId = Long.valueOf(JwtUtil.checkToken(httpServletRequest));
+        Comment comment = getById(id);
+        if (comment.getCreateBy() != userId )
+            throw new SystemException(NO_OPERATOR_AUTH);
+        removeById(id);
+        return ResponseResult.okResult();
+    }
+
+    /**
+     * 更新评论用户信息
+     */
+    @Override
+    public ResponseResult<Void> updateComment(UpdateCommentVO updateCommentVO)
+    {
+        Comment comment = BeanCopyUtils.copyBean(updateCommentVO, Comment.class);
+        commentMapper.update(comment, new LambdaQueryWrapper<Comment>()
+                .eq(Comment::getCreateBy, updateCommentVO.getCreateBy()));
+        return ResponseResult.okResult();
     }
 
 }

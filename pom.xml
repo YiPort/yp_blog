@@ -44,7 +44,7 @@
         <elasticsearch.version>7.12.1</elasticsearch.version>
         <flexmark.version>0.50.42</flexmark.version>
         <lang.version>2.6</lang.version>
-        <lang3.version>3.4</lang3.version>
+        <lang3.version>3.12.0</lang3.version>
         <feign-httpclient.version>10.1.0</feign-httpclient.version>
     </properties>
     <dependencyManagement>
