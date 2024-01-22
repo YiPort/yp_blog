@@ -1,11 +1,13 @@
 package com.yiport.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.User;
+import com.yiport.domain.vo.OtherUserVO;
 import com.yiport.domain.vo.UserVO;
 import com.yiport.exception.SystemException;
 import com.yiport.mapper.UserMapper;
@@ -21,11 +23,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
 import static com.yiport.constent.UserConstant.EXPIRATION;
@@ -208,6 +214,27 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Map<Object, Object> map = new HashMap<>();
         map.put("Token", jwt);
         return ResponseResult.okResult(map);
+    }
+
+    /**
+     * 获取其他用户信息
+     */
+    @Override
+    public ResponseResult<OtherUserVO> getOtherUser(Long userId)
+    {
+        User user = getById(userId);
+        if (Objects.isNull(user))
+            throw new SystemException(PARAMETER_ERROR, "用户不存在");
+        OtherUserVO otherUserVO = BeanCopyUtils.copyBean(user, OtherUserVO.class);
+        Date date=null;
+        try {
+          date = new SimpleDateFormat("yyyy-MM-dd").parse(user.getCreateTime());
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        long totalDay = DateUtil.betweenDay( date, new Date(System.currentTimeMillis()), true) + 1;
+        otherUserVO.setTotalDay(totalDay);
+        return ResponseResult.okResult(otherUserVO);
     }
 
 }

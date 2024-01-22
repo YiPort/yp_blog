@@ -5,6 +5,7 @@ import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.User;
 import com.yiport.domain.request.UserRegisterRequest;
+import com.yiport.domain.vo.OtherUserVO;
 import com.yiport.domain.vo.UserVO;
 import com.yiport.service.UserLoginService;
 import com.yiport.service.UserService;
@@ -122,5 +123,14 @@ public class UserController {
         return userService.deleteUserById(id);
     }
 
+    /**
+     * 获取其他用户信息
+     */
+    @GetMapping("/getOtherUser/{userId}")
+    @SystemLog(businessName = "获取其他用户信息")
+    public ResponseResult<OtherUserVO> getOtherUser(@PathVariable Long userId)
+    {
+        return userService.getOtherUser(userId);
+    }
 
 }

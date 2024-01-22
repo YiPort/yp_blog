@@ -3,6 +3,7 @@ package com.yiport.service;
 import com.yiport.domain.ResponseResult;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yiport.domain.entity.User;
+import com.yiport.domain.vo.OtherUserVO;
 import com.yiport.domain.vo.UserVO;
 
 import java.util.List;
@@ -57,5 +58,6 @@ public interface UserService extends IService<User> {
      */
     ResponseResult deleteUserById(String id);
 
+    ResponseResult<OtherUserVO> getOtherUser(Long userId);
 }
 

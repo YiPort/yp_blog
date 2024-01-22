@@ -35,7 +35,6 @@ public class User
     /**
      * UID
      */
-    @TableField(exist = false)
     private Long uid;
 
     /**
