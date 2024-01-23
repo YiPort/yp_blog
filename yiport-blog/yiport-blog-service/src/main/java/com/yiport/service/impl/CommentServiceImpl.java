@@ -318,10 +318,11 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Override
     public ResponseResult<Void> deleteMyComment(Long id)
     {
-        Long userId = Long.valueOf(JwtUtil.checkToken(httpServletRequest));
+        String userId = JwtUtil.checkToken(httpServletRequest);
         Comment comment = getById(id);
-        if (comment.getCreateBy() != userId )
+        if(!userId.equals(comment.getCreateBy().toString())){
             throw new SystemException(NO_OPERATOR_AUTH);
+        }
         removeById(id);
         return ResponseResult.okResult();
     }
@@ -332,7 +333,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Override
     public ResponseResult<Void> updateComment(UpdateCommentVO updateCommentVO)
     {
+        JwtUtil.checkToken(httpServletRequest);
         Comment comment = BeanCopyUtils.copyBean(updateCommentVO, Comment.class);
+        comment.setAvatar(updateCommentVO.getAvatarUrl());
         commentMapper.update(comment, new LambdaQueryWrapper<Comment>()
                 .eq(Comment::getCreateBy, updateCommentVO.getCreateBy()));
         return ResponseResult.okResult();
