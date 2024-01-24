@@ -5,6 +5,7 @@ import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.User;
 import com.yiport.domain.request.UserRegisterRequest;
+import com.yiport.domain.vo.EditUserVO;
 import com.yiport.domain.vo.OtherUserVO;
 import com.yiport.domain.vo.UserVO;
 import com.yiport.service.UserLoginService;
@@ -45,13 +46,13 @@ public class UserController {
     /**
      * 更新个人信息
      *
-     * @param user
+     * @param editUserVO
      * @return
      */
     @PutMapping("/saveUserInfo")
     @SystemLog(businessName = "更新个人信息")
-    public ResponseResult updateUserInfo(@RequestBody UserVO userVO){
-        return userService.updateUserInfo(userVO);
+    public ResponseResult updateUserInfo(@RequestBody EditUserVO editUserVO){
+        return userService.updateUserInfo(editUserVO);
     }
 
     /**

@@ -50,6 +50,10 @@ import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
 import static com.yiport.constent.UserBusinessConstants.CAPTCHA_CODES;
 import static com.yiport.constent.UserConstant.ADMIN_ROLE;
 import static com.yiport.constent.UserConstant.EXPIRATION;
+import static com.yiport.constent.UserConstant.NICKNAME_PREFIX;
+import static com.yiport.constent.UserConstant.NULL_REGEX;
+import static com.yiport.constent.UserConstant.SECTION_MARK;
+import static com.yiport.constent.UserConstant.SPECIAL_REGEX;
 import static com.yiport.enums.AppHttpCodeEnum.NICKNAME_EXIST;
 import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
 import static com.yiport.enums.AppHttpCodeEnum.SUCCESS;
@@ -120,7 +124,7 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
         }
         // 1.6、账号不能重复（将数据库查询校验放到最后）
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("userAccount", userAccount);
+        queryWrapper.eq("username", userAccount);
         long count = this.count(queryWrapper);
         if (count > 0) {
             throw new SystemException(USERNAME_EXIST, "账号已存在");
@@ -171,24 +175,22 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
             throw new SystemException(PARAMETER_ERROR, "密码为8~16位");
         }
         // 1.4、账号不能包含特殊字符
-        String validPattern = "[\\s`!@#$%^&*_\\-~()+=|{}':;,\\[\\].<>/\\\\?！￥…（）—【】‘；：”“’。，、？]";
-        Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
+        Matcher matcher = Pattern.compile(SPECIAL_REGEX).matcher(userAccount);
         if (matcher.find()) {
             throw new SystemException(PARAMETER_ERROR, "账号不能包含特殊字符");
         }
         // 1.5、密码不能含有空字符
-        String validPattern1 = "[\\s]";
-        Matcher matcher1 = Pattern.compile(validPattern1).matcher(userPassword);
+        Matcher matcher1 = Pattern.compile(NULL_REGEX).matcher(userPassword);
         if (matcher1.find()) {
             throw new SystemException(PARAMETER_ERROR, "密码不能包含空字符");
         }
         // 1.6、密码和校验密码不相同
         if (!userPassword.equals(checkPassword)) {
-            throw new SystemException(PARAMETER_ERROR, "密码和校验密码不相同");
+            throw new SystemException(PARAMETER_ERROR, "两次输入的密码不一致");
         }
         // 1.7、验证码为1~4位
         if (captcha.length() < 1 || captcha.length() > 4) {
-            throw new SystemException(PARAMETER_ERROR, "验证码为1~4位");
+            throw new SystemException(PARAMETER_ERROR, "验证码错误请重试");
         }
         // 1.8、验证码失效
         String key = CAPTCHA_CODES + uuid;
@@ -217,8 +219,10 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
         user.setUserName(userAccount);
         user.setPassword(encryptPassword);
         // 分配UID
-        Long common = userMapper.getUidForRegister("common");
+        Long common = userMapper.getUidForRegister(SECTION_MARK);
         user.setUid(common);
+        // 分配昵称
+        user.setNickName(NICKNAME_PREFIX + common);
         // 3.插入数据
         save(user);
 
@@ -261,28 +265,26 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
         String uuid = userLoginRequest.getUuid();
         // 1.1、非空校验
         if (StringUtils.isAnyEmpty(userAccount, userPassword)) {
-            throw new SystemException(PARAMETER_ERROR, "账号密码不能为空");
+            throw new SystemException(PARAMETER_ERROR, "账号或密码错误");
         }
         // 1.2、账号为4~9位
         if (userAccount.length() < 4 || userAccount.length() > 9)
         {
-            throw new SystemException(PARAMETER_ERROR, "账号为4~9位");
+            throw new SystemException(PARAMETER_ERROR, "账号或密码错误");
         }
         // 1.3、密码为8~16位
         if (userPassword.length() < 8 || userPassword.length() > 16)
         {
-            throw new SystemException(PARAMETER_ERROR, "密码为8~16位");
+            throw new SystemException(PARAMETER_ERROR, "账号或密码错误");
         }
         // 1.4、账号不能包含特殊字符
-        String validPattern = "[\\s`!@#$%^&*_\\-~()+=|{}':;,\\[\\].<>/\\\\?！￥…（）—【】‘；：”“’。，、？]";
-        Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
+        Matcher matcher = Pattern.compile(SPECIAL_REGEX).matcher(userAccount);
         if (matcher.find())
         {
-            throw new SystemException(PARAMETER_ERROR, "账号不能包含特殊字符");
+            throw new SystemException(PARAMETER_ERROR, "账号或密码错误");
         }
         // 1.5、密码不能含有空字符
-        String validPattern1 = "[\\s]";
-        Matcher matcher1 = Pattern.compile(validPattern1).matcher(userPassword);
+        Matcher matcher1 = Pattern.compile(NULL_REGEX).matcher(userPassword);
         if (matcher1.find())
         {
             throw new SystemException(PARAMETER_ERROR, "密码不能包含空字符");
@@ -290,7 +292,7 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
         // 1.6、验证码为1~4位
         if (captcha.length() < 1 || captcha.length() > 4)
         {
-            throw new SystemException(PARAMETER_ERROR, "验证码为1~4位");
+            throw new SystemException(PARAMETER_ERROR, "验证码错误请重试");
         }
         // 1.7、验证码失效
         String key = CAPTCHA_CODES + uuid;
@@ -298,7 +300,7 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
         text = redisCache.getCacheObject(key);
         if (StringUtils.isAnyBlank(text))
         {
-            throw new SystemException(PARAMETER_ERROR, "验证码失效请重试");
+            throw new SystemException(PARAMETER_ERROR, "验证码过期请刷新重试");
         }
 
         String result = text.substring(text.lastIndexOf("@") + 1);
@@ -312,7 +314,7 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
                 new UsernamePasswordAuthenticationToken(userAccount, userPassword);
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
         if (Objects.isNull(authenticate)) {
-            throw new SystemException(AppHttpCodeEnum.LOGIN_ERROR, "账号或密码错误");
+            throw new SystemException(PARAMETER_ERROR, "账号或密码错误");
         }
         // 根据 userId生成 Token存入 redis(有效期24小时)
         LoginUser loginUser = (LoginUser) authenticate.getPrincipal();

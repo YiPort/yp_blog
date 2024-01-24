@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.User;
+import com.yiport.domain.vo.EditUserVO;
 import com.yiport.domain.vo.OtherUserVO;
 import com.yiport.domain.vo.UserVO;
 import com.yiport.exception.SystemException;
@@ -20,6 +21,8 @@ import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,10 +35,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
+import static com.yiport.constent.UserConstant.EMAIL_REGEX;
 import static com.yiport.constent.UserConstant.EXPIRATION;
+import static com.yiport.constent.UserConstant.LIMIT_TIME;
+import static com.yiport.constent.UserConstant.NULL_REGEX;
+import static com.yiport.constent.UserConstant.RELOAD_TIME;
+import static com.yiport.constent.UserConstant.TOKEN_HEADER_KEY;
+import static com.yiport.constent.UserConstant.USER_INFO;
 import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
+import static com.yiport.enums.AppHttpCodeEnum.NO_OPERATOR_AUTH;
 import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
 
 /**
@@ -53,32 +65,64 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Autowired
     private RedisCache redisCache;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     /**
      * 更新个人信息
      *
-     * @param userVO
+     * @param editUserVO
      * @return
      */
     @Override
-    public ResponseResult updateUserInfo(UserVO userVO) {
+    public ResponseResult updateUserInfo(EditUserVO editUserVO) {
+        String username = editUserVO.getUsername();
+        String email = editUserVO.getEmail();
+        String sex = editUserVO.getSex();
+        String avatarUrl = editUserVO.getAvatar();
+        String userPassword = editUserVO.getPassword();
+        String checkPassword = editUserVO.getCheckPassword();
         // 获取时间戳,设置创更新时间
-        String updateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        if (StringUtils.isAnyBlank(username))
+        {
+            throw new SystemException(PARAMETER_ERROR, "昵称不能为空");
+        }
+        // 验证邮箱
+        if (!email.matches(EMAIL_REGEX))
+        {
+            throw new SystemException(PARAMETER_ERROR, "邮箱格式不正确");
+        }
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getId, userVO.getId());
+        queryWrapper.eq(User::getId, editUserVO.getId());
         User user = getOne(queryWrapper);
-
-        queryWrapper.eq(User::getId, user.getId());
-        user.setNickName(userVO.getNickName());
-        user.setEmail(userVO.getEmail());
-        user.setSex(userVO.getSex());
-        user.setAvatar(userVO.getAvatar());
-        //设置保存时间
-        // 获取当前时间
-        LocalDateTime currentTime = LocalDateTime.now();
-        user.setUpdateTime(String.valueOf(currentTime));
-        user.setUpdateBy(userVO.getId());
+        user.setEmail(email);
+        user.setSex(sex);
+        user.setAvatar(avatarUrl);
+        if (Objects.nonNull(userPassword) && !StringUtils.isAllBlank(userPassword, checkPassword))
+        {
+            Matcher matcher1 = Pattern.compile(NULL_REGEX).matcher(userPassword);
+            if (matcher1.find() || (userPassword.length() < 8 || userPassword.length() > 16))
+            {
+                throw new SystemException(PARAMETER_ERROR, "密码为8~16位且不能包含空字符");
+            }
+            if (!userPassword.equals(checkPassword))
+            {
+                throw new SystemException(PARAMETER_ERROR, "两次输入的密码不一致");
+            }
+            // 加密
+            String encryptPassword = passwordEncoder.encode(userPassword);
+            user.setPassword(encryptPassword);
+        }
+        User one = getOne(new LambdaQueryWrapper<User>()
+                .eq(User::getUserName, username)
+                .ne(User::getId, editUserVO.getId()));
+        if (Objects.nonNull(one))
+        {
+            throw new SystemException(PARAMETER_ERROR, "昵称已存在");
+        }
+        user.setUserName(username);
         updateById(user);
-        return reloadToken();
+        return reloadToken(user.getId());
     }
 
 
@@ -156,7 +200,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @return
      */
     @Override
-    public ResponseResult deleteUserById(String id) {
+    public ResponseResult<Void> deleteUserById(String id)
+    {
         if (StringUtils.isBlank(id) || !NumberUtils.isDigits(id)) {
             throw new SystemException(PARAMETER_ERROR, "请求参数错误");
         }
@@ -169,15 +214,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
 
     /**
-     * 刷新 Token
-     *
-     * @return
+     * 刷新Token
      */
-    public ResponseResult reloadToken()
+    public ResponseResult<Object> reloadToken(Long id)
     {
-        String token = request.getHeader("Token");
+        String token = request.getHeader(TOKEN_HEADER_KEY);
         Claims claims;
         String jwt;
+        Map<Object, Object> map = new HashMap<>();
         // 解析token
         try
         {
@@ -185,34 +229,42 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         catch (Exception e)
         {
-            e.printStackTrace();
-            throw new RuntimeException("Token非法！");
+            throw new SystemException(NEED_LOGIN, "Token非法！");
         }
+        // 获取用户信息
         String userId = claims.getId();
+        if (Objects.nonNull(id) && !id.toString().equals(userId))
+        {
+            throw new SystemException(NO_OPERATOR_AUTH);
+        }
+        User user = getById(userId);
+        UserVO userVO = BeanCopyUtils.copyBean(user, UserVO.class);
+        map.put(USER_INFO, userVO);
+        String tokenKey = BLOG_TOKEN + userId;
+
         long now = System.currentTimeMillis();
         long startTime = claims.getIssuedAt().getTime();
         // 距离登录时间超过五天重新登录
-        if (now - startTime < 5 * 24 * 60 * 60 * 1000L)
+        if (now - startTime < LIMIT_TIME)
         {
             long expiration = claims.getExpiration().getTime();
-            User user = getById(userId);
-            // 距离过期时间小于6小时刷新token过期时间
-            if (expiration - now < 6 * 60 * 60 * 1000L)
+            // 距离过期时间小于12小时刷新token过期时间，并将token返回
+            if (expiration - now < RELOAD_TIME)
             {
                 jwt = JwtUtil.createJWT(userId, JSON.toJSONString(user), EXPIRATION);
             }
             else
             {
-                jwt = JwtUtil.updateJWT(userId, JSON.toJSONString(user), claims.getIssuedAt(), claims.getExpiration());
+                return ResponseResult.okResult(userVO);
             }
         }
         else
         {
+            redisCache.deleteObject(tokenKey);
             throw new SystemException(NEED_LOGIN, "用户未登录");
         }
-        redisCache.setCacheObject(BLOG_TOKEN + userId, jwt);
-        Map<Object, Object> map = new HashMap<>();
-        map.put("Token", jwt);
+        redisCache.setCacheObject(tokenKey, jwt);
+        map.put(TOKEN_HEADER_KEY, jwt);
         return ResponseResult.okResult(map);
     }
 

@@ -87,5 +87,34 @@ public interface UserConstant {
      * Token过期时间
      */
     long EXPIRATION = 48 * 60 * 60 * 1000L;
+    /**
+     * 强制重新登录时间（10天）
+     */
+    Long LIMIT_TIME = 10 * 24 * 60 * 60 * 1000L;
+
+    /**
+     * Token刷新时间（12小时）
+     */
+    Long RELOAD_TIME = 12 * 60 * 60 * 1000L;
+
+    /**
+     * 系统自动分配昵称前缀
+     */
+    String NICKNAME_PREFIX = "用户";
+
+    /**
+     * UID区间标识（common）
+     */
+    String SECTION_MARK = "common";
+
+    /**
+     * token-header-key
+     */
+    String TOKEN_HEADER_KEY = "token";
+
+    /**
+     * userInfo
+     */
+    String USER_INFO = "userInfo";
 
 }
