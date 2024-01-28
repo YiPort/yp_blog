@@ -44,7 +44,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 // 对于登录接口 允许匿名访问
                 // 对于任何人都可见
-                .antMatchers("/user/login", "/user/register", "/user/captchaImage", "/user/getOtherUser/**").permitAll()
+                .antMatchers("/user/login", "/user/register", "/user/captchaImage",
+                        "/user/getOtherUser/**", "/mail/**").permitAll()
                 // 对于登录接口 允许匿名访问
                 .antMatchers("/user/login", "/user/register", "/user/captchaImage").anonymous()
                 // 除上面外的所有请求全部需要鉴权认证

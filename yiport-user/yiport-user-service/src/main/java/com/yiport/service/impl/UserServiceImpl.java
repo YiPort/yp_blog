@@ -77,7 +77,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public ResponseResult updateUserInfo(EditUserVO editUserVO) {
         String username = editUserVO.getUsername();
-        String email = editUserVO.getEmail();
         String sex = editUserVO.getSex();
         String avatarUrl = editUserVO.getAvatar();
         String userPassword = editUserVO.getPassword();
@@ -87,15 +86,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         {
             throw new SystemException(PARAMETER_ERROR, "昵称不能为空");
         }
-        // 验证邮箱
-        if (!email.matches(EMAIL_REGEX))
-        {
-            throw new SystemException(PARAMETER_ERROR, "邮箱格式不正确");
-        }
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getId, editUserVO.getId());
         User user = getOne(queryWrapper);
-        user.setEmail(email);
         user.setSex(sex);
         user.setAvatar(avatarUrl);
         if (Objects.nonNull(userPassword) && !StringUtils.isAllBlank(userPassword, checkPassword))

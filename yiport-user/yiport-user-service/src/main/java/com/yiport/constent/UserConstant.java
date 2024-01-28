@@ -117,4 +117,19 @@ public interface UserConstant {
      */
     String USER_INFO = "userInfo";
 
+    /**
+     * mail-subject
+     */
+    String VALIDATION_MESSAGE = "验证消息";
+
+    /**
+     * verify-mail-captcha-key
+     */
+    String VERIFY_MAIL_CAPTCHA = "verify_mail_captcha:";
+
+    /**
+     * 邮箱验证码过期时间（分钟）
+     */
+    Integer MAIL_CAPTCHA_TIME = 3;
+
 }
