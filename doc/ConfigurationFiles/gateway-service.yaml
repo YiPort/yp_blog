@@ -33,7 +33,7 @@ spring:
         - id: user-service
           uri: lb://user-service
           predicates:
-            - Path=/user/**,
+            - Path=/user/**,/mail/**,
           filters: # 过滤器
             # - AddRequestHeader=Ye,Ye is freaking awesome!
             - StripPrefix=0

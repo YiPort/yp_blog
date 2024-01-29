@@ -1,0 +1,56 @@
+spring:
+  #邮箱基本配置（自定义邮箱）
+  mail:
+    host: smtp.yiport.top
+    #发送者邮箱
+    username: blog@yiport.top
+    #配置密码,注意不是真正的密码，而是申请到的授权码
+    password: password
+    port: 465
+    #默认的邮件编码为UTF-8
+    default-encoding: UTF-8
+    properties:
+      mail:
+        #配置SSL 加密工厂
+        smtp:
+          ssl:
+            enable: true
+        debug: true
+
+  #邮箱基本配置（网易）
+  # mail:
+  #   host: smtp.163.com
+  #   #发送者邮箱
+  #   username: xxx@163.com
+  #   #配置密码,注意不是真正的密码，而是申请到的授权码
+  #   password: xxx
+  #   port: 465
+  #   #默认的邮件编码为UTF-8
+  #   default-encoding: UTF-8
+  #   properties:
+  #     mail:
+  #       #配置SSL 加密工厂
+  #       smtp:
+  #         ssl:
+  #           enable: true
+  #       debug: true
+
+    #邮箱基本配置（qq）
+#    mail:
+#      host: smtp.qq.com
+#      #发送者邮箱
+#      username: xxx@qq.com
+#      #配置密码,注意不是真正的密码，而是申请到的授权码
+#      password: xxx
+#      #端口号465或587
+#      port: 587
+#      #默认的邮件编码为UTF-8
+#      default-encoding: UTF-8
+#      #其他参数
+#      properties:
+#        mail:
+#          #配置SSL 加密工厂
+#          smtp:
+#            starttls:
+#              enable: true
+#          debug: true

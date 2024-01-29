@@ -329,6 +329,7 @@ logging:
 
 ```yaml
 # security配置
+# security配置
 security:
   # 拦截路径
   Intercepts:
@@ -357,6 +358,10 @@ security:
     - /article/articleList
     - /article/articleDetail/**
     - /article/updateViewCount/**
+    - /user/captchaImage
+    - /user/login
+    - /search/index/getArticleIndex
+    - /search/searchArticle
     - /category/getCategoryList
     - /comment/commentList
     - /comment/linkCommentList
@@ -382,7 +387,7 @@ security:
 <details>
 <summary>RabbitMQ</summary>
 
-[跳转进入文件](./default-log.yaml )
+[跳转进入文件](./default-rabbitmq.yaml )
 
 ```yaml
 spring:
@@ -395,5 +400,70 @@ spring:
     listener:
       simple:
         prefetch: 1 # 每次只能获取一条消息，处理完成才能获取下一个消息
+```
+</details>
+
+
+<details>
+<summary>Mail</summary>
+
+[跳转进入文件](./default-mail.yaml )
+
+```yaml
+spring:
+  #邮箱基本配置（自定义域名邮箱）
+  mail:
+    host: smtp.yiport.top
+    #发送者邮箱
+    username: blog@yiport.top
+    #配置密码,注意不是真正的密码，而是申请到的授权码
+    password: password
+    port: 465
+    #默认的邮件编码为UTF-8
+    default-encoding: UTF-8
+    properties:
+      mail:
+        #配置SSL 加密工厂
+        smtp:
+          ssl:
+            enable: true
+        debug: true
+    #邮箱基本配置（网易）
+    # mail:
+    #   host: smtp.163.com
+    #   #发送者邮箱
+    #   username: xxx@163.com
+    #   #配置密码,注意不是真正的密码，而是申请到的授权码
+    #   password: xxx
+    #   port: 465
+    #   #默认的邮件编码为UTF-8
+    #   default-encoding: UTF-8
+    #   properties:
+    #     mail:
+    #       #配置SSL 加密工厂
+    #       smtp:
+    #         ssl:
+    #           enable: true
+    #       debug: true
+    
+    #邮箱基本配置（qq）
+#    mail:
+#      host: smtp.qq.com
+#      #发送者邮箱
+#      username: xxx@qq.com
+#      #配置密码,注意不是真正的密码，而是申请到的授权码
+#      password: xxx
+#      #端口号465或587
+#      port: 587
+#      #默认的邮件编码为UTF-8
+#      default-encoding: UTF-8
+#      #其他参数
+#      properties:
+#        mail:
+#          #配置SSL 加密工厂
+#          smtp:
+#            starttls:
+#              enable: true
+#          debug: true
 ```
 </details>

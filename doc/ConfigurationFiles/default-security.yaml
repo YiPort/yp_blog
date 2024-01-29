@@ -27,6 +27,10 @@ security:
     - /article/articleList
     - /article/articleDetail/**
     - /article/updateViewCount/**
+    - /user/captchaImage
+    - /user/login
+    - /search/index/getArticleIndex
+    - /search/searchArticle
     - /category/getCategoryList
     - /comment/commentList
     - /comment/linkCommentList
