@@ -44,9 +44,4 @@ public class EditUserVO
      */
     private String phonenumber;
 
-    /**
-     * 邮箱
-     */
-    private String email;
-
 }

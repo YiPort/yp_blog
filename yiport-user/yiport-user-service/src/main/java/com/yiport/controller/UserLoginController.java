@@ -3,7 +3,6 @@ package com.yiport.controller;
 import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.request.AccountLoginRequest;
-import com.yiport.enums.AppHttpCodeEnum;
 import com.yiport.exception.SystemException;
 import com.yiport.service.UserLoginService;
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
 
 @RestController
 @RequestMapping("/user")
@@ -33,17 +34,9 @@ public class UserLoginController {
         String userPassword = accountLoginRequest.getPassword();
         String captcha = accountLoginRequest.getCaptcha();
         String uuid = accountLoginRequest.getUuid();
-        if (StringUtils.isBlank(userName)) {
-            throw new SystemException(AppHttpCodeEnum.REQUIRE_USERNAME);
-        }
-        if (StringUtils.isBlank(userPassword)){
-            throw new SystemException(AppHttpCodeEnum.PASSWORD_NOT_NULL);
-        }
-        if (StringUtils.isBlank(captcha)){
-            throw new SystemException(AppHttpCodeEnum.CAPTCHA_NOT_NULL);
-        }
-        if (StringUtils.isBlank(uuid)){
-            throw new SystemException(AppHttpCodeEnum.CAPTCHA_NOT_NULL);
+        if (StringUtils.isAnyBlank(userName, userPassword, captcha, uuid))
+        {
+            throw new SystemException(PARAMETER_ERROR);
         }
 
         return userLoginService.userLoginByAccount(accountLoginRequest);
