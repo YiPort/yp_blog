@@ -113,6 +113,11 @@ public interface UserConstant {
     String TOKEN_HEADER_KEY = "token";
 
     /**
+     * 博客验证码
+     */
+    String CAPTCHA_CODES = "ypblog:user:captcha_codes:";
+
+    /**
      * userInfo
      */
     String USER_INFO = "userInfo";
@@ -126,6 +131,16 @@ public interface UserConstant {
      * verify-mail-captcha-key
      */
     String VERIFY_MAIL_CAPTCHA = "verify_mail_captcha:";
+
+    /**
+     * get_account_mail_captcha-key
+     */
+    String GET_ACCOUNT_MAIL_CAPTCHA = "get_account_mail_captcha:";
+
+    /**
+     * update-password-mail-captcha-key
+     */
+    String UPDATE_PASSWORD_MAIL_CAPTCHA = "update_password_mail_captcha:";
 
     /**
      * 邮箱验证码过期时间（分钟）

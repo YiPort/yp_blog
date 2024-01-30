@@ -1,6 +1,5 @@
 package com.yiport.service.impl;
 
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.LoginUser;
@@ -16,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
@@ -23,9 +23,12 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import static com.yiport.constent.UserConstant.GET_ACCOUNT_MAIL_CAPTCHA;
 import static com.yiport.constent.UserConstant.MAIL_CAPTCHA_TIME;
 import static com.yiport.constent.UserConstant.VALIDATION_MESSAGE;
 import static com.yiport.constent.UserConstant.VERIFY_MAIL_CAPTCHA;
+import static com.yiport.enums.AppHttpCodeEnum.EMAIL_EXIST;
+import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
 import static com.yiport.enums.AppHttpCodeEnum.SYSTEM_ERROR;
 
 /**
@@ -39,6 +42,7 @@ public class MailServiceImpl implements MailService
     private final JavaMailSenderImpl javaMailSender;
     private final RedisCache redisCache;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${spring.mail.username}")
     private String sendMailer;
@@ -49,9 +53,11 @@ public class MailServiceImpl implements MailService
     @Override
     public ResponseResult<Void> sendMailCaptcha(String email)
     {
-        String captcha = RandomStringUtils.random(4, "0123456789");
-        redisCache.setCacheObject(VERIFY_MAIL_CAPTCHA + email, captcha + ":" + email, MAIL_CAPTCHA_TIME, TimeUnit.MINUTES);
-        String content = "您正在验证邮箱，请填写验证码：" + captcha + "（" + MAIL_CAPTCHA_TIME + "分钟内有效，若非本人操作请忽略）";
+        String captcha = RandomStringUtils.random(6, "0123456789");
+        redisCache.setCacheObject(VERIFY_MAIL_CAPTCHA + email, captcha + ":" + email,
+                MAIL_CAPTCHA_TIME, TimeUnit.MINUTES);
+        String content = "您正在验证邮箱，请填写验证码：\n" + captcha + "\n" + MAIL_CAPTCHA_TIME +
+                "分钟内有效。该邮件为系统邮件，请勿回复，若非本人操作请忽略";
         sendMail(email, VALIDATION_MESSAGE, content);
         return ResponseResult.okResult();
     }
@@ -62,7 +68,13 @@ public class MailServiceImpl implements MailService
     @Override
     public ResponseResult<Void> verifyMail(String email, String captcha)
     {
-        verifyCaptcha(email, captcha);
+        verifyCaptcha(VERIFY_MAIL_CAPTCHA, email, captcha);
+        User verifyUser = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getEmail, email));
+        if (Objects.nonNull(verifyUser))
+        {
+            throw new SystemException(EMAIL_EXIST, "该邮箱已绑定账号");
+        }
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
                 .eq(User::getId, loginUser.getUser().getId()));
@@ -70,6 +82,44 @@ public class MailServiceImpl implements MailService
         userMapper.updateById(user);
         return ResponseResult.okResult();
     }
+
+    /**
+     * 发送找回账号邮箱验证码
+     */
+    @Override
+    public ResponseResult<Void> sendRetrieveAccountCaptcha(String email)
+    {
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getEmail, email));
+        if (Objects.isNull(user))
+        {
+            throw new SystemException(PARAMETER_ERROR, "该邮箱没有与账号绑定");
+        }
+        String captcha = RandomStringUtils.random(6, "0123456789");
+        redisCache.setCacheObject(GET_ACCOUNT_MAIL_CAPTCHA + email, captcha + ":" + email,
+                MAIL_CAPTCHA_TIME, TimeUnit.MINUTES);
+        String content = "您正在使用邮箱找回账号，请填写验证码：\n" + captcha + "\n" + MAIL_CAPTCHA_TIME +
+                "分钟内有效。该邮件为系统邮件，请勿回复，若非本人操作请忽略";
+        sendMail(email, VALIDATION_MESSAGE, content);
+        return ResponseResult.okResult();
+    }
+
+    /**
+     * 找回账号
+     */
+    @Override
+    public ResponseResult<String> retrieveAccount(String email, String captcha)
+    {
+        verifyCaptcha(GET_ACCOUNT_MAIL_CAPTCHA, email, captcha);
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getEmail, email));
+        if (Objects.isNull(user))
+        {
+            throw new SystemException(PARAMETER_ERROR, "该邮箱没有与账号绑定");
+        }
+        return ResponseResult.okResult(user.getUserName());
+    }
+
 
     /**
      * 发送邮件
@@ -107,10 +157,14 @@ public class MailServiceImpl implements MailService
 
     /**
      * 验证码校验
+     *
+     * @param key     redis-key
+     * @param email   邮箱
+     * @param captcha 验证码
      */
-    public void verifyCaptcha(String email, String captcha)
+    public void verifyCaptcha(String key, String email, String captcha)
     {
-        String emailCaptcha = redisCache.getCacheObject(VERIFY_MAIL_CAPTCHA + email);
+        String emailCaptcha = redisCache.getCacheObject(key + email);
         if (Objects.isNull(emailCaptcha))
         {
             throw new SystemException(SYSTEM_ERROR, "验证码错误");

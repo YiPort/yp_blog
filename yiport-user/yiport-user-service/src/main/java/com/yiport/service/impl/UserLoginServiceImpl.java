@@ -47,7 +47,7 @@ import java.util.regex.Pattern;
 import static com.yiport.constants.BusinessConstants.BLOG_ADMIN;
 import static com.yiport.constants.BusinessConstants.BLOG_LOGIN;
 import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
-import static com.yiport.constent.UserBusinessConstants.CAPTCHA_CODES;
+import static com.yiport.constent.UserConstant.CAPTCHA_CODES;
 import static com.yiport.constent.UserConstant.ADMIN_ROLE;
 import static com.yiport.constent.UserConstant.EXPIRATION;
 import static com.yiport.constent.UserConstant.NICKNAME_PREFIX;
