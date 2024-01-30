@@ -30,4 +30,14 @@ public interface MailService
      */
     ResponseResult<String> retrieveAccount(String email, String captcha);
 
+    /**
+     * 发送忘记密码邮箱验证码
+     */
+    ResponseResult<Void> sendUpdatePasswordCaptcha(String email);
+
+    /**
+     * 邮箱验证-修改密码
+     */
+    ResponseResult<String> updatePasswordByMail(UpdatePasswordRequest updatePasswordRequest);
+
 }

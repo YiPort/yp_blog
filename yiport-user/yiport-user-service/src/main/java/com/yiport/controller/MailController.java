@@ -69,4 +69,25 @@ public class MailController
         return mailService.retrieveAccount(email, captcha);
     }
 
+    /**
+     * 发送忘记密码邮箱验证码
+     */
+    @GetMapping("/sendUpdatePasswordCaptcha")
+    @SystemLog(businessName = "发送忘记密码邮箱验证码")
+    @LimitRequest(time = 60 * 1000, description = "请一分钟后再试", tip = true)
+    public ResponseResult<Void> sendUpdatePasswordCaptcha(String email)
+    {
+        return mailService.sendUpdatePasswordCaptcha(email);
+    }
+
+    /**
+     * 邮箱验证-修改密码
+     */
+    @PostMapping("/updatePasswordByMail")
+    @SystemLog(businessName = "验证邮箱修改密码")
+    public ResponseResult<String> updatePasswordByMail(@Validated @RequestBody UpdatePasswordRequest updatePasswordRequest)
+    {
+        return mailService.updatePasswordByMail(updatePasswordRequest);
+    }
+
 }

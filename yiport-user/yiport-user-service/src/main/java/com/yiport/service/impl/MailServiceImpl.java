@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.LoginUser;
 import com.yiport.domain.entity.User;
+import com.yiport.domain.request.UpdatePasswordRequest;
 import com.yiport.exception.SystemException;
 import com.yiport.mapper.UserMapper;
 import com.yiport.service.MailService;
@@ -22,9 +23,13 @@ import javax.mail.MessagingException;
 import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.yiport.constent.UserConstant.GET_ACCOUNT_MAIL_CAPTCHA;
 import static com.yiport.constent.UserConstant.MAIL_CAPTCHA_TIME;
+import static com.yiport.constent.UserConstant.NULL_REGEX;
+import static com.yiport.constent.UserConstant.UPDATE_PASSWORD_MAIL_CAPTCHA;
 import static com.yiport.constent.UserConstant.VALIDATION_MESSAGE;
 import static com.yiport.constent.UserConstant.VERIFY_MAIL_CAPTCHA;
 import static com.yiport.enums.AppHttpCodeEnum.EMAIL_EXIST;
@@ -120,6 +125,54 @@ public class MailServiceImpl implements MailService
         return ResponseResult.okResult(user.getUserName());
     }
 
+    /**
+     * 发送忘记密码邮箱验证码
+     */
+    @Override
+    public ResponseResult<Void> sendUpdatePasswordCaptcha(String email)
+    {
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getEmail, email));
+        if (Objects.isNull(user))
+        {
+            throw new SystemException(PARAMETER_ERROR, "该邮箱没有与账号绑定");
+        }
+        String captcha = RandomStringUtils.random(6, "0123456789");
+        redisCache.setCacheObject(UPDATE_PASSWORD_MAIL_CAPTCHA + email, captcha + ":" + email,
+                MAIL_CAPTCHA_TIME, TimeUnit.MINUTES);
+        String content = "您正在使用邮箱修改密码，请填写验证码：\n" + captcha + "\n" + MAIL_CAPTCHA_TIME +
+                "分钟内有效。该邮件为系统邮件，请勿回复，若非本人操作请忽略";
+        sendMail(email, VALIDATION_MESSAGE, content);
+        return ResponseResult.okResult();
+    }
+
+    /**
+     * 邮箱验证-修改密码
+     */
+    @Override
+    public ResponseResult<String> updatePasswordByMail(UpdatePasswordRequest updatePasswordRequest)
+    {
+        String userPassword = updatePasswordRequest.getPassword();
+        Matcher matcher1 = Pattern.compile(NULL_REGEX).matcher(userPassword);
+        if (matcher1.find())
+        {
+            throw new SystemException(PARAMETER_ERROR, "密码不能包含空字符");
+        }
+        if (!userPassword.equals(updatePasswordRequest.getCheckPassword()))
+        {
+            throw new SystemException(PARAMETER_ERROR, "两次输入的密码不一致");
+        }
+        verifyCaptcha(UPDATE_PASSWORD_MAIL_CAPTCHA, updatePasswordRequest.getEmail(), updatePasswordRequest.getCaptcha());
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getEmail, updatePasswordRequest.getEmail()));
+        if (Objects.isNull(user))
+        {
+            throw new SystemException(PARAMETER_ERROR, "该邮箱没有与账号绑定");
+        }
+        user.setPassword(passwordEncoder.encode(userPassword));
+        userMapper.updateById(user);
+        return ResponseResult.okResult();
+    }
 
     /**
      * 发送邮件
