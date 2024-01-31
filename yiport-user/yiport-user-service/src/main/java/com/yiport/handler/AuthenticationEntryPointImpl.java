@@ -1,4 +1,4 @@
-package com.yiport.handler.security;
+package com.yiport.handler;
 
 import com.yiport.domain.ResponseResult;
 import com.yiport.enums.AppHttpCodeEnum;
