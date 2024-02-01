@@ -28,4 +28,19 @@ public class SystemConstants {
      */
     public static final String IP = "ip";
 
+    /**
+     * adminID
+     */
+    public static Long ADMIN_ID_1 = 1L;
+
+    /**
+     * adminID
+     */
+    public static Long ADMIN_ID_2 = 2L;
+
+    /**
+     * X-Forwarded-For
+     */
+    public static String X_FORWARDED_FOR = "X-Forwarded-For";
+
 }

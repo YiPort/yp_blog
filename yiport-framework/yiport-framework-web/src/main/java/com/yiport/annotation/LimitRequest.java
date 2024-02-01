@@ -2,6 +2,9 @@ package com.yiport.annotation;
 
 import java.lang.annotation.*;
 
+/**
+ * 限流注解
+ */
 @Documented
 @Target(ElementType.METHOD) // 说明该注解只能放在方法上面
 @Retention(RetentionPolicy.RUNTIME)
