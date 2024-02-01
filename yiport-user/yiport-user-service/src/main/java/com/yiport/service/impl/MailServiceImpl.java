@@ -37,7 +37,7 @@ import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
 import static com.yiport.enums.AppHttpCodeEnum.SYSTEM_ERROR;
 
 /**
- *
+ * 邮件 服务层实现类
  */
 @Service
 @Slf4j

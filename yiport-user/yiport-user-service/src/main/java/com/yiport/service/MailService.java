@@ -5,7 +5,7 @@ import com.yiport.domain.ResponseResult;
 import com.yiport.domain.request.UpdatePasswordRequest;
 
 /**
- *
+ * 邮件 服务层
  */
 public interface MailService
 {
