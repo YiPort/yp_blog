@@ -25,6 +25,11 @@ public enum AppHttpCodeEnum {
     NO_OPERATOR_AUTH(403,"无权限操作"),
 
     /**
+     * 找不到资源
+     */
+    SORRY_NOT_FOUND(404, "找不到资源"),
+
+    /**
      * 系统错误
      */
     SYSTEM_ERROR(500,"系统错误"),

@@ -7,6 +7,8 @@ CREATE TABLE `yp_edit_history`
     `content`     varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '事件内容',
     `timestamp`   datetime NULL DEFAULT NULL COMMENT '时间戳（发生时间）',
     `color`       varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '图标颜色',
+    `icon`       varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '图标',
+    `size`       varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '图标尺寸',
     `create_by`   bigint(20) DEFAULT NULL COMMENT '创建人的用户id',
     `create_time` datetime DEFAULT NULL COMMENT '创建时间',
     `update_by`   bigint(20) DEFAULT NULL COMMENT '更新人的用户id',

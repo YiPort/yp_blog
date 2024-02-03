@@ -144,27 +144,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     /**
-     * 管理员根据用户昵称查询用户
-     *
-     * @param username 用户昵称
-     * @return
-     */
-    @Override
-    public ResponseResult<List<UserVO>> searchByUsername(String username) {
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(username)) {
-            queryWrapper.like("user_name", username);
-        } else {
-            return ResponseResult.okResult();
-        }
-        List<User> userList = list(queryWrapper);
-        // 返回脱敏后的 List<User>
-        List<UserVO> userVOS = BeanCopyUtils.copyBeanList(userList, UserVO.class);
-
-        return ResponseResult.okResult(userVOS);
-    }
-
-    /**
      * 管理员分页查询用户
      *
      * @param current  当前页

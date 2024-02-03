@@ -41,6 +41,31 @@ public class BlogConstants
     public static final String NOT_RELEASE = "1";
 
     /**
+     * 正常状态
+     */
+    public static final int NORMAL_STATUS = 0;
+
+    /**
+     * 禁用状态
+     */
+    public static final int NOT_NORMAL_STATUS = 1;
+
+    /**
+     * 待审核
+     */
+    public static final String NOT_EXAMINE = "0";
+
+    /**
+     * 审核通过
+     */
+    public static final String PASS = "1";
+
+    /**
+     * 审核未通过
+     */
+    public static final String NOT_PASS = "2";
+
+    /**
      * 根评论
      */
     public static final int ROOT_COMMENT = -1;
@@ -77,5 +102,51 @@ public class BlogConstants
      * 置顶评论
      */
     public static final String TOP_COMMENT = "1";
+
+    /**
+     * red
+     */
+    public static final  String RED = "#F56C6C";
+
+    /**
+     * blue
+     */
+    public static final  String BLUE = "#409EFF";
+
+    /**
+     * green
+     */
+    public static final String GREEN = "#0BBD87";
+
+    /**
+     * yellow
+     */
+    public static final  String YELLOW = "#E6A23C";
+
+    /**
+     * 提交图标
+     */
+    public static final String UPLOAD = "el-icon-upload2";
+
+    /**
+     * 未通过图标
+     */
+    public static final String FAIL = "el-icon-close";
+
+    /**
+     * 通过图标
+     */
+    public static final String SUCCESS = "el-icon-check";
+
+    /**
+     * 图标尺寸-normal
+     */
+    public static final String NORMAL = "normal";
+
+    /**
+     * 图标尺寸-large
+     */
+    public static final String LARGE = "large";
+
 
 }

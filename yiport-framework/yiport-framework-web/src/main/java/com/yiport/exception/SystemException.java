@@ -1,10 +1,16 @@
 package com.yiport.exception;
 
 import com.yiport.enums.AppHttpCodeEnum;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import static com.yiport.enums.AppHttpCodeEnum.SYSTEM_ERROR;
 
-public class SystemException extends RuntimeException{
+@EqualsAndHashCode(callSuper = true)
+@Data
+public class SystemException extends RuntimeException
+{
+    private static final long serialVersionUID = -5926292653065284660L;
 
     /**
      * 状态码

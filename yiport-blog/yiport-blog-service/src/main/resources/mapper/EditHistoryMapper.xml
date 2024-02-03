@@ -10,6 +10,8 @@
         <result property="content" column="content" jdbcType="BIGINT"/>
         <result property="timestamp" column="timestamp" jdbcType="VARCHAR"/>
         <result property="color" column="color" jdbcType="CHAR"/>
+        <result property="icon" column="icon" jdbcType="VARCHAR"/>
+        <result property="size" column="size" jdbcType="VARCHAR"/>
         <result property="createBy" column="create_by" jdbcType="BIGINT"/>
         <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
         <result property="updateBy" column="update_by" jdbcType="BIGINT"/>
@@ -18,9 +20,9 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id
-        ,user_id,content,
-        timestamp,category_status,create_by,
+        id ,user_id,content,
+        timestamp,color,icon,size,
+        category_status,create_by,
         create_time,update_by,update_time,
         del_flag
     </sql>

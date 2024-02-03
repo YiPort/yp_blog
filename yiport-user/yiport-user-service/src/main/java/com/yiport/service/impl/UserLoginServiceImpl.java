@@ -155,7 +155,7 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
      * @return
      */
     @Override
-    public ResponseResult<AppHttpCodeEnum> userRegister(UserRegisterRequest userRegisterRequest) {
+    public ResponseResult<Void> userRegister(UserRegisterRequest userRegisterRequest) {
         String userAccount = userRegisterRequest.getUserName();
         String userPassword = userRegisterRequest.getPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
@@ -226,7 +226,7 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
         // 3.插入数据
         save(user);
 
-        return ResponseResult.okResult(SUCCESS);
+        return ResponseResult.okResult();
     }
 
     @Override
@@ -383,7 +383,7 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
      * @return
      */
     @Override
-    public ResponseResult<AppHttpCodeEnum> logout() {
+    public ResponseResult<Void> logout() {
         // 从 SecurityContextHolder中获取 loginUser
         String token = request.getHeader("Token");
         Claims claims;
@@ -411,7 +411,7 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
             String adminKey = BLOG_ADMIN+ userId;
             redisCache.deleteObject(adminKey);
         }
-        return ResponseResult.okResult(SUCCESS, "退出成功");
+        return ResponseResult.okResult();
     }
 
 }

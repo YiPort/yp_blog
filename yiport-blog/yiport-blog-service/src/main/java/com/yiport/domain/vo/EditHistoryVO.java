@@ -25,4 +25,16 @@ public class EditHistoryVO {
      * 图标颜色
      */
     private String color;
+
+
+    /**
+     * 图标
+     */
+    private String icon;
+
+    /**
+     * 图标尺寸
+     */
+    private String size;
+
 }

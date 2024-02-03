@@ -52,6 +52,16 @@ public class EditHistory
     private String color;
 
     /**
+     * 图标
+     */
+    private String icon;
+
+    /**
+     * 图标尺寸
+     */
+    private String size;
+
+    /**
      * 创建人的用户id
      */
     @TableField(fill = FieldFill.INSERT)
@@ -89,12 +99,26 @@ public class EditHistory
         this.createTime = timestamp;
     }
 
+
     public EditHistory(Long userId, String content, String timestamp, String color) {
         this.userId = userId;
         this.content = content;
         this.timestamp = timestamp;
         this.color = color;
 
+
+        this.createBy = userId;
+        this.createTime = timestamp;
+    }
+
+    public EditHistory(Long userId,String content, String timestamp, String color,String icon,String size) {
+
+        this.userId=userId;
+        this.content = content;
+        this.timestamp = timestamp;
+        this.color = color;
+        this.icon=icon;
+        this.size=size;
 
         this.createBy = userId;
         this.createTime = timestamp;

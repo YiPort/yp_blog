@@ -8,8 +8,10 @@ import com.yiport.domain.request.UserRegisterRequest;
 import com.yiport.domain.vo.EditUserVO;
 import com.yiport.domain.vo.OtherUserVO;
 import com.yiport.domain.vo.UserVO;
+import com.yiport.exception.SystemException;
 import com.yiport.service.UserLoginService;
 import com.yiport.service.UserService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -63,9 +65,20 @@ public class UserController {
      * @return
      */
     @PostMapping("/register")
-    public ResponseResult userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
-        if (userRegisterRequest == null) {
-            return null;
+    public ResponseResult<Void> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
+        if (userRegisterRequest == null)
+        {
+            throw new SystemException();
+        }
+
+        String userName = userRegisterRequest.getUserName();
+        String password = userRegisterRequest.getPassword();
+        String checkPassword = userRegisterRequest.getCheckPassword();
+        String captcha = userRegisterRequest.getCaptcha();
+        String uuid = userRegisterRequest.getUuid();
+        if (StringUtils.isAnyBlank(userName, password, checkPassword, captcha, uuid))
+        {
+            throw new SystemException();
         }
 
         return userLoginService.userRegister(userRegisterRequest);
@@ -82,19 +95,6 @@ public class UserController {
     @SystemLog(businessName = "获取用户登录态")
     public ResponseResult current() {
         return userService.getCurrent();
-    }
-
-    /**
-     * 管理员根据用户昵称查询用户
-     *
-     * @param username 用户昵称
-     * @return
-     */
-    @GetMapping("/searchByUsername")
-    @PreAuthorize("hasAuthority('1')")
-    @SystemLog(businessName = "管理员根据用户昵称查询用户")
-    public ResponseResult<List<UserVO>> searchByUsername(@RequestParam("username") String username) {
-        return userService.searchByUsername(username);
     }
 
     /**

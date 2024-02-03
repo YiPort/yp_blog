@@ -3,10 +3,14 @@ package com.yiport.domain.request;
 import com.yiport.constent.UserConstant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+
+import static com.yiport.constent.UserConstant.PASSWORD_REGEX;
 
 
 /**
@@ -14,6 +18,8 @@ import javax.validation.constraints.Size;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@Getter
+@Setter
 public class AccountLoginRequest extends BaseLoginRequest {
 
     private static final long serialVersionUID = 1449842852532846833L;
@@ -29,7 +35,7 @@ public class AccountLoginRequest extends BaseLoginRequest {
      * 密码
      */
     @NotBlank(message = "密码不能为空")
-//    @Pattern(regexp = PASSWORD_REGEX, message = "密码必须包含[数字][英文字母][特殊字符(!@#$%^&*)]并且长度在8-16之间")
+    @Pattern(regexp = PASSWORD_REGEX, message = "密码必须包含[数字][英文字母][特殊字符(!@#$%^&*)]并且长度在8-16之间")
     private String password;
 
     /**

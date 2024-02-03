@@ -14,8 +14,6 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -51,7 +49,6 @@ public class LogAspect
     @Around("pt()")
     public Object printLog(ProceedingJoinPoint joinPoint) throws Throwable
     {
-
         Object ret;
         try
         {
@@ -82,13 +79,11 @@ public class LogAspect
 
     /**
      * 打印前置日志
-     *
-     * @param joinPoint
      */
     private void handlerBefore(ProceedingJoinPoint joinPoint)
     {
         // 获取真实ip对应的地址存入RedisHash
-        String ip = request.getHeader("X-Forwarded-For") == null ? request.getRemoteHost() : request.getHeader("X-Forwarded-For");
+        String ip = request.getHeader(X_FORWARDED_FOR) == null ? request.getRemoteHost() : request.getHeader(X_FORWARDED_FOR);
         String realAddressByIP = addressUtils.getRealAddressByIP(ip);
 
         if (!realAddressByIP.equals(INTRANET_IP) && !realAddressByIP.equals(UNKNOWN))
@@ -113,15 +108,11 @@ public class LogAspect
 
     /**
      * 获取被增强方法上的注解对象
-     *
-     * @param joinPoint
-     * @return
      */
     private SystemLog getSystemLog(ProceedingJoinPoint joinPoint)
     {
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
-        SystemLog systemLog = methodSignature.getMethod().getAnnotation(SystemLog.class);
-        return systemLog;
+        return methodSignature.getMethod().getAnnotation(SystemLog.class);
     }
 
 }

@@ -2,7 +2,9 @@ package com.yiport.service;
 
 import com.yiport.domain.ResponseResult;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yiport.domain.bo.ArticleExamineBO;
 import com.yiport.domain.entity.Article;
+import com.yiport.domain.vo.PageVO;
 import com.yiport.domain.vo.SaveArticleVO;
 
 public interface ArticleService extends IService<Article> {
@@ -92,5 +94,15 @@ public interface ArticleService extends IService<Article> {
      * @return
      */
     ResponseResult getLatestArticleList();
+
+    /**
+     * 查询提交审核文章
+     */
+    ResponseResult<PageVO> getNotExamineArticle(ArticleExamineBO articleExamineBO);
+
+    /**
+     * 修改审核文章状态
+     */
+    ResponseResult<Void> editArticleExamine(Article article);
 
 }

@@ -60,6 +60,11 @@ public class Article
      */
     @TableField(exist = false)
     private String categoryName;
+    /**
+     * 驳回理由
+     */
+    @TableField(exist = false)
+    private String notPassMessage;
 
     /**
      * 缩略图
@@ -75,6 +80,11 @@ public class Article
      * 状态（0已发布，1草稿）
      */
     private String status;
+
+    /**
+     * 文章审核状态（0待审核，1审核通过，2驳回）
+     */
+    private String articleExamine;
 
     /**
      * 访问量

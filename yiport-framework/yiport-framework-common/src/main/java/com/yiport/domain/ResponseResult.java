@@ -60,6 +60,15 @@ public class ResponseResult<T> implements Serializable {
         this.msg = msg;
     }
 
+    public static <T> ResponseResult<T> resultByRows(int rows)
+    {
+        if (rows > 0)
+        {
+            return ResponseResult.okResult();
+        }
+        return ResponseResult.errorResult();
+    }
+
     public static <T> ResponseResult<T> errorResult(int code, String msg) {
         ResponseResult<T> result = new ResponseResult<>();
         return result.error(code, msg);
@@ -99,10 +108,17 @@ public class ResponseResult<T> implements Serializable {
         }
         return result;
     }
+
     public static <T> ResponseResult<T> errorResult(String msg)
     {
         return setAppHttpCodeEnum(SYSTEM_ERROR, msg);
     }
+
+    public static <T> ResponseResult<T> errorResult()
+    {
+        return setAppHttpCodeEnum(SYSTEM_ERROR, SYSTEM_ERROR.getMsg());
+    }
+
     public static <T> ResponseResult<T> errorResult(AppHttpCodeEnum enums) {
         return setAppHttpCodeEnum(enums, enums.getMsg());
     }

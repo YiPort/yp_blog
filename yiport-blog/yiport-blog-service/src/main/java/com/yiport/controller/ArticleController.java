@@ -3,6 +3,9 @@ package com.yiport.controller;
 import com.yiport.annotation.LimitRequest;
 import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
+import com.yiport.domain.bo.ArticleExamineBO;
+import com.yiport.domain.entity.Article;
+import com.yiport.domain.vo.PageVO;
 import com.yiport.domain.vo.SaveArticleVO;
 import com.yiport.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,4 +163,26 @@ public class ArticleController {
     {
         return articleService.getTotalView();
     }
+
+
+    /**
+     * 查询提交审核文章
+     */
+    @GetMapping("/examineArticle")
+    @SystemLog(businessName = "查询提交审核文章")
+    public ResponseResult<PageVO> getNotExamineArticle(@RequestBody ArticleExamineBO articleExamineBO)
+    {
+        return articleService.getNotExamineArticle(articleExamineBO);
+    }
+
+    /**
+     * 修改审核文章状态
+     */
+    @PutMapping("/editArticleExamine")
+    @SystemLog(businessName = "修改审核文章状态")
+    public ResponseResult<Void> editArticleExamine(@RequestBody Article article)
+    {
+        return articleService.editArticleExamine(article);
+    }
+
 }

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yiport.constants.BlogConstants;
 import com.yiport.domain.ResponseResult;
+import com.yiport.domain.bo.ArticleExamineBO;
 import com.yiport.domain.entity.Article;
 import com.yiport.domain.entity.Category;
 import com.yiport.domain.entity.EditHistory;
@@ -26,6 +27,7 @@ import com.yiport.utils.RedisCache;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,13 +50,29 @@ import java.util.stream.Collectors;
 import static com.yiport.constants.BlogBusinessConstants.ARTICLE_EDITLIST;
 import static com.yiport.constants.BlogBusinessConstants.ARTICLE_VIEWCOUNT;
 import static com.yiport.constants.BlogConstants.ARTICLE_STATUS_NORMAL;
+import static com.yiport.constants.BlogConstants.BLUE;
+import static com.yiport.constants.BlogConstants.FAIL;
+import static com.yiport.constants.BlogConstants.GREEN;
+import static com.yiport.constants.BlogConstants.LARGE;
+import static com.yiport.constants.BlogConstants.NORMAL;
+import static com.yiport.constants.BlogConstants.NOT_EXAMINE;
+import static com.yiport.constants.BlogConstants.NOT_PASS;
 import static com.yiport.constants.BlogConstants.NOT_RELEASE;
+import static com.yiport.constants.BlogConstants.PASS;
+import static com.yiport.constants.BlogConstants.RED;
 import static com.yiport.constants.BlogConstants.RELEASE;
+import static com.yiport.constants.BlogConstants.SUCCESS;
+import static com.yiport.constants.BlogConstants.UPLOAD;
+import static com.yiport.constants.BlogConstants.YELLOW;
 import static com.yiport.constants.MQConstants.BLOG_DELETE_KEY;
 import static com.yiport.constants.MQConstants.BLOG_INSERT_KEY;
 import static com.yiport.constants.MQConstants.BLOG_TOPIC_EXCHANGE;
 import static com.yiport.constants.MQConstants.BLOG_UPDATE_KEY;
+import static com.yiport.constants.SystemConstants.ADMIN_ID_1;
+import static com.yiport.constants.SystemConstants.ADMIN_ID_2;
 import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
+import static com.yiport.enums.AppHttpCodeEnum.SORRY_NOT_FOUND;
+
 
 
 @Service
@@ -86,12 +104,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Override
     public ResponseResult hotArticleList() {
-        //查询热门文章 封装成ResponseResult返回
+        // 查询浏览量最高的前10篇文章的信息
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
-        //必须是正式文章
-        queryWrapper.eq(Article::getStatus, BlogConstants.ARTICLE_STATUS_NORMAL);
-        //按照浏览量进行排序
-        queryWrapper.orderByDesc(Article::getViewCount);
+        queryWrapper.eq(Article::getStatus, RELEASE)
+                .eq(Article::getArticleExamine, PASS)
+                .orderByDesc(Article::getViewCount);
         //最多只查询10条
         Page<Article> page = new Page(1,10);
         page(page,queryWrapper);
@@ -177,10 +194,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public ResponseResult getArticleDetail(Long id) {
         //根据id查询文章
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Article::getId, id).eq(Article::getStatus, ARTICLE_STATUS_NORMAL);
+        queryWrapper.eq(Article::getStatus, RELEASE)
+                .eq(Article::getArticleExamine, PASS)
+                .eq(Article::getId, id);
         Article article = articleMapper.selectOne(queryWrapper);
         if (Objects.isNull(article)) {
-            throw new SystemException(PARAMETER_ERROR, "没有找到文章");
+            throw new SystemException(SORRY_NOT_FOUND, "没有找到文章");
         }
         //从redis中获取viewCount
         String redisKey = ARTICLE_VIEWCOUNT + article.getId().toString();
@@ -212,7 +231,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Optional<Long> increment1 = Optional.ofNullable(increment);
         if (increment1.isPresent() && increment <= 1) {
             redisCache.deleteObject(redisKey);
-            throw new SystemException(PARAMETER_ERROR);
         }
         return ResponseResult.okResult(increment);
     }
@@ -226,9 +244,17 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public ResponseResult postArticle(SaveArticleVO article) {
 
-        LoginUtils.checkRole(httpServletRequest);
-
+        String userId = JwtUtil.checkToken(httpServletRequest);
         Article saveArticle = BeanCopyUtils.copyBean(article, Article.class);
+        boolean isAdmin = StringUtils.equalsAny(userId, ADMIN_ID_1.toString(), ADMIN_ID_2.toString());
+        if (isAdmin)
+        {
+            saveArticle.setArticleExamine(PASS);
+        }
+        else
+        {
+            saveArticle.setArticleExamine(NOT_EXAMINE);
+        }
         //设置保存时间
         // 获取当前时间
         LocalDateTime currentTime = LocalDateTime.now();
@@ -243,12 +269,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             saveArticle.setCreateTime(createTime);
             articleMapper.insert(saveArticle);
             // 将文章浏览量同步到 redis
-            if (article.getStatus().equals(RELEASE)) {   //已发布文章
+            if (saveArticle.getStatus().equals(RELEASE) && isAdmin)     //发布文章
+            {
                 String articleKey = ARTICLE_VIEWCOUNT + saveArticle.getId() ;
                 long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
                 redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
                 // 将事件 push入消息列表
-                EditHistory editHistory = new EditHistory(saveArticle.getCreateBy(), "发布了文章：" + saveArticle.getTitle(), createTime, "#0bbd87");
+                EditHistory editHistory = new EditHistory(Long.valueOf(userId), "发布了文章：" + saveArticle.getTitle(), createTime,  GREEN, null, NORMAL);
                 editHistoryService.saveOrUpdate(editHistory);
                 redisCache.setCacheList(editKey, Arrays.asList(editHistory));
 
@@ -261,18 +288,33 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 rabbitTemplate.convertAndSend(BLOG_TOPIC_EXCHANGE, BLOG_INSERT_KEY, articleDocs);
 
                 return ResponseResult.okResult(saveArticle.getId(), "发布成功");
-            } else {  //草稿
+            }
+            else if (saveArticle.getStatus().equals(RELEASE) && !isAdmin)
+            {
+                // 将文章浏览量同步到 redis
+                String articleKey = ARTICLE_VIEWCOUNT + saveArticle.getId();
+                // viewCount为null时为新发布的文章或草稿，不为空时为已发布文章
+                long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
+                redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
                 // 将事件 push入消息队列
-                EditHistory editHistory = new EditHistory(saveArticle.getCreateBy(), "编辑了文章：" + saveArticle.getTitle(), createTime, "#e6a23c");
+                EditHistory editHistory = new EditHistory(Long.valueOf(userId), "提交了文章审核申请：" +
+                        saveArticle.getTitle(), createTime, GREEN, UPLOAD, LARGE);
+                editHistoryService.saveOrUpdate(editHistory);
+                redisCache.setCacheList(editKey, Arrays.asList(editHistory));
+                return ResponseResult.okResult(saveArticle.getId(), "审核申请成功");
+            }else {  //草稿
+                // 将事件 push入消息队列
+                EditHistory editHistory = new EditHistory(Long.valueOf(userId), "创建了草稿：" +
+                        saveArticle.getTitle(), createTime, GREEN, null, NORMAL);
                 editHistoryService.saveOrUpdate(editHistory);
                 redisCache.setCacheList(editKey, Arrays.asList(editHistory));
                 return ResponseResult.okResult(200, "保存成功！");
             }
         } else {
             // 更新文章
-            saveArticle.setUpdateTime(createTime);
+             saveArticle.setUpdateTime(createTime);
             articleMapper.updateById(saveArticle);
-            if (saveArticle.getStatus().equals(RELEASE))  //编辑已发布文章
+            if (saveArticle.getStatus().equals(RELEASE) && isAdmin)  //编辑已发布文章
             {
                 // 将文章浏览量同步到 redis
                 String articleKey = ARTICLE_VIEWCOUNT +saveArticle.getId();;
@@ -280,7 +322,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
                 redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
                 // 将事件 push入消息队列
-                EditHistory editHistory = new EditHistory(saveArticle.getCreateBy(), "编辑了文章：" + saveArticle.getTitle(), createTime, "#409eff");
+                EditHistory editHistory = new EditHistory(Long.valueOf(userId), "编辑了文章：" +
+                        saveArticle.getTitle(), createTime, BLUE, null, NORMAL);
                 redisCache.setCacheList(editKey, Arrays.asList(editHistory));
 
                 //设置文章摘要为当前文章的内容节选,用于文章搜索
@@ -292,10 +335,25 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 rabbitTemplate.convertAndSend(BLOG_TOPIC_EXCHANGE, BLOG_UPDATE_KEY, articleDocs);
 
                 return ResponseResult.okResult(saveArticle.getId(), "编辑成功");
+            } else if (saveArticle.getStatus().equals(RELEASE) && !isAdmin)
+            {
+                // 将文章浏览量同步到 redis
+                String articleKey = ARTICLE_VIEWCOUNT + saveArticle.getId();
+                // viewCount为null时为新发布的文章或草稿，不为空时为已发布文章
+                long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
+                redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
+                // 将事件 push入消息队列
+                EditHistory editHistory = new EditHistory(Long.parseLong(userId),
+                        "提交了编辑文章审核申请：" + saveArticle.getTitle(), createTime, BLUE, UPLOAD, LARGE);
+                redisCache.setCacheList(editKey, Arrays.asList(editHistory));
+                //消息队列发送删除文章，发送MQ消息
+                rabbitTemplate.convertAndSend(BLOG_TOPIC_EXCHANGE, BLOG_DELETE_KEY, article.getId());
+                return ResponseResult.okResult(saveArticle.getId(), "审核申请成功");
             } else    //编辑草稿
             {
                 // 将事件 push入消息队列
-                EditHistory editHistory = new EditHistory(saveArticle.getCreateBy(), "编辑了草稿：" + saveArticle.getTitle(), createTime, "#e6a23c");
+                EditHistory editHistory = new EditHistory(Long.valueOf(userId),
+                        "编辑了草稿：" + saveArticle.getTitle(), createTime, YELLOW, null, NORMAL);
                 redisCache.setCacheList(editKey, Arrays.asList(editHistory));
                 //消息队列发送删除文章，发送MQ消息
                 rabbitTemplate.convertAndSend(BLOG_TOPIC_EXCHANGE, BLOG_DELETE_KEY, article.getId());
@@ -371,7 +429,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         String createTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         String editKey = ARTICLE_EDITLIST + userId;
         // 将事件 push入消息列表
-        EditHistory editHistory = new EditHistory(userId, "删除了文章：" + title, createTime, "#F56C6C");
+        EditHistory editHistory = new EditHistory(userId, "删除了草稿：" + title, createTime, "#F56C6C");
         EditHistoryVO editHistoryVO = BeanCopyUtils.copyBean(editHistory, EditHistoryVO.class);
         editHistoryService.saveOrUpdate(editHistory);
         redisCache.setCacheList(editKey, Arrays.asList(editHistoryVO));
@@ -429,6 +487,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     {
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Article::getStatus, RELEASE)
+                .eq(Article::getArticleExamine, PASS)
                 .orderByDesc(Article::getCreateTime)
                 .last("limit 0,3");
         List<Article> articles = articleMapper.selectList(queryWrapper);
@@ -439,5 +498,68 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         );
         return ResponseResult.okResult(articleListVOS);
     }
+
+    /**
+     * 查询提交审核文章
+     */
+    @Override
+    public ResponseResult<PageVO> getNotExamineArticle(ArticleExamineBO articleExamineBO)
+    {
+        LoginUtils.checkRole(httpServletRequest);
+        LambdaQueryWrapper<Article> qw = new LambdaQueryWrapper<Article>()
+                .eq(Article::getStatus, RELEASE)
+                .in(StringUtils.isEmpty(articleExamineBO.getArticleExamine()),
+                        Article::getArticleExamine, NOT_EXAMINE, NOT_PASS)
+                .eq(!StringUtils.isEmpty(articleExamineBO.getArticleExamine()),
+                        Article::getArticleExamine, articleExamineBO.getArticleExamine())
+                .eq(Objects.nonNull(articleExamineBO.getCreateBy()),
+                        Article::getCreateBy, articleExamineBO.getCreateBy())
+                .ge(!StringUtils.isEmpty(articleExamineBO.getStartTime()),
+                        Article::getCreateTime, articleExamineBO.getStartTime())
+                .le(!StringUtils.isEmpty(articleExamineBO.getEndTime()),
+                        Article::getCreateTime, articleExamineBO.getEndTime());
+        Page<Article> page = new Page<>(articleExamineBO.getPageNum(), articleExamineBO.getPageSize());
+        page(page, qw);
+        return ResponseResult.okResult(new PageVO(page.getRecords(), page.getTotal()));
+    }
+
+    /**
+     * 修改审核文章状态
+     */
+    @Override
+    public ResponseResult<Void> editArticleExamine(Article article)
+    {
+        LoginUtils.checkRole(httpServletRequest);
+        Long userId = Long.valueOf(JwtUtil.checkToken(httpServletRequest));
+        int rows = articleMapper.updateById(article);
+        // 获取时间戳
+        String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        String editKey = ARTICLE_EDITLIST + article.getCreateBy();
+        if (rows > 0)
+        {
+            // 将文章浏览量同步到 redis
+            String articleKey = ARTICLE_VIEWCOUNT + article.getId();
+            // viewCount为null时为新发布的文章或草稿，不为空时为已发布文章
+            long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
+            redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
+            EditHistory editHistory = null;
+            if (article.getArticleExamine().equals(PASS))
+            {
+                // 将事件 push入消息队列
+                editHistory = new EditHistory(userId, "文章审核通过：" + article.getTitle(),
+                        now, GREEN, SUCCESS, LARGE);
+            }
+            if (article.getArticleExamine().equals(NOT_PASS))
+            {
+                // 将事件 push入消息队列
+                editHistory = new EditHistory(userId, "文章审核未通过：" + article.getTitle() +
+                        "(" + article.getNotPassMessage() + ")", now, RED, FAIL, LARGE);
+            }
+            editHistoryService.saveOrUpdate(editHistory);
+            redisCache.setCacheList(editKey, Arrays.asList(editHistory));
+        }
+        return ResponseResult.resultByRows(rows);
+    }
+
 
 }

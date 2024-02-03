@@ -24,7 +24,7 @@ public interface UserLoginService {
      * @param userRegisterRequest
      * @return
      */
-    ResponseResult<AppHttpCodeEnum> userRegister(UserRegisterRequest userRegisterRequest);
+    ResponseResult<Void> userRegister(UserRegisterRequest userRegisterRequest);
 
     /**
      * 用户登录（停用）
@@ -40,7 +40,7 @@ public interface UserLoginService {
      *
      * @return
      */
-    ResponseResult<AppHttpCodeEnum> logout();
+    ResponseResult<Void> logout();
 
     /**
      * 账号密码登录

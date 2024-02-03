@@ -13,6 +13,7 @@
         <result property="thumbnail" column="thumbnail" jdbcType="VARCHAR"/>
         <result property="isTop" column="is_top" jdbcType="CHAR"/>
         <result property="status" column="article_status" jdbcType="CHAR"/>
+        <result property="articleExamine" column="article_examine" jdbcType="CHAR"/>
         <result property="viewCount" column="view_count" jdbcType="BIGINT"/>
         <result property="isComment" column="is_comment" jdbcType="CHAR"/>
         <result property="createBy" column="create_by" jdbcType="BIGINT"/>

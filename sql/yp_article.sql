@@ -30,6 +30,7 @@ CREATE TABLE `yp_article` (
                               `thumbnail`   varchar(256) DEFAULT NULL COMMENT '缩略图',
                               `is_top`      char(1) DEFAULT '0' COMMENT '是否置顶（0否，1是）',
                               `status`      char(1) DEFAULT '1' COMMENT '状态（0已发布，1草稿）',
+                              `article_examine`      char(1) DEFAULT '0' COMMENT '文章审核状态（0待审核，1审核通过，2驳回）',
                               `view_count`  bigint(200) DEFAULT '0' COMMENT '访问量',
                               `is_comment`  char(1) DEFAULT '1' COMMENT '是否允许评论 1是，0否',
                               `create_by`   bigint(20) DEFAULT NULL COMMENT '创建人的用户id',

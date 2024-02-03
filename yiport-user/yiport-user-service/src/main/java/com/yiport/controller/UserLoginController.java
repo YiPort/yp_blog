@@ -49,7 +49,7 @@ public class UserLoginController {
      */
     @PostMapping("/logout")
     @SystemLog(businessName = "用户退出登录")
-    public ResponseResult logout() {
+    public ResponseResult<Void> logout() {
         return userLoginService.logout();
     }
 

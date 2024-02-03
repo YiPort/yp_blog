@@ -35,14 +35,6 @@ public interface UserService extends IService<User> {
     ResponseResult getCurrent();
 
     /**
-     * 管理员根据用户昵称查询用户
-     *
-     * @param username 用户昵称
-     * @return
-     */
-    ResponseResult<List<UserVO>> searchByUsername(String username);
-
-    /**
      * 管理员分页查询用户
      *
      * @param current  当前页
