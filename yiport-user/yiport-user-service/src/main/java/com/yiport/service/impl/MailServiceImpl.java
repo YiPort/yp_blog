@@ -58,6 +58,12 @@ public class MailServiceImpl implements MailService
     @Override
     public ResponseResult<Void> sendMailCaptcha(String email)
     {
+        User verifyUser = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getEmail, email));
+        if (Objects.nonNull(verifyUser))
+        {
+            throw new SystemException(EMAIL_EXIST, "该邮箱已绑定账号");
+        }
         String captcha = RandomStringUtils.random(6, "0123456789");
         redisCache.setCacheObject(VERIFY_MAIL_CAPTCHA + email, captcha + ":" + email,
                 MAIL_CAPTCHA_TIME, TimeUnit.MINUTES);
@@ -85,6 +91,7 @@ public class MailServiceImpl implements MailService
                 .eq(User::getId, loginUser.getUser().getId()));
         user.setEmail(email);
         userMapper.updateById(user);
+        redisCache.deleteObject(VERIFY_MAIL_CAPTCHA + email);
         return ResponseResult.okResult();
     }
 
@@ -122,6 +129,7 @@ public class MailServiceImpl implements MailService
         {
             throw new SystemException(PARAMETER_ERROR, "该邮箱没有与账号绑定");
         }
+        redisCache.deleteObject(GET_ACCOUNT_MAIL_CAPTCHA + email);
         return ResponseResult.okResult(user.getUserName());
     }
 
@@ -153,6 +161,7 @@ public class MailServiceImpl implements MailService
     public ResponseResult<String> updatePasswordByMail(UpdatePasswordRequest updatePasswordRequest)
     {
         String userPassword = updatePasswordRequest.getPassword();
+        String email = updatePasswordRequest.getEmail();
         Matcher matcher1 = Pattern.compile(NULL_REGEX).matcher(userPassword);
         if (matcher1.find())
         {
@@ -162,15 +171,16 @@ public class MailServiceImpl implements MailService
         {
             throw new SystemException(PARAMETER_ERROR, "两次输入的密码不一致");
         }
-        verifyCaptcha(UPDATE_PASSWORD_MAIL_CAPTCHA, updatePasswordRequest.getEmail(), updatePasswordRequest.getCaptcha());
+        verifyCaptcha(UPDATE_PASSWORD_MAIL_CAPTCHA, email, updatePasswordRequest.getCaptcha());
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
-                .eq(User::getEmail, updatePasswordRequest.getEmail()));
+                .eq(User::getEmail, email));
         if (Objects.isNull(user))
         {
             throw new SystemException(PARAMETER_ERROR, "该邮箱没有与账号绑定");
         }
         user.setPassword(passwordEncoder.encode(userPassword));
         userMapper.updateById(user);
+        redisCache.deleteObject(UPDATE_PASSWORD_MAIL_CAPTCHA + email);
         return ResponseResult.okResult();
     }
 
