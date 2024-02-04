@@ -2,6 +2,8 @@ package com.yiport.annotation;
 
 import java.lang.annotation.*;
 
+import static com.yiport.constants.SystemConstants.FALSE;
+
 /**
  * 限流注解
  */
@@ -33,12 +35,15 @@ public @interface LimitRequest
     boolean limitAdmin() default true;
 
     /**
-     * 返回描述
+     * 默认返回描述
      */
-    String description() default "接口请求超过次数，请不要频繁操作";
+    String description() default "请不要频繁操作";
 
     /**
-     * 前端是否提示
+     * 前端提示类型
+     * <p>不提示-FALSE
+     * <p>精确提示（精确到秒）-TRUE
+     * <p>自定义-DEFINED
      */
-    boolean tip() default false;
+    String tip() default FALSE;
 }

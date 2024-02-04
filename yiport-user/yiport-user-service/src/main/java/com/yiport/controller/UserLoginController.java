@@ -29,14 +29,11 @@ public class UserLoginController {
      */
     @PostMapping("/login")
     @SystemLog(businessName = "用户登录")
-    public ResponseResult login(@RequestBody AccountLoginRequest accountLoginRequest) {
-        String userName = accountLoginRequest.getUserName();
-        String userPassword = accountLoginRequest.getPassword();
-        String captcha = accountLoginRequest.getCaptcha();
-        String uuid = accountLoginRequest.getUuid();
-        if (StringUtils.isAnyBlank(userName, userPassword, captcha, uuid))
+    public ResponseResult login(@RequestBody AccountLoginRequest accountLoginRequest)
+    {
+        if (accountLoginRequest == null)
         {
-            throw new SystemException(PARAMETER_ERROR);
+            throw new SystemException();
         }
 
         return userLoginService.userLoginByAccount(accountLoginRequest);

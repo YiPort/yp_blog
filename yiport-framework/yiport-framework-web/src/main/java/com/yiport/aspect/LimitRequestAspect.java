@@ -1,6 +1,7 @@
 package com.yiport.aspect;
 
 
+import cn.hutool.core.date.DateUtil;
 import com.yiport.annotation.LimitRequest;
 import com.yiport.domain.ResponseResult;
 import com.yiport.exception.SystemException;
@@ -24,9 +25,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 
+import static cn.hutool.core.date.BetweenFormatter.Level.SECOND;
 import static com.yiport.constants.BusinessConstants.TOKEN_KEY;
 import static com.yiport.constants.SystemConstants.ADMIN_ID_1;
 import static com.yiport.constants.SystemConstants.ADMIN_ID_2;
+import static com.yiport.constants.SystemConstants.FALSE;
+import static com.yiport.constants.SystemConstants.TRUE;
 import static com.yiport.constants.SystemConstants.X_FORWARDED_FOR;
 import static com.yiport.enums.AppHttpCodeEnum.LIMIT_ERROR;
 import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
@@ -72,9 +76,13 @@ public class LimitRequestAspect
         if (uCount >= limitRequest.count())
         {
             // 超过次数，不执行目标方法
-            if (limitRequest.tip())
+            if (limitRequest.tip().equals(FALSE))
             {
                 return ResponseResult.errorResult(LIMIT_ERROR, limitRequest.description());
+            }
+            else if (limitRequest.tip().equals(TRUE))
+            {
+                return ResponseResult.errorResult(LIMIT_ERROR, DateUtil.formatBetween(uc.getExpectedExpiration(key), SECOND) + " 后再试");
             }
             else
             {

@@ -5,8 +5,8 @@ public class HTTPConstants {
     /**
      * Content-Type
      */
-    public static String JPG = "image/jpg";
-    public static String JPEG = "image/jpeg";
-    public static String PNG = "image/png";
+    public static final String JPG = "image/jpg";
+    public static final String JPEG = "image/jpeg";
+    public static final String PNG = "image/png";
 
 }

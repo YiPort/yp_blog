@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.yiport.constants.SystemConstants.TRUE;
+
 /**
  * 邮件 控制器
  */
@@ -31,7 +33,7 @@ public class MailController
      */
     @GetMapping("/sendVerifyMailCaptcha")
     @SystemLog(businessName = "发送邮箱验证码")
-    @LimitRequest(time = 60 * 1000, description = "请一分钟后再试", tip = true)
+    @LimitRequest(time = 60 * 1000, type = "USER", tip = TRUE)
     public ResponseResult<Void> sendMailCaptcha(String email)
     {
         return mailService.sendMailCaptcha(email);
@@ -42,7 +44,7 @@ public class MailController
      */
     @PostMapping("/verifyMail")
     @SystemLog(businessName = "修改邮箱")
-    @LimitRequest(time = 24 * 60 * 1000, count = 2, description = "24小时内允许修改两次", tip = true)
+    @LimitRequest(time = 24 * 60 * 1000, type = "USER", count = 3, tip = TRUE)
     public ResponseResult<Void> verifyMail(String email, String captcha)
     {
         return mailService.verifyMail(email, captcha);
@@ -53,7 +55,7 @@ public class MailController
      */
     @GetMapping("/sendRetrieveAccountCaptcha")
     @SystemLog(businessName = "发送找回账号邮箱验证码")
-    @LimitRequest(time = 60 * 1000, description = "请一分钟后再试", tip = true)
+    @LimitRequest(time = 60 * 1000, tip = TRUE)
     public ResponseResult<Void> sendRetrieveAccountCaptcha(String email)
     {
         return mailService.sendRetrieveAccountCaptcha(email);
@@ -74,7 +76,7 @@ public class MailController
      */
     @GetMapping("/sendUpdatePasswordCaptcha")
     @SystemLog(businessName = "发送忘记密码邮箱验证码")
-    @LimitRequest(time = 60 * 1000, description = "请一分钟后再试", tip = true)
+    @LimitRequest(time = 60 * 1000, tip = TRUE)
     public ResponseResult<Void> sendUpdatePasswordCaptcha(String email)
     {
         return mailService.sendUpdatePasswordCaptcha(email);

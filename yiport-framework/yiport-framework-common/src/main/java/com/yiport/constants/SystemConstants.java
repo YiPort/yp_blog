@@ -31,16 +31,26 @@ public class SystemConstants {
     /**
      * adminID
      */
-    public static Long ADMIN_ID_1 = 1L;
+    public static final Long ADMIN_ID_1 = 1L;
 
     /**
      * adminID
      */
-    public static Long ADMIN_ID_2 = 2L;
+    public static final Long ADMIN_ID_2 = 2L;
 
     /**
      * X-Forwarded-For
      */
-    public static String X_FORWARDED_FOR = "X-Forwarded-For";
+    public static final String X_FORWARDED_FOR = "X-Forwarded-For";
+
+    /**
+     * 前端提示类型
+     * <p>不提示-false
+     * <p>精确提示（精确到秒）-true
+     * <p>自定义-defined
+     */
+    public static final String FALSE = "false";
+    public static final String TRUE = "true";
+    public static final String DEFINED = "defined";
 
 }

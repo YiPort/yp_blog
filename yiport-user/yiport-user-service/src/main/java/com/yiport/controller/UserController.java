@@ -1,6 +1,7 @@
 package com.yiport.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.yiport.annotation.LimitRequest;
 import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.User;
@@ -17,6 +18,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static com.yiport.constants.SystemConstants.DEFINED;
 
 @RestController
 @RequestMapping("/user")
@@ -65,18 +68,9 @@ public class UserController {
      * @return
      */
     @PostMapping("/register")
+    @LimitRequest(time = 12 * 60 * 60 * 1000, description = "操作频繁，休息一下吧~", tip = DEFINED)
     public ResponseResult<Void> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null)
-        {
-            throw new SystemException();
-        }
-
-        String userName = userRegisterRequest.getUserName();
-        String password = userRegisterRequest.getPassword();
-        String checkPassword = userRegisterRequest.getCheckPassword();
-        String captcha = userRegisterRequest.getCaptcha();
-        String uuid = userRegisterRequest.getUuid();
-        if (StringUtils.isAnyBlank(userName, password, checkPassword, captcha, uuid))
         {
             throw new SystemException();
         }
