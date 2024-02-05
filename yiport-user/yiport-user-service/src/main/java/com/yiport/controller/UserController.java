@@ -15,6 +15,7 @@ import com.yiport.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,23 +32,6 @@ public class UserController {
     @Autowired
     private UserLoginService userLoginService;
 
-
-    /**
-     * 根据id返回user
-     *
-     * @param id
-     * @return
-     */
-    @GetMapping("/getUserNickNameById")
-    @SystemLog(businessName = "根据id返回user")
-    public User getById(Long id) {
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getId, String.valueOf(id)).select(User::getNickName);
-
-        User user = userService.getOne(queryWrapper);
-        return user;
-    }
-
     /**
      * 更新个人信息
      *
@@ -56,29 +40,9 @@ public class UserController {
      */
     @PutMapping("/saveUserInfo")
     @SystemLog(businessName = "更新个人信息")
-    public ResponseResult updateUserInfo(@RequestBody EditUserVO editUserVO){
+    public ResponseResult updateUserInfo(@Validated  @RequestBody EditUserVO editUserVO){
         return userService.updateUserInfo(editUserVO);
     }
-
-    /**
-     * 用户注册
-     * 不需要token请求头
-     *
-     * @param userRegisterRequest
-     * @return
-     */
-    @PostMapping("/register")
-    @LimitRequest(time = 12 * 60 * 60 * 1000, description = "操作频繁，休息一下吧~", tip = DEFINED)
-    public ResponseResult<Void> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
-        if (userRegisterRequest == null)
-        {
-            throw new SystemException();
-        }
-
-        return userLoginService.userRegister(userRegisterRequest);
-
-    }
-
 
     /**
      * 获取用户登录态

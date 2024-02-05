@@ -19,15 +19,6 @@ import java.util.List;
 public interface UserClient {
 
     /**
-     * 根据ID获取用户昵称。
-     *
-     * @param id 用户ID。
-     * @return 用户信息。
-     */
-    @GetMapping("/user/getUserNickNameById")
-    UserVO getUserNickNameById(@RequestParam Long id);
-
-    /**
      * 更新个人信息。
      *
      * @param userVO 用户信息对象。

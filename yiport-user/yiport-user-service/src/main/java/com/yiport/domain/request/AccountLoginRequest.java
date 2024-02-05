@@ -2,13 +2,12 @@ package com.yiport.domain.request;
 
 import com.yiport.constent.UserConstant;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+
+import java.io.Serializable;
 
 import static com.yiport.constent.UserConstant.PASSWORD_REGEX;
 
@@ -16,14 +15,10 @@ import static com.yiport.constent.UserConstant.PASSWORD_REGEX;
 /**
  * 账号密码登录请求体
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
-@Getter
-@Setter
-public class AccountLoginRequest extends BaseLoginRequest {
-
-    private static final long serialVersionUID = 1449842852532846833L;
-
+public class AccountLoginRequest implements Serializable
+{
+    private static final long serialVersionUID = -4835709278962674666L;
     /**
      * 账号
      */

@@ -1,10 +1,10 @@
 package com.yiport.domain.request;
 
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 import static com.yiport.constent.UserConstant.ACCOUNT_REGEX;
@@ -41,7 +41,7 @@ public class UserRegisterRequest implements Serializable {
      * 验证码
      */
     @NotBlank(message = "验证码不能为空")
-    @Size(max = 4, min = 1, message = "验证码错误")
+    @Length(max = 4, min = 1, message = "验证码错误")
     private String captcha;
 
     /**
