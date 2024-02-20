@@ -3,14 +3,13 @@ package com.yiport.service.impl;
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.User;
 import com.yiport.domain.vo.EditUserVO;
 import com.yiport.domain.vo.OtherUserVO;
 import com.yiport.domain.vo.UserVO;
-import com.yiport.exception.SystemException;
+import com.yiport.exception.UserSystemException;
 import com.yiport.mapper.UserMapper;
 import com.yiport.service.UserService;
 import com.yiport.utils.RedisCache;
@@ -21,15 +20,12 @@ import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +35,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
-import static com.yiport.constent.UserConstant.EMAIL_REGEX;
 import static com.yiport.constent.UserConstant.EXPIRATION;
 import static com.yiport.constent.UserConstant.LIMIT_TIME;
 import static com.yiport.constent.UserConstant.NULL_REGEX;
@@ -84,7 +79,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 获取时间戳,设置创更新时间
         if (StringUtils.isAnyBlank(username))
         {
-            throw new SystemException(PARAMETER_ERROR, "昵称不能为空");
+            throw new UserSystemException(PARAMETER_ERROR, "昵称不能为空");
         }
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getId, editUserVO.getId());
@@ -96,11 +91,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             Matcher matcher1 = Pattern.compile(NULL_REGEX).matcher(userPassword);
             if (matcher1.find() || (userPassword.length() < 8 || userPassword.length() > 16))
             {
-                throw new SystemException(PARAMETER_ERROR, "密码为8~16位且不能包含空字符");
+                throw new UserSystemException(PARAMETER_ERROR, "密码为8~16位且不能包含空字符");
             }
             if (!userPassword.equals(checkPassword))
             {
-                throw new SystemException(PARAMETER_ERROR, "两次输入的密码不一致");
+                throw new UserSystemException(PARAMETER_ERROR, "两次输入的密码不一致");
             }
             // 加密
             String encryptPassword = passwordEncoder.encode(userPassword);
@@ -111,7 +106,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .ne(User::getId, editUserVO.getId()));
         if (Objects.nonNull(one))
         {
-            throw new SystemException(PARAMETER_ERROR, "昵称已存在");
+            throw new UserSystemException(PARAMETER_ERROR, "昵称已存在");
         }
         user.setUserName(username);
         updateById(user);
@@ -135,7 +130,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         catch (Exception e)
         {
-            throw new SystemException("Token非法！");
+            throw new UserSystemException("Token非法！");
         }
         User user = getById(id);
         UserVO userVO = BeanCopyUtils.copyBean(user, UserVO.class);
@@ -175,10 +170,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public ResponseResult<Void> deleteUserById(String id)
     {
         if (StringUtils.isBlank(id) || !NumberUtils.isDigits(id)) {
-            throw new SystemException(PARAMETER_ERROR, "请求参数错误");
+            throw new UserSystemException(PARAMETER_ERROR, "请求参数错误");
         }
         if (Long.parseLong(id) <= 0) {
-            throw new SystemException(PARAMETER_ERROR, "参数错误，id大于0");
+            throw new UserSystemException(PARAMETER_ERROR, "参数错误，id大于0");
         }
         removeById(id);
         return ResponseResult.okResult(null);
@@ -201,13 +196,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         catch (Exception e)
         {
-            throw new SystemException(NEED_LOGIN, "Token非法！");
+            throw new UserSystemException(NEED_LOGIN, "Token非法！");
         }
         // 获取用户信息
         String userId = claims.getId();
         if (Objects.nonNull(id) && !id.toString().equals(userId))
         {
-            throw new SystemException(NO_OPERATOR_AUTH);
+            throw new UserSystemException(NO_OPERATOR_AUTH);
         }
         User user = getById(userId);
         UserVO userVO = BeanCopyUtils.copyBean(user, UserVO.class);
@@ -233,7 +228,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         else
         {
             redisCache.deleteObject(tokenKey);
-            throw new SystemException(NEED_LOGIN, "用户未登录");
+            throw new UserSystemException(NEED_LOGIN, "用户未登录");
         }
         redisCache.setCacheObject(tokenKey, jwt);
         map.put(TOKEN_HEADER_KEY, jwt);
@@ -248,7 +243,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     {
         User user = getById(userId);
         if (Objects.isNull(user))
-            throw new SystemException(PARAMETER_ERROR, "用户不存在");
+            throw new UserSystemException(PARAMETER_ERROR, "用户不存在");
         OtherUserVO otherUserVO = BeanCopyUtils.copyBean(user, OtherUserVO.class);
         Date date=null;
         try {
