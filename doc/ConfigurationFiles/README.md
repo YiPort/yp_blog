@@ -227,8 +227,19 @@ spring:
 
 ```yaml
 mybatis-plus:
+  # 对应的 XML 文件位置
+  mapperLocations: classpath*:mapper/**/*Mapper.xml
   configuration:
+    # MyBatis 自动映射策略
+    # NONE：不启用 PARTIAL：只对非嵌套 resultMap 自动映射 FULL：对所有 resultMap 自动映射
+    autoMappingBehavior: PARTIAL
+    # MyBatis 自动映射时未知列或未知属性处理策
+    # NONE：不做处理 WARNING：打印相关警告 FAILING：抛出异常和详细信息
+    autoMappingUnknownColumnBehavior: NONE
+    mapUnderscoreToCamelCase: true # 开启自动驼峰命名转换
+
     # 日志
+    # log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
 
   global-config:
@@ -329,7 +340,6 @@ logging:
 
 ```yaml
 # security配置
-# security配置
 security:
   # 拦截路径
   Intercepts:
@@ -359,7 +369,12 @@ security:
     - /article/articleDetail/**
     - /article/updateViewCount/**
     - /user/captchaImage
-    - /user/login
+    - /user/login/**
+    - /user/register
+    - /mail/sendRetrieveAccountCaptcha
+    - /mail/retrieveAccount
+    - /mail/sendUpdatePasswordCaptcha
+    - /mail/updatePasswordByMail
     - /search/index/getArticleIndex
     - /search/searchArticle
     - /category/getCategoryList

@@ -28,7 +28,12 @@ security:
     - /article/articleDetail/**
     - /article/updateViewCount/**
     - /user/captchaImage
-    - /user/login
+    - /user/login/**
+    - /user/register
+    - /mail/sendRetrieveAccountCaptcha
+    - /mail/retrieveAccount
+    - /mail/sendUpdatePasswordCaptcha
+    - /mail/updatePasswordByMail
     - /search/index/getArticleIndex
     - /search/searchArticle
     - /category/getCategoryList

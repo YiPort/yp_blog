@@ -39,9 +39,6 @@ import static com.yiport.enums.AppHttpCodeEnum.NO_OPERATOR_AUTH;
 
 /**
  * 接口请求限制切面类
- *
- * @author wzy
- * @version 2022/5/26 10:05
  */
 @Aspect
 @Component

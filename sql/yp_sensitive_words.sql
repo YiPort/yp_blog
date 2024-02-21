@@ -1,3 +1,7 @@
+CREATE DATABASE /*!32312 IF NOT EXISTS*/`yp_blog` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
+
+USE `yp_blog`;
+
 DROP TABLE IF EXISTS `yp_sensitive_words`;
 
 CREATE TABLE `yp_sensitive_words` (
