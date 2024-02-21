@@ -29,8 +29,7 @@ public class JwtUtil {
     public static final String JWT_KEY = "YiPortBLOG";
 
     public static String getUUID(){
-        String token = UUID.randomUUID().toString().replaceAll("-", "");
-        return token;
+        return UUID.randomUUID().toString().replaceAll("-", "");
     }
     
     /**

@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.yiport.domain.entity.LoginUser;
 import com.yiport.domain.entity.User;
 import com.yiport.mapper.UserMapper;
+import com.yiport.service.LoginCommonService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,21 +17,15 @@ import java.util.Objects;
 import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    @Autowired
-    private UserMapper userMapper;
+    private final LoginCommonService loginCommonService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        //根据用户名查询用户信息
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getUserName, username);
-        User user = userMapper.selectOne(queryWrapper);
-        //判断是否查到用户  如果没查到抛出异常
-        if (Objects.isNull(user)) {
-            throw new RuntimeException("用户不存在");
-        }
+        // 根据账号查询用户
+        User user = loginCommonService.loadUserByUsername(username);
         // 获取权限集合
         Set<String> permissions = new HashSet<>();
         permissions.add(user.getUserRole().toString());

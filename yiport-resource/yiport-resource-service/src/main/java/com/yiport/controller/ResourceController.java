@@ -15,6 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 
+import static com.yiport.constants.SystemConstants.TRUE;
+
 @RestController("/resource")
 public class ResourceController {
     @Resource
@@ -48,7 +50,7 @@ public class ResourceController {
      */
     @PostMapping("/uploadAvatar")
 //    @SystemLog(businessName = "上传文件头像")
-    @LimitRequest(time = 24 * 60 * 60 * 1000, count = 2, type = "USER", limitAdmin = false, description = "每日只能修改两次头像", tip = true)
+    @LimitRequest(time = 24 * 60 * 60 * 1000, count = 2, type = "USER", limitAdmin = false, description = "每日只能修改两次头像", tip = TRUE)
     public ResponseResult uploadAvatar(MultipartFile img){
         return minioService.uploadImg(img);
     }

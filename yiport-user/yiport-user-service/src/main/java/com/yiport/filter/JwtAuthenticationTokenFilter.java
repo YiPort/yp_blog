@@ -1,12 +1,9 @@
 package com.yiport.filter;
 
-import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.LoginUser;
 import com.yiport.exception.SystemException;
 import com.yiport.utils.JwtUtil;
 import com.yiport.utils.RedisCache;
-import com.yiport.utils.WebUtils;
-import com.alibaba.fastjson.JSON;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,9 +17,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Objects;
 
 import static com.yiport.constants.BusinessConstants.BLOG_LOGIN;
+import static com.yiport.constants.BusinessConstants.TOKEN_KEY;
+import static com.yiport.constent.ExceptionDescription.NOT_LOGIN;
+import static com.yiport.constent.ExceptionDescription.TOKEN_EXPIRE;
+import static com.yiport.constent.ExceptionDescription.TOKEN_ILLEGAL;
+import static com.yiport.constent.UserConstant.LIMIT_TIME;
+import static com.yiport.constent.UserConstant.TOKEN_HEADER_KEY;
 import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
 
 @Component
@@ -32,11 +34,13 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     private RedisCache redisCache;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        //获取请求头中的token
-        String token = request.getHeader("Token");
-        if(!StringUtils.hasText(token)){
-            //说明该接口不需要登录  直接放行
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException
+    {
+        //获取 Token
+        String token = request.getHeader(TOKEN_HEADER_KEY);
+        if (!StringUtils.hasText(token))
+        {
+            // 未找到 Token，放行
             filterChain.doFilter(request, response);
             return;
         }
@@ -49,29 +53,31 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Token非法！");
+            throw new SystemException(NEED_LOGIN, TOKEN_ILLEGAL);
         }
         long now = System.currentTimeMillis();
         long startTime = claims.getIssuedAt().getTime();
-        if (now - startTime > 5 * 24 * 60 * 60 * 1000L)
+        if (now - startTime > LIMIT_TIME)
         {
-            throw new SystemException(NEED_LOGIN, "认证过期，请重新登录");
+            throw new SystemException(NEED_LOGIN, TOKEN_EXPIRE);
         }
 
         userId = claims.getId();
 
-        //从redis中获取用户信息
-        LoginUser loginUser = redisCache.getCacheObject(BLOG_LOGIN + userId);
-        //如果获取不到
-        if (Objects.isNull(loginUser)) {
-            //说明登录过期  提示重新登录
-            ResponseResult result = ResponseResult.errorResult(NEED_LOGIN);
-            WebUtils.renderString(response, JSON.toJSONString(result));
-            return;
+        // 从 redis中获取用户信息
+        String key = BLOG_LOGIN + userId;
+        LoginUser loginUser = redisCache.getCacheObject(key);
+        String tokenKey = TOKEN_KEY + userId;
+        String redisToken = redisCache.getCacheObject(tokenKey);
+        if (loginUser == null || !redisToken.equals(token))
+        {
+            throw new SystemException(NEED_LOGIN, NOT_LOGIN);
         }
-        //将用户信息(loginUser)和对应的权限信息(permissions)存入 SecurityContextHolder
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
+        // 将用户信息(loginUser)和对应的权限信息(permissions)存入 SecurityContextHolder
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
         // 放行
         filterChain.doFilter(request, response);
     }

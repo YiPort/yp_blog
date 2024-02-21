@@ -3,15 +3,19 @@ package com.yiport.exception;
 import com.yiport.domain.ResponseResult;
 import com.yiport.enums.AppHttpCodeEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.mybatis.spring.MyBatisSystemException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.stream.Collectors;
+
+import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
 
 @RestControllerAdvice
 @Slf4j
@@ -42,6 +46,22 @@ public class GlobalExceptionHandler {
         return ResponseResult.errorResult(AppHttpCodeEnum.SYSTEM_ERROR.getCode(), "系统异常");
     }
 
+    /**
+     * Mybatis系统异常 通用处理
+     */
+    @ExceptionHandler(MyBatisSystemException.class)
+    public ResponseResult<Void> handleCannotFindDataSourceException(MyBatisSystemException e, HttpServletRequest request)
+    {
+        String requestURI = request.getRequestURI();
+        String message = e.getMessage();
+        if (message.contains("CannotFindDataSourceException"))
+        {
+            log.error("请求地址'{}', 未找到数据源", requestURI);
+            return ResponseResult.errorResult(PARAMETER_ERROR, "未找到数据源，请联系管理员确认");
+        }
+        log.error("请求地址'{}', Mybatis系统异常", requestURI, e);
+        return ResponseResult.errorResult(PARAMETER_ERROR, "Mybatis系统异常");
+    }
 
     /**
      * 自定义验证异常
