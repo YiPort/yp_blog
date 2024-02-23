@@ -7,9 +7,11 @@ public interface ExceptionDescription
 {
     // ------ user ------
 
-    String ACCOUNT_PASSWORD_ERROR = "账号或密码错误";
+    String ACCOUNT_PASSWORD_ERROR = "用户名或密码错误";
 
     String ACCOUNT_EXIST = "账号已存在";
+
+    String ACCOUNT_DEACTIVATE = "账号已被停用";
 
     String ACCOUNT_NOT_EXIST = "用户不存在";
 
@@ -20,6 +22,10 @@ public interface ExceptionDescription
     String CAPTCHA_ERROR = "验证码错误请重试";
 
     String PASSWORD_DIFFERENT = "两次输入的密码不一致";
+
+    String ACCOUNT_ERROR = "用户名错误";
+
+    String PASSWORD_ERROR = "密码错误";
 
     // ------ token ------
 

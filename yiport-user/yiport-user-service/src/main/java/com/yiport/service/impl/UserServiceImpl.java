@@ -9,7 +9,7 @@ import com.yiport.domain.entity.User;
 import com.yiport.domain.vo.EditUserVO;
 import com.yiport.domain.vo.OtherUserVO;
 import com.yiport.domain.vo.UserVO;
-import com.yiport.exception.UserSystemException;
+import com.yiport.exception.SystemException;
 import com.yiport.mapper.UserMapper;
 import com.yiport.service.UserService;
 import com.yiport.utils.RedisCache;
@@ -79,7 +79,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 获取时间戳,设置创更新时间
         if (StringUtils.isAnyBlank(username))
         {
-            throw new UserSystemException(PARAMETER_ERROR, "昵称不能为空");
+            throw new SystemException(PARAMETER_ERROR, "昵称不能为空");
         }
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getId, editUserVO.getId());
@@ -91,11 +91,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             Matcher matcher1 = Pattern.compile(NULL_REGEX).matcher(userPassword);
             if (matcher1.find() || (userPassword.length() < 8 || userPassword.length() > 16))
             {
-                throw new UserSystemException(PARAMETER_ERROR, "密码为8~16位且不能包含空字符");
+                throw new SystemException(PARAMETER_ERROR, "密码为8~16位且不能包含空字符");
             }
             if (!userPassword.equals(checkPassword))
             {
-                throw new UserSystemException(PARAMETER_ERROR, "两次输入的密码不一致");
+                throw new SystemException(PARAMETER_ERROR, "两次输入的密码不一致");
             }
             // 加密
             String encryptPassword = passwordEncoder.encode(userPassword);
@@ -106,7 +106,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .ne(User::getId, editUserVO.getId()));
         if (Objects.nonNull(one))
         {
-            throw new UserSystemException(PARAMETER_ERROR, "昵称已存在");
+            throw new SystemException(PARAMETER_ERROR, "昵称已存在");
         }
         user.setUserName(username);
         updateById(user);
@@ -130,7 +130,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         catch (Exception e)
         {
-            throw new UserSystemException("Token非法！");
+            throw new SystemException("Token非法！");
         }
         User user = getById(id);
         UserVO userVO = BeanCopyUtils.copyBean(user, UserVO.class);
@@ -170,10 +170,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public ResponseResult<Void> deleteUserById(String id)
     {
         if (StringUtils.isBlank(id) || !NumberUtils.isDigits(id)) {
-            throw new UserSystemException(PARAMETER_ERROR, "请求参数错误");
+            throw new SystemException(PARAMETER_ERROR, "请求参数错误");
         }
         if (Long.parseLong(id) <= 0) {
-            throw new UserSystemException(PARAMETER_ERROR, "参数错误，id大于0");
+            throw new SystemException(PARAMETER_ERROR, "参数错误，id大于0");
         }
         removeById(id);
         return ResponseResult.okResult(null);
@@ -196,13 +196,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         catch (Exception e)
         {
-            throw new UserSystemException(NEED_LOGIN, "Token非法！");
+            throw new SystemException(NEED_LOGIN, "Token非法！");
         }
         // 获取用户信息
         String userId = claims.getId();
         if (Objects.nonNull(id) && !id.toString().equals(userId))
         {
-            throw new UserSystemException(NO_OPERATOR_AUTH);
+            throw new SystemException(NO_OPERATOR_AUTH);
         }
         User user = getById(userId);
         UserVO userVO = BeanCopyUtils.copyBean(user, UserVO.class);
@@ -228,7 +228,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         else
         {
             redisCache.deleteObject(tokenKey);
-            throw new UserSystemException(NEED_LOGIN, "用户未登录");
+            throw new SystemException(NEED_LOGIN, "用户未登录");
         }
         redisCache.setCacheObject(tokenKey, jwt);
         map.put(TOKEN_HEADER_KEY, jwt);
@@ -243,7 +243,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     {
         User user = getById(userId);
         if (Objects.isNull(user))
-            throw new UserSystemException(PARAMETER_ERROR, "用户不存在");
+            throw new SystemException(PARAMETER_ERROR, "用户不存在");
         OtherUserVO otherUserVO = BeanCopyUtils.copyBean(user, OtherUserVO.class);
         Date date=null;
         try {

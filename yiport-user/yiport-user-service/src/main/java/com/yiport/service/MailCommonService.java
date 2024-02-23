@@ -3,7 +3,7 @@ package com.yiport.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.yiport.domain.entity.User;
 import com.yiport.enums.MailTypeEnum;
-import com.yiport.exception.UserSystemException;
+import com.yiport.exception.SystemException;
 import com.yiport.mapper.UserMapper;
 import com.yiport.utils.RedisCache;
 import lombok.RequiredArgsConstructor;
@@ -132,12 +132,12 @@ public class MailCommonService
         String emailCaptcha = redisCache.getCacheObject(key + email);
         if (Objects.isNull(emailCaptcha))
         {
-            throw new UserSystemException(SYSTEM_ERROR, CAPTCHA_ERROR);
+            throw new SystemException(SYSTEM_ERROR, CAPTCHA_ERROR);
         }
         String[] captchaAndEmail = emailCaptcha.split(":");
         if (!captchaAndEmail[0].equals(captcha))
         {
-            throw new UserSystemException(SYSTEM_ERROR, CAPTCHA_ERROR);
+            throw new SystemException(SYSTEM_ERROR, CAPTCHA_ERROR);
         }
     }
 
@@ -152,7 +152,7 @@ public class MailCommonService
                 .eq(User::getEmail, email));
         if (Objects.isNull(user))
         {
-            throw new UserSystemException(PARAMETER_ERROR, MAIL_NOT_BINDING);
+            throw new SystemException(PARAMETER_ERROR, MAIL_NOT_BINDING);
         }
         return user;
     }
@@ -168,7 +168,7 @@ public class MailCommonService
                 .eq(User::getEmail, email));
         if (Objects.nonNull(verifyUser))
         {
-            throw new UserSystemException(EMAIL_EXIST, MAIL_BINDING_ACCOUNT);
+            throw new SystemException(EMAIL_EXIST, MAIL_BINDING_ACCOUNT);
         }
     }
 

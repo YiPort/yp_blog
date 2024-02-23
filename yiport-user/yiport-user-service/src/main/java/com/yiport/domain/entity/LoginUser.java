@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -74,7 +75,8 @@ public class LoginUser implements UserDetails
     }
 
     @Override
-    public boolean isEnabled() {
-        return user.getStatus().equals(NORMAL_STATUS);
+    public boolean isEnabled()
+    {
+        return Objects.equals(user.getStatus(), NORMAL_STATUS);
     }
 }
