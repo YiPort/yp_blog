@@ -27,7 +27,7 @@
         <spring-cloud-alibaba.version>2021.0.4.0</spring-cloud-alibaba.version>
         <fastjson2.version>2.0.8</fastjson2.version>
         <jjwt.version>0.9.0</jjwt.version>
-        <mybatis-plus.version>3.4.3</mybatis-plus.version>
+        <mybatis-plus.version>3.5.1</mybatis-plus.version>
         <aliyun-oss.version>3.10.2</aliyun-oss.version>
         <easyexcel.version>3.0.5</easyexcel.version>
         <mybatis.version>2.2.2</mybatis.version>
