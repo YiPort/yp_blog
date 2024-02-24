@@ -132,7 +132,7 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
         // 1.7、昵称不能重复（将数据库查询校验放到最后）
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(User::getNickName, nickName);
-        int count1 = count(lambdaQueryWrapper);
+        Long count1 = count(lambdaQueryWrapper);
         if (count1 > 0) {
             throw new SystemException(NICKNAME_EXIST, "昵称已存在");
         }

@@ -13,8 +13,7 @@ public interface LoginInfoService extends IService<LoginInfo>
     /**
      * 登录信息记录
      */
-    void recordLoginInfo(String userAccount, String status, String message,
-                         HttpServletRequest request, Object... args);
+    void recordLoginInfo(String userName, String status, String message, HttpServletRequest request);
 
     /**
      * 新增登录日志

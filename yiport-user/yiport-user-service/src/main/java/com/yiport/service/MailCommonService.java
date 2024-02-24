@@ -47,6 +47,19 @@ public class MailCommonService
     private String sendMailer;
 
     /**
+     * 查询用户绑定邮箱
+     *
+     * @param userName 用户名
+     * @return 邮箱
+     */
+    public String getMailByAccount(String userName)
+    {
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getUserName, userName));
+        return user.getEmail();
+    }
+
+    /**
      * 发送普通文本邮件
      *
      * @param email    收件邮箱
@@ -93,8 +106,7 @@ public class MailCommonService
     public void sendLoginMail(String email, String userAccount, String loginTime, String ip, String address)
     {
         String mailContent = "你好, " + userAccount + "\n\n" + "你的帐号于 " + loginTime + " 在非常用的IP地址 " +
-                ip + "(" + address + ")" + " 登录，如非本人操作，建议尽快修改帐户密码。" + "\n\n" +
-                "如果不想再收到此类邮件，请登录https://yiport.top，点击 头像>帮助中心>订阅 取消登录告警。";
+                ip + "(" + address + ")" + " 登录，如非本人操作，建议尽快修改帐户密码。";
         try
         {
             //true 代表支持复杂的类型
