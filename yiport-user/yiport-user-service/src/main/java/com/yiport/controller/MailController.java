@@ -92,4 +92,14 @@ public class MailController
         return mailService.updatePasswordByMail(updatePasswordRequest);
     }
 
+    /**
+     * 发送邮箱登录验证码
+     */
+    @GetMapping("/sendLoginByMailCaptcha")
+    @SystemLog(businessName = "发送邮箱登录验证码")
+    @LimitRequest(time = 60 * 1000, tip = TRUE)
+    public ResponseResult<Void> sendLoginByMailCaptcha(String email)
+    {
+        return mailService.sendLoginByMailCaptcha(email);
+    }
 }

@@ -54,7 +54,7 @@ public class UserController {
      * @param pageSize 页面容量
      * @return
      */
-    @GetMapping("/searchUsers")
+    @GetMapping("/system/searchUsers")
     @PreAuthorize("hasAuthority('1')")
     @SystemLog(businessName = "管理员分页查询用户")
     public ResponseResult<List<UserVO>> searchUsers(@RequestParam("current") String current, @RequestParam("pageSize") String pageSize) {
@@ -67,7 +67,7 @@ public class UserController {
      * @param id
      * @return
      */
-    @PostMapping("/delete")
+    @PostMapping("/system/delete")
     @PreAuthorize("hasAuthority('1')")
     @SystemLog(businessName = "管理员根据id删除用户")
     public ResponseResult deleteUser(@RequestParam("id") @RequestBody String id) {

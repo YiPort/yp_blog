@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yiport.domain.ResponseResult;
+import com.yiport.domain.entity.LoginUser;
 import com.yiport.domain.entity.User;
 import com.yiport.domain.vo.EditUserVO;
 import com.yiport.domain.vo.OtherUserVO;
@@ -20,6 +21,8 @@ import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -28,12 +31,15 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.yiport.constants.BusinessConstants.BLOG_LOGIN;
 import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
 import static com.yiport.constent.UserConstant.EXPIRATION;
 import static com.yiport.constent.UserConstant.LIMIT_TIME;
@@ -71,6 +77,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public ResponseResult updateUserInfo(EditUserVO editUserVO) {
+        String userId = JwtUtil.checkToken(request);
         String username = editUserVO.getUsername();
         String sex = editUserVO.getSex();
         String avatarUrl = editUserVO.getAvatar();
@@ -81,36 +88,27 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         {
             throw new SystemException(PARAMETER_ERROR, "昵称不能为空");
         }
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getId, editUserVO.getId());
-        User user = getOne(queryWrapper);
+        if (!userId.equals(editUserVO.getId().toString()))
+        {
+            throw new SystemException(NO_OPERATOR_AUTH);
+        }
+        User user = getOne(new LambdaQueryWrapper<User>()
+                .eq(User::getId, editUserVO.getId()));
+
         user.setSex(sex);
         user.setAvatar(avatarUrl);
-        if (Objects.nonNull(userPassword) && !StringUtils.isAllBlank(userPassword, checkPassword))
-        {
-            Matcher matcher1 = Pattern.compile(NULL_REGEX).matcher(userPassword);
-            if (matcher1.find() || (userPassword.length() < 8 || userPassword.length() > 16))
-            {
-                throw new SystemException(PARAMETER_ERROR, "密码为8~16位且不能包含空字符");
-            }
-            if (!userPassword.equals(checkPassword))
-            {
-                throw new SystemException(PARAMETER_ERROR, "两次输入的密码不一致");
-            }
-            // 加密
-            String encryptPassword = passwordEncoder.encode(userPassword);
-            user.setPassword(encryptPassword);
-        }
-        User one = getOne(new LambdaQueryWrapper<User>()
-                .eq(User::getUserName, username)
-                .ne(User::getId, editUserVO.getId()));
-        if (Objects.nonNull(one))
-        {
-            throw new SystemException(PARAMETER_ERROR, "昵称已存在");
-        }
-        user.setUserName(username);
         updateById(user);
-        return reloadToken(user.getId());
+        // 获取权限集合
+        Set<String> permissions = new HashSet<>();
+        permissions.add(user.getUserRole().toString());
+        // 将用户信息封装成 UserDetails返回
+        LoginUser loginUser = new LoginUser(user, permissions);
+        // 将用户信息(loginUser)和对应的权限信息(permissions)存入 SecurityContextHolder
+        SecurityContextHolder.getContext().setAuthentication(new
+                UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities()));
+        // 将 loginUser存入 redis
+        setRedisCache(loginUser);
+        return ResponseResult.okResult();
     }
 
 
@@ -254,6 +252,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         long totalDay = DateUtil.betweenDay( date, new Date(System.currentTimeMillis()), true) + 1;
         otherUserVO.setTotalDay(totalDay);
         return ResponseResult.okResult(otherUserVO);
+    }
+
+    public void setRedisCache(LoginUser loginUser)
+    {
+        // 将 loginUser存入 redis
+        String redisKey = BLOG_LOGIN + loginUser.getUser().getId();
+        redisCache.setCacheObject(redisKey, loginUser);
     }
 
 }

@@ -20,10 +20,13 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static com.yiport.constent.ExceptionDescription.CAPTCHA_ERROR;
+import static com.yiport.constent.ExceptionDescription.CAPTCHA_EXPIRE;
 import static com.yiport.constent.ExceptionDescription.MAIL_BINDING_ACCOUNT;
 import static com.yiport.constent.ExceptionDescription.MAIL_NOT_BINDING;
 import static com.yiport.constent.UserConstant.ACCOUNT_LOGIN_MESSAGE;
 import static com.yiport.constent.UserConstant.GET_ACCOUNT_MAIL_CAPTCHA;
+import static com.yiport.constent.UserConstant.LOGIN_BY_MAIL;
+import static com.yiport.constent.UserConstant.MAIL_CAPTCHA_LENGTH;
 import static com.yiport.constent.UserConstant.MAIL_CAPTCHA_TIME;
 import static com.yiport.constent.UserConstant.UPDATE_PASSWORD_MAIL_CAPTCHA;
 import static com.yiport.constent.UserConstant.VERIFY_MAIL_CAPTCHA;
@@ -56,7 +59,7 @@ public class MailCommonService
     {
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
                 .eq(User::getUserName, userName));
-        return user.getEmail();
+        return user != null ? user.getEmail() : "";
     }
 
     /**
@@ -68,7 +71,7 @@ public class MailCommonService
      */
     public void sendTextMail(String email, String subject, MailTypeEnum typeEnum)
     {
-        String captcha = RandomStringUtils.random(6, "0123456789");
+        String captcha = RandomStringUtils.random(MAIL_CAPTCHA_LENGTH, "0123456789");
         try
         {
             //true 代表支持复杂的类型
@@ -144,7 +147,7 @@ public class MailCommonService
         String emailCaptcha = redisCache.getCacheObject(key + email);
         if (Objects.isNull(emailCaptcha))
         {
-            throw new SystemException(SYSTEM_ERROR, CAPTCHA_ERROR);
+            throw new SystemException(SYSTEM_ERROR, CAPTCHA_EXPIRE);
         }
         String[] captchaAndEmail = emailCaptcha.split(":");
         if (!captchaAndEmail[0].equals(captcha))
@@ -203,6 +206,10 @@ public class MailCommonService
                 break;
             case UPDATE_PASSWORD:
                 redisCache.setCacheObject(UPDATE_PASSWORD_MAIL_CAPTCHA + email, captcha + ":" + email,
+                        MAIL_CAPTCHA_TIME, TimeUnit.MINUTES);
+                break;
+            case LOGIN_BY_MAIL:
+                redisCache.setCacheObject(LOGIN_BY_MAIL + email, captcha + ":" + email,
                         MAIL_CAPTCHA_TIME, TimeUnit.MINUTES);
                 break;
         }

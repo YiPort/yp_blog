@@ -9,7 +9,9 @@ public enum MailTypeEnum
 
     RETRIEVE_ACCOUNT("使用邮箱找回账号"),
 
-    UPDATE_PASSWORD("使用邮箱修改密码");
+    UPDATE_PASSWORD("使用邮箱修改密码"),
+
+    LOGIN_BY_MAIL("使用邮箱登录");
 
     String type;
 

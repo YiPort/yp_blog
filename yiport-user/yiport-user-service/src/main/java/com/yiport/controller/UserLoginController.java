@@ -4,6 +4,7 @@ import com.yiport.annotation.LimitRequest;
 import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.request.AccountLoginRequest;
+import com.yiport.domain.request.EmailLoginRequest;
 import com.yiport.domain.request.UserRegisterRequest;
 import com.yiport.service.UserLoginService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 import static com.yiport.constants.SystemConstants.DEFINED;
 
@@ -37,17 +40,30 @@ public class UserLoginController {
     }
 
     /**
-     * 用户登录
+     * 账号密码登录
      *
      * @param accountLoginRequest
      * @return
      */
-    @PostMapping("/login")
+    @PostMapping("/login/account")
     @SystemLog(businessName = "用户登录")
-    public ResponseResult login(@RequestBody AccountLoginRequest accountLoginRequest)
-    {
+    public ResponseResult<Map<String, Object>> userLoginByAccount(@Validated @RequestBody
+                                                                  AccountLoginRequest accountLoginRequest) {
         return userLoginService.userLoginByAccount(accountLoginRequest);
     }
+    /**
+         * 邮箱验证码登录
+         *
+         * @param emailLoginRequest 邮箱验证码登录请求体
+         * @return 结果
+         */
+        @SystemLog(businessName = "用户登录[邮箱验证码]")
+        @PostMapping("/login/email")
+        public ResponseResult<Map<String, Object>> userLoginByEmail(@Validated @RequestBody
+                                                                            EmailLoginRequest emailLoginRequest)
+        {
+            return userLoginService.userLoginByEmail(emailLoginRequest);
+        }
 
     /**
      * 用户退出登录

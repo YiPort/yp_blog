@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.Objects;
 
+import static com.yiport.constent.UserConstant.LOGIN_BY_ACCOUNT;
 import static com.yiport.constent.UserConstant.LOGIN_SUCCESS;
 import static com.yiport.constent.UserConstant.SUCCESS;
 
@@ -42,15 +43,20 @@ public class LoginInfoServiceImpl extends ServiceImpl<LoginInfoMapper, LoginInfo
 
     /**
      * 登录信息记录
+     *
+     *      * @param userAccount 账号
+     *      * @param status      访问状态
+     *      * @param message     详细消息
+     *      * @param type        登录类型
      */
     @Async
     @Override
-    public void recordLoginInfo(String userName, String status, String message, HttpServletRequest request)
+    public void recordLoginInfo(String userName, String status, String message, String type, HttpServletRequest request)
     {
         final UserAgent userAgent = UserAgentUtil.parse(request.getHeader("User-Agent"));
         final String ip = ServletUtil.getClientIP(request);
         SpringUtil.getBean(LoginInfoServiceImpl.class)
-                .asyncRecordLog(userName, status, message, userAgent, ip);
+                .asyncRecordLog(userName, status, message, type, userAgent, ip);
     }
 
     /**
@@ -77,7 +83,7 @@ public class LoginInfoServiceImpl extends ServiceImpl<LoginInfoMapper, LoginInfo
      * @param ip          ip
      */
     @Async
-    public void asyncRecordLog(final String userName, final String status, final String message,
+    public void asyncRecordLog(final String userName, final String status, final String message, final String type,
                                final UserAgent userAgent, final String ip, final Object... args)
     {
         // 获取地址
@@ -98,8 +104,8 @@ public class LoginInfoServiceImpl extends ServiceImpl<LoginInfoMapper, LoginInfo
         loginInfo.setStatus(status);
         String mail = null;
         boolean sendMail = false;
-        // 登录成功校验是否符合发送邮件
-        if (message.equals(LOGIN_SUCCESS))
+        // 通过账号密码登录成功校验是否符合发送邮件
+        if (message.equals(LOGIN_SUCCESS) && type.equals(LOGIN_BY_ACCOUNT))
         {
             mail = mailCommonService.getMailByAccount(userName);
             sendMail = verifyLoginIp(userName, ip, mail, true);

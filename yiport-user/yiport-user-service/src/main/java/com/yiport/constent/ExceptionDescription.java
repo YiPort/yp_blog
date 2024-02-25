@@ -17,7 +17,7 @@ public interface ExceptionDescription
 
     String NICKNAME_EXIST = "昵称已存在";
 
-    String CAPTCHA_EXPIRE = "验证码过期请刷新重试";
+    String CAPTCHA_EXPIRE = "验证码过期请重新获取";
 
     String CAPTCHA_ERROR = "验证码错误请重试";
 

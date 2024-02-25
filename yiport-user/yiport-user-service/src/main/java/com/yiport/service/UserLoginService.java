@@ -1,23 +1,15 @@
 package com.yiport.service;
 
 import com.yiport.domain.ResponseResult;
-import com.yiport.domain.entity.User;
 import com.yiport.domain.request.AccountLoginRequest;
+import com.yiport.domain.request.EmailLoginRequest;
 import com.yiport.domain.request.UserRegisterRequest;
-import com.yiport.domain.vo.UserLoginVO;
-import com.yiport.enums.AppHttpCodeEnum;
 
-public interface UserLoginService {
 
-    /**
-     * 用户注册（停用）
-     *
-     * @param user
-     * @return
-     */
-    @Deprecated
-    ResponseResult<AppHttpCodeEnum> register(User user);
+import java.util.Map;
 
+public interface UserLoginService
+{
     /**
      * 用户注册
      *
@@ -25,15 +17,6 @@ public interface UserLoginService {
      * @return
      */
     ResponseResult<Void> userRegister(UserRegisterRequest userRegisterRequest);
-
-    /**
-     * 用户登录（停用）
-     *
-     * @param user
-     * @return
-     */
-    @Deprecated
-    ResponseResult<UserLoginVO> login(User user);
 
     /**
      * 用户登出
@@ -48,7 +31,15 @@ public interface UserLoginService {
      * @param accountLoginRequest 用户登录请求体
      * @return 结果
      */
-    ResponseResult<UserLoginVO> userLoginByAccount(AccountLoginRequest accountLoginRequest);
+    ResponseResult<Map<String, Object>> userLoginByAccount(AccountLoginRequest accountLoginRequest);
+
+    /**
+     * 邮箱验证码登录
+     *
+     * @param emailLoginRequest 邮箱验证码登录请求体
+     * @return 结果
+     */
+    ResponseResult<Map<String, Object>> userLoginByEmail(EmailLoginRequest emailLoginRequest);
 
     /**
      * 获取图片验证码

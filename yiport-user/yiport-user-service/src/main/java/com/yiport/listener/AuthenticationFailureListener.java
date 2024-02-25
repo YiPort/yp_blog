@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import static com.yiport.constent.ExceptionDescription.ACCOUNT_DEACTIVATE;
 import static com.yiport.constent.ExceptionDescription.PASSWORD_ERROR;
 import static com.yiport.constent.UserConstant.FAIL;
+import static com.yiport.constent.UserConstant.LOGIN_BY_ACCOUNT;
 
 /**
  * 用户登录失败监听器
@@ -54,6 +55,6 @@ public class AuthenticationFailureListener implements ApplicationListener<Abstra
             message = "未知错误";
         }
         loginInfoService.recordLoginInfo(event.getAuthentication().getPrincipal().toString(),
-                FAIL, message, request);
+                FAIL, LOGIN_BY_ACCOUNT, message, request);
     }
 }

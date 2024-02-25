@@ -40,4 +40,9 @@ public interface MailService
      */
     ResponseResult<String> updatePasswordByMail(UpdatePasswordRequest updatePasswordRequest);
 
+    /**
+     * 发送邮箱登录验证码
+     */
+    ResponseResult<Void> sendLoginByMailCaptcha(String email);
+
 }

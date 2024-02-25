@@ -183,6 +183,11 @@ public interface UserConstant {
     String ACCOUNT_LOGIN_MESSAGE = "一点博客 | 账号登录告警";
 
     /**
+     * login-byMail-subject
+     */
+    String LOGIN_BY_MAIL_MESSAGE = "一点博客 | 账号登录验证";
+
+    /**
      * verify-mail-captcha-key
      */
     String VERIFY_MAIL_CAPTCHA = "verify_mail_captcha:";
@@ -193,6 +198,11 @@ public interface UserConstant {
     Integer MAIL_CAPTCHA_TIME = 5;
 
     /**
+     * 邮箱验证码长度
+     */
+    int MAIL_CAPTCHA_LENGTH = 6;
+
+    /**
      * get_account_mail_captcha-key
      */
     String GET_ACCOUNT_MAIL_CAPTCHA = "get_account_mail_captcha:";
@@ -201,6 +211,11 @@ public interface UserConstant {
      * update-password-mail-captcha-key
      */
     String UPDATE_PASSWORD_MAIL_CAPTCHA = "update_password_mail_captcha:";
+
+    /**
+     * login-byMail-captcha-key
+     */
+    String LOGIN_BY_MAIL = "login_by_mail_captcha:";
 
     /**
      * X-Forwarded-For
@@ -216,5 +231,15 @@ public interface UserConstant {
     String FALSE = "false";
     String TRUE = "true";
     String DEFINED = "defined";
+
+    /**
+     * 登录/访问类型-账号密码
+     */
+    String LOGIN_BY_ACCOUNT = "0";
+
+    /**
+     * 登录/访问类型-邮箱验证码
+     */
+    String LOGIN_BY_EMAIL = "1";
 
 }

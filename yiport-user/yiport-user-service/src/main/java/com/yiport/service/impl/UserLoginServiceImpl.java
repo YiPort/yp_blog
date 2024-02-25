@@ -4,15 +4,20 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.yiport.constent.UserConstant;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.LoginUser;
 import com.yiport.domain.entity.User;
 import com.yiport.domain.request.AccountLoginRequest;
+import com.yiport.domain.request.EmailLoginRequest;
 import com.yiport.domain.request.UserRegisterRequest;
 import com.yiport.domain.vo.UserLoginVO;
 import com.yiport.domain.vo.UserVO;
 import com.yiport.exception.SystemException;
 import com.yiport.mapper.UserMapper;
+import com.yiport.provider.MailAuthenticationToken;
+import com.yiport.service.LoginCommonService;
+import com.yiport.service.LoginInfoService;
 import com.yiport.service.UserLoginService;
 import com.yiport.utils.BeanCopyUtils;
 import com.yiport.utils.CaptchaTextCreator;
@@ -22,6 +27,8 @@ import com.google.code.kaptcha.Producer;
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import com.yiport.enums.AppHttpCodeEnum;
 import io.jsonwebtoken.Claims;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -47,13 +54,23 @@ import java.util.regex.Pattern;
 import static com.yiport.constants.BusinessConstants.BLOG_ADMIN;
 import static com.yiport.constants.BusinessConstants.BLOG_LOGIN;
 import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
+import static com.yiport.constent.ExceptionDescription.ACCOUNT_EXIST;
+import static com.yiport.constent.ExceptionDescription.ACCOUNT_PASSWORD_ERROR;
+import static com.yiport.constent.ExceptionDescription.PASSWORD_DIFFERENT;
 import static com.yiport.constent.UserConstant.CAPTCHA_CODES;
 import static com.yiport.constent.UserConstant.ADMIN_ROLE;
 import static com.yiport.constent.UserConstant.EXPIRATION;
+import static com.yiport.constent.UserConstant.FAIL;
+import static com.yiport.constent.UserConstant.LOGIN_BY_ACCOUNT;
+import static com.yiport.constent.UserConstant.LOGIN_BY_EMAIL;
+import static com.yiport.constent.UserConstant.LOGIN_SUCCESS;
 import static com.yiport.constent.UserConstant.NICKNAME_PREFIX;
 import static com.yiport.constent.UserConstant.NULL_REGEX;
+import static com.yiport.constent.UserConstant.REGISTER_SUCCESS;
 import static com.yiport.constent.UserConstant.SECTION_MARK;
 import static com.yiport.constent.UserConstant.SPECIAL_REGEX;
+import static com.yiport.constent.UserConstant.TOKEN_HEADER_KEY;
+import static com.yiport.constent.UserConstant.USER_INFO;
 import static com.yiport.enums.AppHttpCodeEnum.NICKNAME_EXIST;
 import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
 import static com.yiport.enums.AppHttpCodeEnum.SUCCESS;
@@ -61,92 +78,19 @@ import static com.yiport.enums.AppHttpCodeEnum.SYSTEM_ERROR;
 import static com.yiport.enums.AppHttpCodeEnum.USERNAME_EXIST;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implements UserLoginService {
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private RedisCache redisCache;
-
-    @Autowired
-    private CaptchaTextCreator captchaTextCreator;
-
-    @Autowired
-    private Producer captchaProducerMath;
-
-    @Autowired
-    private HttpServletRequest request;
-
-    @Resource
-    private UserMapper userMapper;
-
-
-
-    /**
-     * 用户注册（停用）
-     *
-     * @param user
-     * @return
-     */
-    @Override
-    public ResponseResult<AppHttpCodeEnum> register(User user) {
-        // 1.校验
-        String userAccount = user.getUserName();
-        String nickName = user.getNickName();
-        String userPassword = user.getPassword();
-        // 1.1、非空校验（使用 Apache Commons Lang库）
-        if (StringUtils.isAnyEmpty(userAccount, userPassword)) {
-            throw new SystemException(PARAMETER_ERROR, "账号密码不能为空");
-        }
-        // 1.2、账号为4~9位
-        if (userAccount.length() < 4 || userAccount.length() > 9) {
-            throw new SystemException(PARAMETER_ERROR, "账号为4~9位");
-        }
-        // 1.3、密码为8~16位
-        if (userPassword.length() < 8 || userPassword.length() > 16) {
-            throw new SystemException(PARAMETER_ERROR, "密码为8~16位");
-        }
-        // 1.4、账号不能包含特殊字符
-        String validPattern = "[\\s`!@#$%^&*_\\-~()+=|{}':;,\\[\\].<>/\\\\?！￥…（）—【】‘；：”“’。，、？]";
-        Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
-        if (matcher.find()) {
-            throw new SystemException(PARAMETER_ERROR, "账号不能包含特殊字符");
-        }
-        // 1.5、密码不能含有空字符
-        String validPattern1 = "[\\s]";
-        Matcher matcher1 = Pattern.compile(validPattern1).matcher(userPassword);
-        if (matcher1.find()) {
-            throw new SystemException(PARAMETER_ERROR, "密码不能包含空字符");
-        }
-        // 1.6、账号不能重复（将数据库查询校验放到最后）
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("username", userAccount);
-        long count = this.count(queryWrapper);
-        if (count > 0) {
-            throw new SystemException(USERNAME_EXIST, "账号已存在");
-        }
-        // 1.7、昵称不能重复（将数据库查询校验放到最后）
-        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(User::getNickName, nickName);
-        Long count1 = count(lambdaQueryWrapper);
-        if (count1 > 0) {
-            throw new SystemException(NICKNAME_EXIST, "昵称已存在");
-        }
-
-        // 2.加密
-        String encryptPassword = passwordEncoder.encode(userPassword);
-        user.setPassword(encryptPassword);
-        // 3.插入数据
-        boolean saveResult = this.save(user);
-        if (!saveResult) {
-            throw new SystemException(SYSTEM_ERROR, "系统错误");
-        }
-        return ResponseResult.okResult(SUCCESS);
-    }
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final  RedisCache redisCache;
+    private final CaptchaTextCreator captchaTextCreator;
+    private final Producer captchaProducerMath;
+    private final HttpServletRequest request;
+    private final UserMapper userMapper;
+    private final LoginInfoService loginInfoService;
+    private final LoginCommonService loginCommonService;
 
     /**
      * 用户注册
@@ -156,99 +100,41 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
      */
     @Override
     public ResponseResult<Void> userRegister(UserRegisterRequest userRegisterRequest) {
-        String userAccount = userRegisterRequest.getUserName();
+        String userName = userRegisterRequest.getUserName();
         String userPassword = userRegisterRequest.getPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
         String captcha = userRegisterRequest.getCaptcha();
         String uuid = userRegisterRequest.getUuid();
-        // 1.校验
-        // 1.1、非空校验（使用 Apache Commons Lang库）
-        if (StringUtils.isAnyEmpty(userAccount, userPassword, checkPassword)) {
-            throw new SystemException(PARAMETER_ERROR, "账号密码不能为空");
+        // 密码和校验密码不相同
+        if (!userPassword.equals(checkPassword))
+        {
+            loginInfoService.recordLoginInfo(userName, FAIL, PASSWORD_DIFFERENT, LOGIN_BY_ACCOUNT, request);
+            throw new SystemException(PARAMETER_ERROR, PASSWORD_DIFFERENT);
         }
-        // 1.2、账号为4~9位
-        if (userAccount.length() < 4 || userAccount.length() > 9) {
-            throw new SystemException(PARAMETER_ERROR, "账号为4~9位");
+        // 校验验证码
+        loginCommonService.validateCaptcha(userName, captcha, uuid, request);
+        // 账号不能重复
+        User oneUser = getOne(new LambdaQueryWrapper<User>()
+                .eq(User::getUserName, userName));
+        if (Objects.nonNull(oneUser))
+        {
+            loginInfoService.recordLoginInfo(userName, FAIL, ACCOUNT_EXIST, LOGIN_BY_ACCOUNT, request);
+            throw new SystemException(USERNAME_EXIST, ACCOUNT_EXIST);
         }
-        // 1.3、密码为8~16位
-        if (userPassword.length() < 8 || userPassword.length() > 16) {
-            throw new SystemException(PARAMETER_ERROR, "密码为8~16位");
-        }
-        // 1.4、账号不能包含特殊字符
-        Matcher matcher = Pattern.compile(SPECIAL_REGEX).matcher(userAccount);
-        if (matcher.find()) {
-            throw new SystemException(PARAMETER_ERROR, "账号不能包含特殊字符");
-        }
-        // 1.5、密码不能含有空字符
-        Matcher matcher1 = Pattern.compile(NULL_REGEX).matcher(userPassword);
-        if (matcher1.find()) {
-            throw new SystemException(PARAMETER_ERROR, "密码不能包含空字符");
-        }
-        // 1.6、密码和校验密码不相同
-        if (!userPassword.equals(checkPassword)) {
-            throw new SystemException(PARAMETER_ERROR, "两次输入的密码不一致");
-        }
-        // 1.7、验证码为1~4位
-        if (captcha.length() < 1 || captcha.length() > 4) {
-            throw new SystemException(PARAMETER_ERROR, "验证码错误请重试");
-        }
-        // 1.8、验证码失效
-        String key = CAPTCHA_CODES + uuid;
-        String text;
-        text = redisCache.getCacheObject(key);
-        if (StringUtils.isAnyBlank(text)) {
-            throw new SystemException(PARAMETER_ERROR, "验证码失效请重试");
-        }
-        // 1.9、验证码错误
-        String result = text.substring(text.lastIndexOf("@") + 1);
-        if (!result.equals(captcha)) {
-            throw new SystemException(PARAMETER_ERROR, "验证码错误请重试");
-        }
-        // 1.10、账号不能重复（将数据库查询校验放到最后）
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getUserName, userAccount);
-        long count = this.count(queryWrapper);
-        if (count > 0) {
-            throw new SystemException(USERNAME_EXIST, "账号已存在");
-        }
-
-        // 2.加密
+        // 加密
         String encryptPassword = passwordEncoder.encode(userPassword);
-        // 3.插入数据
         User user = new User();
-        user.setUserName(userAccount);
+        user.setUserName(userName);
         user.setPassword(encryptPassword);
         // 分配UID
         Long common = userMapper.getUidForRegister(SECTION_MARK);
         user.setUid(common);
         // 分配昵称
         user.setNickName(NICKNAME_PREFIX + common);
-        // 3.插入数据
+        // 插入数据
         save(user);
-
+        loginInfoService.recordLoginInfo(userName, UserConstant.SUCCESS, REGISTER_SUCCESS, LOGIN_BY_ACCOUNT, request);
         return ResponseResult.okResult();
-    }
-
-    @Override
-    public ResponseResult<UserLoginVO> login(User user) {
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getUserName(), user.getPassword());
-        Authentication authenticate = authenticationManager.authenticate(authenticationToken);
-        //判断是否认证通过
-        if (Objects.isNull(authenticate)) {
-            throw new RuntimeException("用户名或密码错误");
-        }
-        //获取userid 生成token
-        LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
-        String userId = loginUser.getUser().getId().toString();
-        String jwt = JwtUtil.createJWT(userId);
-        //把用户信息存入redis
-        redisCache.setCacheObject(BLOG_LOGIN + userId, loginUser);
-
-        //把token和userinfo封装 返回
-        //把User转换成UserVo
-        UserVO userInfoVo = BeanCopyUtils.copyBean(loginUser.getUser(), UserVO.class);
-        UserLoginVO vo = new UserLoginVO(jwt, userInfoVo);
-        return ResponseResult.okResult(vo);
     }
 
     /**
@@ -258,85 +144,42 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
      * @return 结果
      */
     @Override
-    public ResponseResult<UserLoginVO> userLoginByAccount(AccountLoginRequest userLoginRequest) {
-        String userAccount = userLoginRequest.getUserName();
+    public ResponseResult<Map<String, Object>> userLoginByAccount(AccountLoginRequest userLoginRequest) {
+        String userName = userLoginRequest.getUserName();
         String userPassword = userLoginRequest.getPassword();
         String captcha = userLoginRequest.getCaptcha();
         String uuid = userLoginRequest.getUuid();
-        // 1.1、非空校验
-        if (StringUtils.isAnyEmpty(userAccount, userPassword)) {
-            throw new SystemException(PARAMETER_ERROR, "账号或密码错误");
-        }
-        // 1.2、账号为4~9位
-        if (userAccount.length() < 4 || userAccount.length() > 9)
-        {
-            throw new SystemException(PARAMETER_ERROR, "账号或密码错误");
-        }
-        // 1.3、密码为8~16位
-        if (userPassword.length() < 8 || userPassword.length() > 16)
-        {
-            throw new SystemException(PARAMETER_ERROR, "账号或密码错误");
-        }
-        // 1.4、账号不能包含特殊字符
-        Matcher matcher = Pattern.compile(SPECIAL_REGEX).matcher(userAccount);
-        if (matcher.find())
-        {
-            throw new SystemException(PARAMETER_ERROR, "账号或密码错误");
-        }
-        // 1.5、密码不能含有空字符
+        // 密码不能含有空字符
         Matcher matcher1 = Pattern.compile(NULL_REGEX).matcher(userPassword);
         if (matcher1.find())
         {
-            throw new SystemException(PARAMETER_ERROR, "密码不能包含空字符");
+            loginInfoService.recordLoginInfo(userName, FAIL, ACCOUNT_PASSWORD_ERROR, LOGIN_BY_ACCOUNT, request);
+            throw new SystemException(PARAMETER_ERROR, ACCOUNT_PASSWORD_ERROR);
         }
-        // 1.6、验证码为1~4位
-        if (captcha.length() < 1 || captcha.length() > 4)
-        {
-            throw new SystemException(PARAMETER_ERROR, "验证码错误请重试");
-        }
-        // 1.7、验证码失效
-        String key = CAPTCHA_CODES + uuid;
-        String text;
-        text = redisCache.getCacheObject(key);
-        if (StringUtils.isAnyBlank(text))
-        {
-            throw new SystemException(PARAMETER_ERROR, "验证码过期请刷新重试");
-        }
+        // 校验验证码
+        loginCommonService.validateCaptcha(userName, captcha, uuid, request);
+        // 记录用户的登录状态
+        Authentication authenticate = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(userName, userPassword));
+        return loginCommon(userName, authenticate, LOGIN_BY_ACCOUNT);
 
-        String result = text.substring(text.lastIndexOf("@") + 1);
-        if (!result.equals(captcha))
-        {
-            throw new SystemException(PARAMETER_ERROR, "验证码错误请重试");
-        }
+    }
 
-        // 2、记录用户的登录状态
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(userAccount, userPassword);
-        Authentication authenticate = authenticationManager.authenticate(authenticationToken);
-        if (Objects.isNull(authenticate)) {
-            throw new SystemException(PARAMETER_ERROR, "账号或密码错误");
-        }
-        // 根据 userId生成 Token存入 redis(有效期24小时)
-        LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
-        String userId = loginUser.getUser().getId().toString();
-        String jwt = JwtUtil.createJWT(userId, JSON.toJSONString(loginUser.getUser()), EXPIRATION);
-        //把用户信息存入redis
-        String redisKey=BLOG_LOGIN + userId;
-        redisCache.setCacheObject(redisKey, loginUser);
-        // 将 token存入 redis
-        String tokenKey = BLOG_TOKEN + userId;
-        redisCache.setCacheObject(tokenKey, jwt);
-        // 将管理员权限信息存入 redis
-        if (loginUser.getUser().getUserRole().equals(ADMIN_ROLE))
-        {
-            String adminKey = BLOG_ADMIN + userId;
-            redisCache.setCacheObject(adminKey, jwt);
-        }
-        //把token和userinfo封装 返回
-        //把User转换成UserVo
-        UserVO userVo = BeanCopyUtils.copyBean(loginUser.getUser(), UserVO.class);
-        UserLoginVO vo = new UserLoginVO(jwt, userVo);
-        return ResponseResult.okResult(vo);
+    /**
+     * 邮箱验证码登录
+     *
+     * @param emailLoginRequest 邮箱验证码登录请求体
+     * @return 结果
+     */
+    @Override
+    public ResponseResult<Map<String, Object>> userLoginByEmail(EmailLoginRequest emailLoginRequest)
+    {
+        String email = emailLoginRequest.getEmail();
+        String mailCaptcha = emailLoginRequest.getCaptcha();
+        // 记录用户的登录状态
+        Authentication authenticate = authenticationManager.authenticate(
+                new MailAuthenticationToken(email, mailCaptcha));
+        return loginCommon(email, authenticate, LOGIN_BY_EMAIL);
     }
 
     /**
@@ -384,7 +227,6 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
      */
     @Override
     public ResponseResult<Void> logout() {
-        // 从 SecurityContextHolder中获取 loginUser
         String token = request.getHeader("Token");
         Claims claims;
         String userId;
@@ -412,6 +254,38 @@ public class UserLoginServiceImpl extends ServiceImpl<UserMapper, User> implemen
             redisCache.deleteObject(adminKey);
         }
         return ResponseResult.okResult();
+    }
+    /**
+     * 登录通用方法
+     *
+     * @param userAccount  账号
+     * @param authenticate Authentication
+     */
+    public ResponseResult<Map<String, Object>> loginCommon(String userAccount, Authentication authenticate, String type)
+    {
+        LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
+        String userId = loginUser.getUser().getId().toString();
+        String jwt = JwtUtil.createJWT(userId, JSON.toJSONString(loginUser.getUser()), EXPIRATION);
+        // 将 loginUser存入 redis
+        setRedisCache(loginUser);
+        // 将 token存入 redis
+        String tokenKey = BLOG_TOKEN + userId;
+        redisCache.setCacheObject(tokenKey, jwt);
+        // 记录登录日志
+        loginInfoService.recordLoginInfo(userAccount, UserConstant.SUCCESS, LOGIN_SUCCESS, type, request);
+        UserVO userVO = BeanCopyUtils.copyBean(loginUser.getUser(), UserVO.class);
+        Map<String, Object> map = new HashMap<>();
+        map.put(TOKEN_HEADER_KEY, jwt);
+        map.put(USER_INFO, userVO);
+        // 返回 Token和 userInfo
+        return ResponseResult.okResult(map);
+    }
+
+    public void setRedisCache(LoginUser loginUser)
+    {
+        // 将 loginUser存入 redis
+        String redisKey = BLOG_LOGIN + loginUser.getUser().getId();
+        redisCache.setCacheObject(redisKey, loginUser);
     }
 
 }

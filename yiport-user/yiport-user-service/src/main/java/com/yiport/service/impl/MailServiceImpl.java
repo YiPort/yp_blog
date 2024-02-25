@@ -21,11 +21,13 @@ import java.util.regex.Pattern;
 
 import static com.yiport.constent.ExceptionDescription.PASSWORD_DIFFERENT;
 import static com.yiport.constent.UserConstant.GET_ACCOUNT_MAIL_CAPTCHA;
+import static com.yiport.constent.UserConstant.LOGIN_BY_MAIL_MESSAGE;
 import static com.yiport.constent.UserConstant.NULL_REGEX;
 import static com.yiport.constent.UserConstant.UPDATE_PASSWORD_MAIL_CAPTCHA;
 import static com.yiport.constent.UserConstant.VALIDATION_MESSAGE;
 import static com.yiport.constent.UserConstant.VERIFY_MAIL_CAPTCHA;
 import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
+import static com.yiport.enums.MailTypeEnum.LOGIN_BY_MAIL;
 import static com.yiport.enums.MailTypeEnum.RETRIEVE_ACCOUNT;
 import static com.yiport.enums.MailTypeEnum.UPDATE_MAIL;
 import static com.yiport.enums.MailTypeEnum.UPDATE_PASSWORD;
@@ -135,6 +137,19 @@ public class MailServiceImpl implements MailService
         user.setPassword(passwordEncoder.encode(userPassword));
         userMapper.updateById(user);
         redisCache.deleteObject(UPDATE_PASSWORD_MAIL_CAPTCHA + email);
+        return ResponseResult.okResult();
+    }
+
+    /**
+     * 发送邮箱登录验证码
+     */
+    @Override
+    public ResponseResult<Void> sendLoginByMailCaptcha(String email)
+    {
+        // 验证邮箱已绑定
+        mailCommonService.verifyHasBind(email);
+        // 发送验证码
+        mailCommonService.sendTextMail(email, LOGIN_BY_MAIL_MESSAGE, LOGIN_BY_MAIL);
         return ResponseResult.okResult();
     }
 
