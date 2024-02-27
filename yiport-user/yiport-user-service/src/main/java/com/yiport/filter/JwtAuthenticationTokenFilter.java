@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import static com.yiport.constants.BusinessConstants.BLOG_LOGIN;
+import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
 import static com.yiport.constants.BusinessConstants.TOKEN_KEY;
 import static com.yiport.constent.ExceptionDescription.NOT_LOGIN;
 import static com.yiport.constent.ExceptionDescription.TOKEN_EXPIRE;
@@ -67,7 +68,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         // 从 redis中获取用户信息
         String key = BLOG_LOGIN + userId;
         LoginUser loginUser = redisCache.getCacheObject(key);
-        String tokenKey = TOKEN_KEY + userId;
+        String tokenKey = BLOG_TOKEN + userId;
         String redisToken = redisCache.getCacheObject(tokenKey);
         if (loginUser == null || !redisToken.equals(token))
         {
