@@ -32,7 +32,7 @@ public interface UserService extends IService<User> {
      *
      * @return
      */
-    ResponseResult getCurrent();
+    ResponseResult<Object> getCurrent();
 
     /**
      * 管理员分页查询用户

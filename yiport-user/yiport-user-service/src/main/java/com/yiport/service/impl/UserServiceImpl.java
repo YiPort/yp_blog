@@ -114,28 +114,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * 获取用户登录态
-     *
-     * @return
      */
     @Override
-    public ResponseResult<UserVO> getCurrent() {
-        String token = request.getHeader("Token");
-        long id;
-        try
-        {
-            Claims claims = JwtUtil.parseJWT(token);
-            id = Long.parseLong(claims.getId());
-        }
-        catch (Exception e)
-        {
-            throw new SystemException("Token非法！");
-        }
-        User user = getById(id);
-        UserVO userVO = BeanCopyUtils.copyBean(user, UserVO.class);
-
-        return ResponseResult.okResult(userVO);
+    public ResponseResult<Object> getCurrent()
+    {
+        return reloadToken(null);
     }
-
     /**
      * 管理员分页查询用户
      *
