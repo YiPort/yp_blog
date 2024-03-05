@@ -8,6 +8,7 @@ CREATE TABLE `yp_edit_history`
 (
     `id`          int    NOT NULL AUTO_INCREMENT COMMENT '主键',
     `user_id`     bigint NOT NULL COMMENT '用户id',
+    `record_id`   bigint NOT NULL COMMENT '文章记录id',
     `content`     varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '事件内容',
     `timestamp`   datetime NULL DEFAULT NULL COMMENT '时间戳（发生时间）',
     `color`       varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '图标颜色',

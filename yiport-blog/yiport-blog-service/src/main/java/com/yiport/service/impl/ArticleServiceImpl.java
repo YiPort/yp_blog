@@ -6,6 +6,7 @@ import com.yiport.constants.BlogConstants;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.bo.ArticleExamineBO;
 import com.yiport.domain.entity.Article;
+import com.yiport.domain.entity.ArticleRecord;
 import com.yiport.domain.entity.Category;
 import com.yiport.domain.entity.EditHistory;
 import com.yiport.domain.vo.ArticleDetailVO;
@@ -16,6 +17,7 @@ import com.yiport.domain.vo.PageVO;
 import com.yiport.domain.vo.SaveArticleVO;
 import com.yiport.exception.SystemException;
 import com.yiport.mapper.ArticleMapper;
+import com.yiport.mapper.ArticleRecordMapper;
 import com.yiport.service.ArticleService;
 import com.yiport.service.CategoryService;
 import com.yiport.service.EditHistoryService;
@@ -90,6 +92,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Autowired
     private EditHistoryService editHistoryService;
+
+    @Autowired
+    private ArticleRecordMapper articleRecordMapper;
 
     @Resource
     private RabbitTemplate rabbitTemplate;
@@ -312,7 +317,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             }
         } else {
             // 更新文章
-             saveArticle.setUpdateTime(createTime);
+            Article previousArticle = articleMapper.selectById(article.getId());
+            ArticleRecord articleRecord = BeanCopyUtils.copyBean(previousArticle, ArticleRecord.class);
+            articleRecordMapper.insert(articleRecord);
+            saveArticle.setUpdateTime(createTime);
             articleMapper.updateById(saveArticle);
             if (saveArticle.getStatus().equals(RELEASE) && isAdmin)  //编辑已发布文章
             {
@@ -322,7 +330,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
                 redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
                 // 将事件 push入消息队列
-                EditHistory editHistory = new EditHistory(Long.valueOf(userId), "编辑了文章：" +
+                EditHistory editHistory = new EditHistory(Long.valueOf(userId),articleRecord.getRecordId(), "编辑了文章：" +
                         saveArticle.getTitle(), createTime, BLUE, null, NORMAL);
                 redisCache.setCacheList(editKey, Arrays.asList(editHistory));
 
@@ -343,7 +351,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
                 redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
                 // 将事件 push入消息队列
-                EditHistory editHistory = new EditHistory(Long.parseLong(userId),
+                EditHistory editHistory = new EditHistory(Long.parseLong(userId),articleRecord.getRecordId(),
                         "提交了编辑文章审核申请：" + saveArticle.getTitle(), createTime, BLUE, UPLOAD, LARGE);
                 redisCache.setCacheList(editKey, Arrays.asList(editHistory));
                 //消息队列发送删除文章，发送MQ消息
@@ -352,7 +360,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             } else    //编辑草稿
             {
                 // 将事件 push入消息队列
-                EditHistory editHistory = new EditHistory(Long.valueOf(userId),
+                EditHistory editHistory = new EditHistory(Long.valueOf(userId),articleRecord.getRecordId(),
                         "编辑了草稿：" + saveArticle.getTitle(), createTime, YELLOW, null, NORMAL);
                 redisCache.setCacheList(editKey, Arrays.asList(editHistory));
                 //消息队列发送删除文章，发送MQ消息
@@ -450,7 +458,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Article::getCreateBy, userId)
                 .eq(Article::getStatus, RELEASE);
-        Integer integer = articleMapper.selectCount(queryWrapper);
+        Long integer = articleMapper.selectCount(queryWrapper);
         HashMap<Object, Object> map = new HashMap<>();
         map.put("myArticleTotal", integer);
         return ResponseResult.okResult(map);

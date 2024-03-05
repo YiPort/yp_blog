@@ -36,6 +36,12 @@ public class EditHistory
      * 用户id
      */
     private Long userId;
+
+    /**
+     * 记录ID
+     */
+    private Long recordId;
+
     /**
      * 事件内容
      */
@@ -114,6 +120,19 @@ public class EditHistory
     public EditHistory(Long userId,String content, String timestamp, String color,String icon,String size) {
 
         this.userId=userId;
+        this.content = content;
+        this.timestamp = timestamp;
+        this.color = color;
+        this.icon=icon;
+        this.size=size;
+
+        this.createBy = userId;
+        this.createTime = timestamp;
+    }
+    public EditHistory(Long userId,Long recordId,String content, String timestamp, String color,String icon,String size) {
+
+        this.userId=userId;
+        this.recordId=recordId;
         this.content = content;
         this.timestamp = timestamp;
         this.color = color;

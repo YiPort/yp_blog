@@ -11,6 +11,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EditHistoryVO {
+
+    /**
+     * 记录ID
+     */
+    private Long recordId;
+
     /**
      * 事件内容
      */
