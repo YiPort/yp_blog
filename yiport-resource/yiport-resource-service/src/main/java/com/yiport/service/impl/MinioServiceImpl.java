@@ -1,5 +1,6 @@
 package com.yiport.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.yiport.domain.ResponseResult;
 import com.yiport.enums.AppHttpCodeEnum;
 import com.yiport.exception.SystemException;
@@ -15,6 +16,7 @@ import io.minio.RemoveObjectArgs;
 import io.minio.Result;
 import io.minio.errors.MinioException;
 import io.minio.messages.Item;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,8 +30,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static com.yiport.constants.HTTPConstants.IMAGE_SIZE;
+import static com.yiport.enums.AppHttpCodeEnum.NO_OPERATOR_AUTH;
+import static com.yiport.enums.AppHttpCodeEnum.SYSTEM_ERROR;
+
 
 @Service("minioService")
+@Slf4j
 public class MinioServiceImpl implements MinioService {
 
 	@Autowired
@@ -50,15 +57,33 @@ public class MinioServiceImpl implements MinioService {
 		//判断文件类型
 		//获取原始文件名
 		String originalFilename = img.getOriginalFilename();
+		if (img.getSize() > 3*IMAGE_SIZE){
+			throw new SystemException(SYSTEM_ERROR, "图片不能超过3MB");}
 		//对原始文件名进行判断
 		if (!originalFilename.endsWith(".png") && !originalFilename.endsWith(".jpg") && !originalFilename.endsWith(".jpeg")) {
 			throw new SystemException(AppHttpCodeEnum.FILE_TYPE_ERROR);
 		}
 
 		//如果判断通过上传文件到OSS
-		String filePath = PathUtils.generateFilePath(originalFilename);
+		String filePath = userId+StrUtil.SLASH+PathUtils.generateFilePath(originalFilename);
 		String url = upload(img, filePath, buckName); //  2099/2/3/wqeqeqe.png
 		return ResponseResult.okResult(url);
+	}
+
+	@Override
+	public ResponseResult deleteImage(String url) {
+		String userId = JwtUtil.checkToken(httpServletRequest);
+		String[] split = url.split(StrUtil.SLASH);
+		log.debug("split:{}", split[4]);
+		if (!userId.equals(split[4]))
+		{
+			throw new SystemException(NO_OPERATOR_AUTH);
+		}
+		int i = url.indexOf(buckName) + buckName.length() + 1;
+		log.info("删除了文件-fileName:{}", url.substring(i));
+
+		removeFile(url.substring(i),buckName);
+		return ResponseResult.okResult();
 	}
 
 	/**
@@ -193,7 +218,7 @@ public class MinioServiceImpl implements MinioService {
 					RemoveObjectArgs.builder().bucket(bucketName).object(fileName).build()
 			);
 		} catch (Exception e) {
-			throw new SystemException("文件删除异常,");
+			throw new SystemException("文件删除异常!");
 		}
 	}
 

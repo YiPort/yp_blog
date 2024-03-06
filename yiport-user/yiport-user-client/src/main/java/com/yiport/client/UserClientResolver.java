@@ -17,18 +17,6 @@ import java.util.List;
 public class UserClientResolver implements UserClient{
 
     /**
-     * 当服务不可用时，为根据ID获取用户昵称提供默认响应。
-     *
-     * @param id 用户ID
-     * @return 返回一个空用户，表示无法查询到用户信息。
-     */
-    @Override
-    public UserVO getUserNickNameById(Long id) {
-        log.error("用户服务异常：获取用户ID {} 的昵称请求失败", id);
-        return new UserVO(); // Assuming the default constructor sets an empty or null nickname.
-    }
-
-    /**
      * 当服务不可用时，为更新用户信息提供默认响应。
      *
      * @param userVO 用户视图对象

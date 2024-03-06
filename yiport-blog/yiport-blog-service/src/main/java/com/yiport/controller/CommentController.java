@@ -12,6 +12,7 @@ import com.yiport.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import static com.yiport.constants.SystemConstants.DEFINED;
 import static com.yiport.constants.SystemConstants.TRUE;
 
 @RestController
@@ -42,7 +43,7 @@ public class CommentController {
      * @return
      */
     @PostMapping("/saveComment")
-    @LimitRequest(time = 60 * 1000, count = 2, type = "USER", tip = TRUE, description = "休息一下再评论吧~")
+    @LimitRequest(time = 60 * 1000, count = 2, type = "USER", tip = DEFINED, description = "休息一下再评论吧~")
     @SystemLog(businessName = "保存评论")
     public ResponseResult addComment(@RequestBody Comment comment) {
         return commentService.addComment(comment);

@@ -1,5 +1,6 @@
 package com.yiport.service;
 
+import com.yiport.domain.ResponseResult;
 import com.yiport.exception.SystemException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -103,4 +104,5 @@ public interface MinioService extends ResourceService {
 	 */
 	void getObjectList(String bucketName) throws Exception;
 
+	ResponseResult deleteImage(String url);
 }
