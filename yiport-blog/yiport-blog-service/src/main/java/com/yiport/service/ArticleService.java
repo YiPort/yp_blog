@@ -4,6 +4,7 @@ import com.yiport.domain.ResponseResult;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yiport.domain.bo.ArticleExamineBO;
 import com.yiport.domain.entity.Article;
+import com.yiport.domain.entity.ArticleRecord;
 import com.yiport.domain.vo.PageVO;
 import com.yiport.domain.vo.SaveArticleVO;
 
@@ -105,4 +106,5 @@ public interface ArticleService extends IService<Article> {
      */
     ResponseResult<Void> editArticleExamine(Article article);
 
+    ResponseResult<ArticleRecord> getArticleEditRecord(Long recordId);
 }

@@ -137,7 +137,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         List<HotArticleVO> articleVos = BeanCopyUtils.copyBeanList(articles, HotArticleVO.class);
         // 从 redis中获取浏览量
         articleVos.forEach(hotArticleVO -> {
-            String redisKey = ARTICLE_VIEWCOUNT+ hotArticleVO.getId().toString();;
+            String redisKey = ARTICLE_VIEWCOUNT+ hotArticleVO.getId().toString();
             hotArticleVO.setViewCount(Long.valueOf(redisCache.getCacheObject(redisKey).toString()));
         });
 
@@ -277,7 +277,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             if (saveArticle.getStatus().equals(RELEASE) && isAdmin)     //发布文章
             {
                 String articleKey = ARTICLE_VIEWCOUNT + saveArticle.getId() ;
-                long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
+                long viewCount = article.getViewCount() == null ||article.getViewCount()==0 ? 1 : article.getViewCount();
                 redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
                 // 将事件 push入消息列表
                 EditHistory editHistory = new EditHistory(Long.valueOf(userId), "发布了文章：" + saveArticle.getTitle(), createTime,  GREEN, null, NORMAL);
@@ -299,7 +299,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 // 将文章浏览量同步到 redis
                 String articleKey = ARTICLE_VIEWCOUNT + saveArticle.getId();
                 // viewCount为null时为新发布的文章或草稿，不为空时为已发布文章
-                long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
+                long viewCount = article.getViewCount() == null ||article.getViewCount()==0 ? 1 : article.getViewCount();
                 redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
                 // 将事件 push入消息队列
                 EditHistory editHistory = new EditHistory(Long.valueOf(userId), "提交了文章审核申请：" +
@@ -327,7 +327,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 // 将文章浏览量同步到 redis
                 String articleKey = ARTICLE_VIEWCOUNT +saveArticle.getId();;
                 // viewCount为null时为新发布的文章或草稿，不为空时为已发布文章
-                long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
+                long viewCount = article.getViewCount() == null ||article.getViewCount()==0 ? 1 : article.getViewCount();
                 redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
                 // 将事件 push入消息队列
                 EditHistory editHistory = new EditHistory(Long.valueOf(userId),articleRecord.getRecordId(), "编辑了文章：" +
@@ -348,7 +348,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 // 将文章浏览量同步到 redis
                 String articleKey = ARTICLE_VIEWCOUNT + saveArticle.getId();
                 // viewCount为null时为新发布的文章或草稿，不为空时为已发布文章
-                long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
+                long viewCount = article.getViewCount() == null ||article.getViewCount()==0 ? 1 : article.getViewCount();
                 redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
                 // 将事件 push入消息队列
                 EditHistory editHistory = new EditHistory(Long.parseLong(userId),articleRecord.getRecordId(),
@@ -567,6 +567,23 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             redisCache.setCacheList(editKey, Arrays.asList(editHistory));
         }
         return ResponseResult.resultByRows(rows);
+    }
+
+    /**
+     * 获取文章编辑详情
+     */
+    @Override
+    public ResponseResult<ArticleRecord> getArticleEditRecord(Long recordId)
+    {
+        Long userId = Long.valueOf(JwtUtil.checkToken(httpServletRequest));
+        ArticleRecord articleRecord = articleRecordMapper.selectOne(new LambdaQueryWrapper<ArticleRecord>()
+                .eq(ArticleRecord::getRecordId, recordId)
+                .eq(ArticleRecord::getCreateBy, userId));
+        if (articleRecord == null)
+        {
+            throw new SystemException(PARAMETER_ERROR, "未找到草稿，请联系管理员");
+        }
+        return ResponseResult.okResult(articleRecord);
     }
 
 

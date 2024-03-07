@@ -5,6 +5,7 @@ import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.bo.ArticleExamineBO;
 import com.yiport.domain.entity.Article;
+import com.yiport.domain.entity.ArticleRecord;
 import com.yiport.domain.vo.PageVO;
 import com.yiport.domain.vo.SaveArticleVO;
 import com.yiport.service.ArticleService;
@@ -183,6 +184,16 @@ public class ArticleController {
     public ResponseResult<Void> editArticleExamine(@RequestBody Article article)
     {
         return articleService.editArticleExamine(article);
+    }
+
+    /**
+     * 获取文章编辑详情
+     */
+    @GetMapping("/getArticleEditRecord")
+    @SystemLog(businessName = "获取文章编辑详情")
+    public ResponseResult<ArticleRecord> getArticleEditRecord(Long recordId)
+    {
+        return articleService.getArticleEditRecord(recordId);
     }
 
 }
