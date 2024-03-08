@@ -4,6 +4,7 @@ import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.exception.SystemException;
 import com.yiport.utils.JwtUtil;
+import com.yiport.utils.LoginUtils;
 import com.yiport.utils.RedisCache;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.lang3.StringUtils;
@@ -45,9 +46,9 @@ public class SystemController
     @GetMapping("/ip")
     public ResponseResult getIpAddress()
     {
-        checkRole();
-        Map<String, Object> ipAddress = redisCache.getEntriesCacheMapValue(IP_ADDRESS);
-        ArrayList<Map<String, Object>> data = new ArrayList<>();
+        LoginUtils.checkRole(httpServletRequest);
+        Map<String, Object> ipAddress = redisCache.getEntriesCacheMapValue("ipAddress");
+        List<Map<String, Object>> data = new ArrayList<>();
         ipAddress.forEach((key, value) -> {
             Map<String, Object> map = new HashMap<>(2);
             map.put("name", key.replace('省', ' ').replace('市', ' ').trim());
@@ -66,7 +67,7 @@ public class SystemController
     @GetMapping("/cache")
     public ResponseResult getCacheInfo()
     {
-        checkRole();
+        LoginUtils.checkRole(httpServletRequest);
         Properties info = (Properties) redisCache.execute((RedisCallback<Object>) RedisServerCommands::info);
         Properties commandStats = (Properties) redisCache.execute((RedisCallback<Object>) connection -> connection.info("commandstats"));
         Object dbSize = redisCache.execute((RedisCallback<Object>) RedisServerCommands::dbSize);
@@ -90,30 +91,4 @@ public class SystemController
         return ResponseResult.okResult(result);
     }
 
-    /**
-     * 权限检查
-     */
-    private void checkRole()
-    {
-        // token校验
-        String token = httpServletRequest.getHeader("token");
-        if (StringUtils.isAnyBlank(token))
-        {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
-        }
-        Claims claims;
-        try
-        {
-            claims = JwtUtil.parseJWT(token);
-        }
-        catch (Exception e)
-        {
-            throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
-        }
-        Object admin = redisCache.getCacheObject(BLOG_ADMIN + claims.getId());
-        if (Objects.isNull(admin))
-        {
-            throw new SystemException(NO_OPERATOR_AUTH);
-        }
-    }
 }
