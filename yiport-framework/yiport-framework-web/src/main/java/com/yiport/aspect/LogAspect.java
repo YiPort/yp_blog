@@ -59,12 +59,17 @@ public class LogAspect
         finally
         {
             StopWatch stopWatch = invokeTimeTL.get();
-            stopWatch.stop();
+            long time = 0;
+            if (stopWatch != null)
+            {
+                stopWatch.stop();
+                time = stopWatch.getTime();
+            }
             log.info("结束请求 => {}/{} URL:[{}] 耗时:[{}毫秒]",
                     request.getMethod(),
                     getSystemLog(joinPoint).businessName(),
                     request.getRequestURI(),
-                    stopWatch.getTime());
+                    time);
             invokeTimeTL.remove();
         }
         return ret;
