@@ -50,6 +50,7 @@ public class AddressUtils
         {
             String rspStr = HttpUtil.createGet(IP_URL)
                     .body("ip=" + ip + "&json=true", "GBK")
+                    .timeout(5000)
                     .execute()
                     .body();
             if (StringUtils.isEmpty(rspStr))
