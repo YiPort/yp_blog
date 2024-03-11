@@ -3,3 +3,6 @@ server:
   # session 失效时间
   session:
     timeout: 60m
+  main:
+    # 开启允许循环依赖
+    allow-circular-references: true

@@ -36,6 +36,10 @@ server:
   # session 失效时间
   session:
     timeout: 60m
+  main:
+    # 开启允许循环依赖
+    allow-circular-references: true
+
 ```
 
 </details>
@@ -374,6 +378,7 @@ security:
     - /mail/sendRetrieveAccountCaptcha
     - /mail/retrieveAccount
     - /mail/sendUpdatePasswordCaptcha
+    - /mail/sendLoginByMailCaptcha
     - /mail/updatePasswordByMail
     - /search/index/getArticleIndex
     - /search/searchArticle
@@ -395,6 +400,19 @@ security:
     - /*/api-docs
     # druid 监控配置
     - /druid/**
+
+#SpringSecurity配置
+spring-security:
+  matchers:
+    - "/user/login/**"
+    - "/user/register"
+    - "/user/captchaImage"
+    - "/user/getOtherUser/**"
+    - "/mail/sendRetrieveAccountCaptcha"
+    - "/mail/retrieveAccount"
+    - "/mail/sendUpdatePasswordCaptcha"
+    - "/mail/updatePasswordByMail"
+    - "/mail/sendLoginByMailCaptcha"
 ```
 </details>
 
