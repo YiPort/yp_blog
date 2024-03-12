@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.MyBatisSystemException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.validation.BindException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -13,9 +14,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import java.nio.file.AccessDeniedException;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static com.yiport.enums.AppHttpCodeEnum.NO_OPERATOR_AUTH;
 import static com.yiport.enums.AppHttpCodeEnum.PARAMETER_ERROR;
+import static com.yiport.enums.AppHttpCodeEnum.SYSTEM_ERROR;
 
 @RestControllerAdvice
 @Slf4j
@@ -43,7 +48,7 @@ public class GlobalExceptionHandler {
         //打印异常信息
         log.error("出现了异常:",e);
         //从异常对象中获取提示信息封装返回
-        return ResponseResult.errorResult(AppHttpCodeEnum.SYSTEM_ERROR.getCode(), "系统异常");
+        return ResponseResult.errorResult(SYSTEM_ERROR.getCode(), "系统异常");
     }
 
     /**
@@ -54,7 +59,7 @@ public class GlobalExceptionHandler {
     {
         String requestURI = request.getRequestURI();
         String message = e.getMessage();
-        if (message.contains("CannotFindDataSourceException"))
+        if (Objects.requireNonNull(message).contains("CannotFindDataSourceException"))
         {
             log.error("请求地址'{}', 未找到数据源", requestURI);
             return ResponseResult.errorResult(PARAMETER_ERROR, "未找到数据源，请联系管理员确认");
@@ -98,5 +103,25 @@ public class GlobalExceptionHandler {
         log.error(e.getMessage(), e);
         String message = e.getBindingResult().getFieldError().getDefaultMessage();
         return ResponseResult.errorResult(message);
+    }
+
+    /**
+     * 请求类型不支持异常
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseResult<Void> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e)
+    {
+        log.error("出现了异常:不支持" + e.getMethod() + "请求", e);
+        return ResponseResult.errorResult(SYSTEM_ERROR, "不支持" + e.getMethod() + "请求");
+    }
+
+    /**
+     * 无权限异常
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseResult<Void> handleAccessDeniedException(AccessDeniedException e)
+    {
+        log.error("出现了异常:" + e.getMessage(), e);
+        return ResponseResult.errorResult(NO_OPERATOR_AUTH, e.getMessage());
     }
 }
