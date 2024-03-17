@@ -152,41 +152,37 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Override
     public ResponseResult articleList(Integer pageNum, Integer pageSize, Long categoryId) {
-        //查询条件
-        LambdaQueryWrapper<Article> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        // 如果 有categoryId 就要 查询时要和传入的相同
-        lambdaQueryWrapper.eq(Objects.nonNull(categoryId)&&categoryId>0 ,Article::getCategoryId,categoryId);
-        // 状态是正式发布的
-        lambdaQueryWrapper.eq(Article::getStatus, BlogConstants.ARTICLE_STATUS_NORMAL);
-        // 对isTop进行降序
-        lambdaQueryWrapper.orderByDesc(Article::getIsTop);
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        // 查询正式发布的文章
+        queryWrapper.eq(Article::getStatus, RELEASE)
+                .eq(Article::getArticleExamine, PASS);
+        // 如果有对应的 categoryId,则查询对应分类的文章
+        queryWrapper.eq(Objects.nonNull(categoryId) && categoryId > 0L,
+                Article::getCategoryId, categoryId);
+        // 将置顶文章置顶，按浏览量排序
+        queryWrapper.orderByDesc(Article::getIsTop)
+                .orderByDesc(Article::getViewCount);
 
-        //分页查询
-        Page<Article> page = new Page<>(pageNum,pageSize);
-        page(page,lambdaQueryWrapper);
+        // 分页查询
+        Page<Article> page = new Page<>(pageNum, pageSize);
+        page(page, queryWrapper);
 
         List<Article> articles = page.getRecords();
-        //查询categoryName
-        //写法一：articleId去查询articleName进行设置
-//        for (Article article : articles) {
-//            Category category = categoryService.getById(article.getCategoryId());
-//            article.setCategoryName(category.getName());
-//        }
-        //写法二：通过链式查询
-        articles.stream()
-                .map(article -> article.setCategoryName(categoryService.getById(article.getCategoryId()).getName()))
-                .collect(Collectors.toList());
+        // 查询 categoryName
+        articles.forEach(article -> article.setCategoryName(((Function<Article, String>) article1 -> {
+            Long id = article1.getCategoryId();
+            return categoryService.getById(id).getName();
+        }).apply(article)));
 
-
-        //封装查询结果
-        List<ArticleListVO> articleListVOS = BeanCopyUtils.copyBeanList(page.getRecords(), ArticleListVO.class);
+        List<ArticleListVO> articleListVOS = BeanCopyUtils.copyBeanList(articles, ArticleListVO.class);
         // 从 redis中获取浏览量
-        articleListVOS.forEach(articleListVO -> {
-            String redisKey = ARTICLE_VIEWCOUNT+ articleListVO.getId().toString();
+        articleListVOS.forEach(articleListVO ->
+        {
+            String redisKey = ARTICLE_VIEWCOUNT + articleListVO.getId().toString();
             articleListVO.setViewCount(Long.valueOf(redisCache.getCacheObject(redisKey).toString()));
         });
-        PageVO pageVo = new PageVO(articleListVOS, page.getTotal());
-        return ResponseResult.okResult(pageVo);
+        PageVO pageVO = new PageVO(articleListVOS, page.getTotal());
+        return ResponseResult.okResult(pageVO);
     }
 
     /**
