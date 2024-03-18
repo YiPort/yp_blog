@@ -19,12 +19,17 @@ import java.util.List;
 public interface UserService extends IService<User> {
 
     /**
-     * 更新个人信息
+     * 修改用户信息
      *
      * @param editUserVO
      * @return
      */
     ResponseResult updateUserInfo(EditUserVO editUserVO);
+
+    /**
+     * 修改密码
+     */
+    ResponseResult<Void> updatePassword(EditUserVO editUserVO);
 
 
     /**
@@ -35,22 +40,8 @@ public interface UserService extends IService<User> {
     ResponseResult<Object> getCurrent();
 
     /**
-     * 管理员分页查询用户
-     *
-     * @param current  当前页
-     * @param pageSize 页面容量
-     * @return
+     * 获取其他用户信息
      */
-    ResponseResult<List<UserVO>> searchUsers(String current, String pageSize);
-
-    /**
-     * 管理员根据 id删除用户
-     *
-     * @param id
-     * @return
-     */
-    ResponseResult deleteUserById(String id);
-
     ResponseResult<OtherUserVO> getOtherUser(Long userId);
 }
 

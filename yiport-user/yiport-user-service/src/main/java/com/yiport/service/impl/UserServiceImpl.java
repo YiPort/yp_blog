@@ -29,6 +29,8 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +43,8 @@ import java.util.regex.Pattern;
 
 import static com.yiport.constants.BusinessConstants.BLOG_LOGIN;
 import static com.yiport.constants.BusinessConstants.BLOG_TOKEN;
+import static com.yiport.constent.ExceptionDescription.NICKNAME_EXIST;
+import static com.yiport.constent.ExceptionDescription.PASSWORD_DIFFERENT;
 import static com.yiport.constent.UserConstant.EXPIRATION;
 import static com.yiport.constent.UserConstant.LIMIT_TIME;
 import static com.yiport.constent.UserConstant.NULL_REGEX;
@@ -70,7 +74,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private PasswordEncoder passwordEncoder;
 
     /**
-     * 更新个人信息
+     * 更新用户信息
      *
      * @param editUserVO
      * @return
@@ -78,13 +82,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public ResponseResult updateUserInfo(EditUserVO editUserVO) {
         String userId = JwtUtil.checkToken(request);
-        String username = editUserVO.getUsername();
+        // 获取时间戳,设置创更新时间
+        String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String nickName = editUserVO.getNickName();
         String sex = editUserVO.getSex();
         String avatarUrl = editUserVO.getAvatar();
-        String userPassword = editUserVO.getPassword();
-        String checkPassword = editUserVO.getCheckPassword();
-        // 获取时间戳,设置创更新时间
-        if (StringUtils.isAnyBlank(username))
+        if (StringUtils.isAnyBlank(nickName))
         {
             throw new SystemException(PARAMETER_ERROR, "昵称不能为空");
         }
@@ -92,15 +95,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         {
             throw new SystemException(NO_OPERATOR_AUTH);
         }
+        User one = getOne(new LambdaQueryWrapper<User>()
+                .eq(User::getNickName, nickName)
+                .ne(User::getId, editUserVO.getId()));
+        if (Objects.nonNull(one))
+        {
+            // 昵称已存在
+            throw new SystemException(PARAMETER_ERROR, NICKNAME_EXIST);
+        }
         User user = getOne(new LambdaQueryWrapper<User>()
                 .eq(User::getId, editUserVO.getId()));
 
         user.setSex(sex);
         user.setAvatar(avatarUrl);
+        user.setNickName(nickName);
+        user.setUpdateTime(now);
+        user.setUpdateBy(Long.valueOf(userId));
         updateById(user);
         // 获取权限集合
         Set<String> permissions = new HashSet<>();
-        permissions.add(user.getUserRole().toString());
+        permissions.add(user.getUserRole());
         // 将用户信息封装成 UserDetails返回
         LoginUser loginUser = new LoginUser(user, permissions);
         // 将用户信息(loginUser)和对应的权限信息(permissions)存入 SecurityContextHolder
@@ -111,6 +125,35 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return ResponseResult.okResult();
     }
 
+    /**
+     * 修改密码
+     */
+    @Override
+    public ResponseResult<Void> updatePassword(EditUserVO editUserVO)
+    {
+        String userId = JwtUtil.checkToken(request);
+        // 获取时间戳,设置创建时间
+        String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String userPassword = editUserVO.getPassword();
+        String checkPassword = editUserVO.getCheckPassword();
+        if (!userId.equals(editUserVO.getId().toString()))
+        {
+            throw new SystemException(NO_OPERATOR_AUTH);
+        }
+        User user = getOne(new LambdaQueryWrapper<User>()
+                .eq(User::getId, editUserVO.getId()));
+        if (!userPassword.equals(checkPassword))
+        {
+            // 两次输入密码不一致
+            throw new SystemException(PARAMETER_ERROR, PASSWORD_DIFFERENT);
+        }
+        // 加密
+        String encryptPassword = passwordEncoder.encode(userPassword);
+        user.setPassword(encryptPassword);
+        user.setUpdateTime(now);
+        updateById(user);
+        return ResponseResult.okResult();
+    }
 
     /**
      * 获取用户登录态
@@ -120,47 +163,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     {
         return reloadToken(null);
     }
-    /**
-     * 管理员分页查询用户
-     *
-     * @param current  当前页
-     * @param pageSize 页面容量
-     * @return
-     */
-    @Override
-    public ResponseResult<List<UserVO>> searchUsers(String current, String pageSize) {
-
-        if (StringUtils.isBlank(current) || !NumberUtils.isDigits(current)) current = "0";
-        if (StringUtils.isBlank(pageSize) || !NumberUtils.isDigits(pageSize)) pageSize = "10";
-
-        Page<User> page = new Page<>(Long.parseLong(current), Long.parseLong(pageSize));
-        page(page);
-        List<User> users = page.getRecords();
-
-        List<UserVO> userVOS = BeanCopyUtils.copyBeanList(users, UserVO.class);
-
-        return ResponseResult.okResult(userVOS);
-    }
-
-    /**
-     * 管理员根据 id删除用户
-     *
-     * @param id
-     * @return
-     */
-    @Override
-    public ResponseResult<Void> deleteUserById(String id)
-    {
-        if (StringUtils.isBlank(id) || !NumberUtils.isDigits(id)) {
-            throw new SystemException(PARAMETER_ERROR, "请求参数错误");
-        }
-        if (Long.parseLong(id) <= 0) {
-            throw new SystemException(PARAMETER_ERROR, "参数错误，id大于0");
-        }
-        removeById(id);
-        return ResponseResult.okResult(null);
-    }
-
 
     /**
      * 刷新Token
@@ -225,7 +227,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     {
         User user = getById(userId);
         if (Objects.isNull(user))
+        {
             throw new SystemException(PARAMETER_ERROR, "用户不存在");
+        }
         OtherUserVO otherUserVO = BeanCopyUtils.copyBean(user, OtherUserVO.class);
         Date date=null;
         try {

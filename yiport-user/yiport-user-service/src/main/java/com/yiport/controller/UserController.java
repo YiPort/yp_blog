@@ -1,5 +1,6 @@
 package com.yiport.controller;
 
+import com.yiport.annotation.LimitRequest;
 import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
 import com.yiport.domain.vo.EditUserVO;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.yiport.constent.UserConstant.TRUE;
+
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -25,15 +28,29 @@ public class UserController {
     private UserLoginService userLoginService;
 
     /**
-     * 更新个人信息
+     * 修改用户信息
      *
      * @param editUserVO
      * @return
      */
     @PutMapping("/saveUserInfo")
-    @SystemLog(businessName = "更新个人信息")
-    public ResponseResult updateUserInfo(@Validated  @RequestBody EditUserVO editUserVO){
+    @SystemLog(businessName = "修改用户信息")
+    public ResponseResult<Void> saveUserInfo(@Validated(EditUserVO.UPDATE_INFO.class)
+                                             @RequestBody EditUserVO editUserVO)
+    {
         return userService.updateUserInfo(editUserVO);
+    }
+
+    /**
+     * 修改密码
+     */
+    @SystemLog(businessName = "修改密码")
+    @PutMapping("/updatePassword")
+    @LimitRequest(time = 60 * 1000, count = 3, tip = TRUE)
+    public ResponseResult<Void> updatePassword(@Validated(EditUserVO.UPDATE_PASSWORD.class)
+                                               @RequestBody EditUserVO editUserVO)
+    {
+        return userService.updatePassword(editUserVO);
     }
 
     /**
@@ -45,33 +62,6 @@ public class UserController {
     @SystemLog(businessName = "获取用户登录态")
     public ResponseResult current() {
         return userService.getCurrent();
-    }
-
-    /**
-     * 管理员分页查询用户
-     *
-     * @param current  当前页
-     * @param pageSize 页面容量
-     * @return
-     */
-    @GetMapping("/system/searchUsers")
-    @PreAuthorize("hasAuthority('1')")
-    @SystemLog(businessName = "管理员分页查询用户")
-    public ResponseResult<List<UserVO>> searchUsers(@RequestParam("current") String current, @RequestParam("pageSize") String pageSize) {
-        return userService.searchUsers(current, pageSize);
-    }
-
-    /**
-     * 管理员根据id删除用户
-     *
-     * @param id
-     * @return
-     */
-    @PostMapping("/system/delete")
-    @PreAuthorize("hasAuthority('1')")
-    @SystemLog(businessName = "管理员根据id删除用户")
-    public ResponseResult deleteUser(@RequestParam("id") @RequestBody String id) {
-        return userService.deleteUserById(id);
     }
 
     /**
