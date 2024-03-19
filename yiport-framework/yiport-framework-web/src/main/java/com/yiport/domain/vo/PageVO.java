@@ -2,20 +2,20 @@ package com.yiport.domain.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class PageVO implements Serializable {
+public class PageVO<T> implements Serializable
+{
 
+    private static final long serialVersionUID = 5081548464042833461L;
     /**
-     * 页面数据列表
+     * 存放数据
      */
-    private List rows;
+    private List<T> rows;
 
     /**
      * 总记录数
