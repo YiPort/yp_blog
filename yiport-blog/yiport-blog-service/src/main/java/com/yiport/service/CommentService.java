@@ -12,12 +12,12 @@ public interface CommentService extends IService<Comment> {
     /**
      * 查询文章评论列表
      */
-    ResponseResult<PageVO> getCommentList(Long articleId, Integer pageNum, Integer pageSize);
+    ResponseResult<PageVO> getCommentList(CommentBO commentBO);
 
     /**
      * 查询友链评论列表
      */
-    ResponseResult<PageVO> getLinkCommentList(Integer pageNum, Integer pageSize);
+    ResponseResult<PageVO> getLinkCommentList(CommentBO commentBO);
 
     /**
      * 保存评论

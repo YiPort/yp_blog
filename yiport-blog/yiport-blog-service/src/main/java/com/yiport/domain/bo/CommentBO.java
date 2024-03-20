@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 评论管理分页查询对象
+ * 评论分页查询对象
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -20,4 +20,9 @@ public class CommentBO extends PageBase
      * 文章ID
      */
     private Long articleId;
+
+    /**
+     * 排序
+     */
+    private String order;
 }

@@ -24,22 +24,15 @@ public class CommentController {
 
     /**
      * 查询评论列表
-     *
-     * @param articleId
-     * @param pageNum
-     * @param pageSize
-     * @return
      */
     @GetMapping("/commentList")
     @SystemLog(businessName = "查询评论列表")
-    public ResponseResult commentList(Long articleId, Integer pageNum, Integer pageSize){
-        return commentService.getCommentList(articleId, pageNum, pageSize);
+    public ResponseResult commentList(CommentBO commentBO){
+        return commentService.getCommentList(commentBO);
     }
 
     /**
      * 发表评论
-     *
-     * @param comment
      * @return
      */
     @PostMapping("/saveComment")
@@ -51,23 +44,15 @@ public class CommentController {
 
     /**
      * 查询友联评论列表
-     *
-     * @param pageNum
-     * @param pageSize
-     * @return
      */
     @GetMapping("/linkCommentList")
     @SystemLog(businessName = "查询友链评论")
-    public ResponseResult linkCommentList(Integer pageNum,Integer pageSize){
-        return commentService.getLinkCommentList(pageNum, pageSize);
+    public ResponseResult linkCommentList(CommentBO commentBO){
+        return commentService.getLinkCommentList(commentBO);
     }
 
     /**
      * 置顶/取消置顶文章评论
-     *
-     * @param id
-     * @param label
-     * @return
      */
     @PutMapping("/setCommentTop/{id}/{label}")
     @SystemLog(businessName = "置顶/取消置顶文章评论")

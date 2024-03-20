@@ -69,28 +69,31 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      * 查询文章评论列表
      */
     @Override
-    public ResponseResult<PageVO> getCommentList(Long articleId, Integer pageNum, Integer pageSize)
+    public ResponseResult<PageVO> getCommentList( CommentBO commentBO)
     {
         // 查询 当前文章下的 精选 文章 根评论
         LambdaQueryWrapper<Comment> lambdaQueryWrapper = new LambdaQueryWrapper<Comment>()
-                .eq(Comment::getArticleId, articleId)
+                .eq(Comment::getArticleId, commentBO.getArticleId())
                 .eq(Comment::getType, ARTICLE_COMMENT)
                 .eq(Comment::getStatus, NORMAL_COMMENT)
                 .eq(Comment::getToCommentId, ROOT_COMMENT)
                 .orderByDesc(Comment::getLabel)
-                .orderByAsc(Comment::getCreateTime);
+                .orderByAsc(StringUtils.isBlank(commentBO.getOrder()) || commentBO.getOrder().equals("ASC"),
+                        Comment::getCreateTime)
+                .orderByDesc(StringUtils.isNotBlank(commentBO.getOrder()) &&
+                        commentBO.getOrder().equals("DESC"), Comment::getCreateTime);
         // 分页
-        Page<Comment> page = new Page<>(pageNum, pageSize);
+        Page<Comment> page = new Page<>(commentBO.getPageNum(), commentBO.getPageSize());
         page(page, lambdaQueryWrapper);
         // 根评论列表
         List<Comment> rootComments = page.getRecords();
-        // 根评论请求体集合
+        // 根评论响应体集合
         List<CommentVO> rootArticleCommentVOS = BeanCopyUtils.copyBeanList(rootComments, CommentVO.class);
-        // 遍历根评论请求体集合
+        // 遍历根评论响应体集合
         for (CommentVO rootArticleCommentVO : rootArticleCommentVOS)
         {
             LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(Comment::getArticleId, articleId);
+            queryWrapper.eq(Comment::getArticleId, commentBO.getArticleId());
             queryWrapper.eq(Comment::getType, ARTICLE_COMMENT);
             queryWrapper.eq(Comment::getStatus, NORMAL_COMMENT);
             queryWrapper.eq(Comment::getToCommentId, rootArticleCommentVO.getId());
@@ -108,7 +111,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         for (Comment rootComment : rootCommentTotal)
         {
             LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(Comment::getArticleId, articleId);
+            queryWrapper.eq(Comment::getArticleId, commentBO.getArticleId());
             queryWrapper.eq(Comment::getType, ARTICLE_COMMENT);
             queryWrapper.eq(Comment::getStatus, NORMAL_COMMENT);
             queryWrapper.eq(Comment::getToCommentId, rootComment.getId());
@@ -126,16 +129,20 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      * 查询友链评论列表
      */
     @Override
-    public ResponseResult<PageVO> getLinkCommentList(Integer pageNum, Integer pageSize)
+    public ResponseResult<PageVO> getLinkCommentList(CommentBO commentBO)
     {
         LambdaQueryWrapper<Comment> rootQueryWrapper = new LambdaQueryWrapper<>();
         // 查询 友链评论 根评论
         rootQueryWrapper.eq(Comment::getType, LINK_COMMENT)
                 .eq(Comment::getRootId, ROOT_COMMENT)
                 .eq(Comment::getStatus, NORMAL_COMMENT)
-                .orderByAsc(Comment::getCreateTime);
+                .orderByDesc(Comment::getLabel)
+                .orderByAsc(StringUtils.isBlank(commentBO.getOrder()) || commentBO.getOrder().equals("ASC"),
+                        Comment::getCreateTime)
+                .orderByDesc(StringUtils.isNotBlank(commentBO.getOrder()) &&
+                        commentBO.getOrder().equals("DESC"), Comment::getCreateTime);
         // 分页
-        Page<Comment> page = new Page<>(pageNum, pageSize);
+        Page<Comment> page = new Page<>(commentBO.getPageNum(), commentBO.getPageSize());
         page(page, rootQueryWrapper);
         // 获取根评论响应请求体集合
         List<Comment> rootComments = page.getRecords();
