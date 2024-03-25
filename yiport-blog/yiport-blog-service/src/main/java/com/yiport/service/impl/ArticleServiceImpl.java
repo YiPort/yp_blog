@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yiport.constants.BlogConstants;
 import com.yiport.domain.ResponseResult;
+import com.yiport.domain.bo.ArticleBO;
 import com.yiport.domain.bo.ArticleExamineBO;
 import com.yiport.domain.entity.Article;
 import com.yiport.domain.entity.ArticleRecord;
@@ -42,6 +43,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -535,6 +537,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     {
         LoginUtils.checkRole(httpServletRequest);
         Long userId = Long.valueOf(JwtUtil.checkToken(httpServletRequest));
+        if (article.getStatus().equals(NOT_RELEASE))
+        {
+            throw new SystemException(PARAMETER_ERROR, "非法操作！");
+        }
         int rows = articleMapper.updateById(article);
         // 获取时间戳
         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
@@ -544,23 +550,27 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             // 将文章浏览量同步到 redis
             String articleKey = ARTICLE_VIEWCOUNT + article.getId();
             // viewCount为null时为新发布的文章或草稿，不为空时为已发布文章
-            long viewCount = article.getViewCount() == null ? 1 : article.getViewCount();
+            long viewCount = article.getViewCount() == null || article.getViewCount() == 0  ? 1 : article.getViewCount();
             redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
-            EditHistory editHistory = null;
+            EditHistory editHistory;
             if (article.getArticleExamine().equals(PASS))
             {
                 // 将事件 push入消息队列
                 editHistory = new EditHistory(userId, "文章审核通过：" + article.getTitle(),
                         now, GREEN, SUCCESS, LARGE);
             }
-            if (article.getArticleExamine().equals(NOT_PASS))
+            else if (article.getArticleExamine().equals(NOT_PASS))
             {
                 // 将事件 push入消息队列
                 editHistory = new EditHistory(userId, "文章审核未通过：" + article.getTitle() +
                         "(" + article.getNotPassMessage() + ")", now, RED, FAIL, LARGE);
             }
+            else
+            {
+                throw new SystemException(PARAMETER_ERROR, "非法操作！");
+            }
             editHistoryService.saveOrUpdate(editHistory);
-            redisCache.setCacheList(editKey, Arrays.asList(editHistory));
+            redisCache.setCacheList(editKey, Collections.singletonList(editHistory));
         }
         return ResponseResult.resultByRows(rows);
     }
@@ -582,5 +592,29 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return ResponseResult.okResult(articleRecord);
     }
 
+    /**
+     * 管理员查询文章
+     */
+    @Override
+    public ResponseResult<PageVO> selectPageArticle(ArticleBO articleBO)
+    {
+        LoginUtils.checkRole(httpServletRequest);
+        Page<Article> page = articleBO.build();
+        page(page, new LambdaQueryWrapper<Article>()
+                .orderByDesc(Article::getCreateTime)
+                .like(!StringUtils.isEmpty(articleBO.getTitle()), Article::getTitle, articleBO.getTitle())
+                .eq(!StringUtils.isEmpty(articleBO.getIsTop()), Article::getIsTop, articleBO.getIsTop())
+                .eq(!StringUtils.isEmpty(articleBO.getStatus()), Article::getStatus, articleBO.getStatus())
+                .eq(!StringUtils.isEmpty(articleBO.getArticleExamine()), Article::getArticleExamine, articleBO.getArticleExamine())
+                .eq(!StringUtils.isEmpty(articleBO.getIsComment()), Article::getIsComment, articleBO.getIsComment())
+                .eq(Objects.nonNull(articleBO.getCategoryId()), Article::getCategoryId, articleBO.getCategoryId())
+                .eq(Objects.nonNull(articleBO.getCreateBy()), Article::getCreateBy, articleBO.getCreateBy())
+                .ge(!StringUtils.isEmpty(articleBO.getStartTime()), Article::getCreateTime, articleBO.getStartTime())
+                .le(!StringUtils.isEmpty(articleBO.getEndTime()), Article::getCreateTime, articleBO.getEndTime()));
+        List<Article> articles = page.getRecords();
+        PageVO pageVO = new PageVO(articles, page.getTotal());
+
+        return ResponseResult.okResult(pageVO);
+    }
 
 }

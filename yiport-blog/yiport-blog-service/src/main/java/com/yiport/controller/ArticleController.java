@@ -3,6 +3,7 @@ package com.yiport.controller;
 import com.yiport.annotation.LimitRequest;
 import com.yiport.annotation.SystemLog;
 import com.yiport.domain.ResponseResult;
+import com.yiport.domain.bo.ArticleBO;
 import com.yiport.domain.bo.ArticleExamineBO;
 import com.yiport.domain.entity.Article;
 import com.yiport.domain.entity.ArticleRecord;
@@ -194,6 +195,16 @@ public class ArticleController {
     public ResponseResult<ArticleRecord> getArticleEditRecord(Long recordId)
     {
         return articleService.getArticleEditRecord(recordId);
+    }
+
+    /**
+     * 管理员查询文章
+     */
+    @GetMapping("/selectPageArticle")
+    @SystemLog(businessName = "管理员查询文章")
+    public ResponseResult<PageVO> selectPageArticle(ArticleBO articleBO)
+    {
+        return articleService.selectPageArticle(articleBO);
     }
 
 }
