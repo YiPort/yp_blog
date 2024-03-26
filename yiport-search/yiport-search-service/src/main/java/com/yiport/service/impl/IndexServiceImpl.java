@@ -73,6 +73,19 @@ public class IndexServiceImpl extends ServiceImpl<IndexMapper, Index> implements
         return ResponseResult.okResult(indexVOS);
     }
 
+
+    /**
+     * 删除文章目录索引
+     */
+    @Override
+    public ResponseResult deleteArticleIndex(Long indexId) {
+        LoginUtils.checkRole(httpServletRequest);
+        // 删除该文章已有索引
+        LambdaQueryWrapper<Index> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Index::getArticleId, indexId);
+        remove(queryWrapper);
+        return ResponseResult.okResult();
+    }
 }
 
 

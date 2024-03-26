@@ -23,4 +23,10 @@ public interface IndexService extends IService<Index> {
      * @return
      */
     ResponseResult getArticleIndex();
+
+
+    /**
+     * 删除文章目录索引
+     */
+    ResponseResult deleteArticleIndex(Long indexId);
 }

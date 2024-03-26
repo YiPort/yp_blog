@@ -10,6 +10,8 @@ import java.util.Objects;
 import static com.yiport.constants.BusinessConstants.ADMIN_ID;
 import static com.yiport.constants.BusinessConstants.BLOG_ADMIN;
 import static com.yiport.constants.BusinessConstants.TOKEN_KEY;
+import static com.yiport.constants.SystemConstants.ADMIN_ID_1;
+import static com.yiport.constants.SystemConstants.ADMIN_ID_2;
 import static com.yiport.enums.AppHttpCodeEnum.NEED_LOGIN;
 import static com.yiport.enums.AppHttpCodeEnum.NO_OPERATOR_AUTH;
 
@@ -40,7 +42,7 @@ public class LoginUtils
         {
             throw new SystemException(NEED_LOGIN, "未登录，请登录后重试");
         }
-        if (!Long.valueOf(claims.getId()).equals(ADMIN_ID))
+        if (!StringUtils.equalsAny(claims.getId(), ADMIN_ID_1.toString(), ADMIN_ID_2.toString()))
         {
             throw new SystemException(NO_OPERATOR_AUTH);
         }

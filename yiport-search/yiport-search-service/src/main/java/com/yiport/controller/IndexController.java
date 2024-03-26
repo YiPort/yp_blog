@@ -6,6 +6,7 @@ import com.yiport.domain.ResponseResult;
 import com.yiport.domain.entity.Index;
 import com.yiport.service.IndexService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,6 +35,15 @@ public class IndexController {
     @SystemLog(businessName = "提交文章目录索引")
     public ResponseResult postArticleIndex(@RequestBody List<Index> directoryIndex) {
         return indexService.postArticleIndex(directoryIndex);
+    }
+
+    /**
+     * 删除文章目录索引
+     */
+    @DeleteMapping("/deleteArticleIndex/{indexId}")
+    @SystemLog(businessName = "删除文章目录索引")
+    public ResponseResult deleteArticleIndex(@PathVariable("indexId") Long indexId) {
+        return indexService.deleteArticleIndex(indexId);
     }
 
     /**
