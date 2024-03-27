@@ -551,16 +551,26 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             String articleKey = ARTICLE_VIEWCOUNT + article.getId();
             // viewCount为null时为新发布的文章或草稿，不为空时为已发布文章
             long viewCount = article.getViewCount() == null || article.getViewCount() == 0  ? 1 : article.getViewCount();
-            redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
             EditHistory editHistory;
             if (article.getArticleExamine().equals(PASS))
             {
+                redisCache.setCacheObject(articleKey, BigInteger.valueOf(viewCount));
+                //设置文章摘要为当前文章的内容节选,用于文章搜索
+                article.setSummary(MarkdownUtils.markdown2PlainText(article.getContent()));
+                //清空内容，减轻网络传输压力
+                article.setContent("");
+                //保存文章，发送MQ消息
+                String articleDocs = JSON.toJSONString(article);
+                rabbitTemplate.convertAndSend(BLOG_TOPIC_EXCHANGE, BLOG_UPDATE_KEY, articleDocs);
                 // 将事件 push入消息队列
                 editHistory = new EditHistory(userId, "文章审核通过：" + article.getTitle(),
                         now, GREEN, SUCCESS, LARGE);
             }
             else if (article.getArticleExamine().equals(NOT_PASS))
             {
+                redisCache.setCacheObject(articleKey, 0);
+                //消息队列发送更新文章，发送MQ消息
+                rabbitTemplate.convertAndSend(BLOG_TOPIC_EXCHANGE, BLOG_DELETE_KEY, article.getId());
                 // 将事件 push入消息队列
                 editHistory = new EditHistory(userId, "文章审核未通过：" + article.getTitle() +
                         "(" + article.getNotPassMessage() + ")", now, RED, FAIL, LARGE);
