@@ -55,6 +55,6 @@ public class AuthenticationFailureListener implements ApplicationListener<Abstra
             message = "未知错误";
         }
         loginInfoService.recordLoginInfo(event.getAuthentication().getPrincipal().toString(),
-                FAIL, LOGIN_BY_ACCOUNT, message, request);
+                FAIL, message, LOGIN_BY_ACCOUNT, request);
     }
 }
