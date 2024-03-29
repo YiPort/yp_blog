@@ -8,9 +8,7 @@ import cn.hutool.http.useragent.UserAgentUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yiport.domain.entity.LoginInfo;
-import com.yiport.domain.entity.User;
 import com.yiport.mapper.LoginInfoMapper;
-import com.yiport.mapper.UserMapper;
 import com.yiport.service.LoginInfoService;
 import com.yiport.service.MailCommonService;
 import com.yiport.utils.AddressUtils;
@@ -22,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
-import java.util.Objects;
 
 import static com.yiport.constent.UserConstant.LOGIN_BY_ACCOUNT;
 import static com.yiport.constent.UserConstant.LOGIN_SUCCESS;
@@ -43,13 +40,11 @@ public class LoginInfoServiceImpl extends ServiceImpl<LoginInfoMapper, LoginInfo
 
     /**
      * 登录信息记录
-     *
-     *      * @param userAccount 账号
-     *      * @param status      访问状态
-     *      * @param message     详细消息
-     *      * @param type        登录类型
+     * @param userName 账号
+     * @param status      访问状态
+     * @param message     详细消息
+     * @param type        登录类型
      */
-    @Async
     @Override
     public void recordLoginInfo(String userName, String status, String message, String type, HttpServletRequest request)
     {
@@ -140,7 +135,3 @@ public class LoginInfoServiceImpl extends ServiceImpl<LoginInfoMapper, LoginInfo
     }
 
 }
-
-
-
-
