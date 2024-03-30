@@ -82,12 +82,6 @@ public class LoginCommonService
             log.info("登录用户：{} 不存在.", userName);
             throw new SystemException(ACCOUNT_PASSWORD_ERROR);
         }
-        else if (BAN_STATUS.toString().equals(user.getStatus()))
-        {
-            loginInfoService.recordLoginInfo(userName, FAIL, ACCOUNT_DEACTIVATE, LOGIN_BY_ACCOUNT, request);
-            log.info("登录用户：{} 已被停用.", userName);
-            throw new SystemException(ACCOUNT_DEACTIVATE);
-        }
         return user;
     }
 
